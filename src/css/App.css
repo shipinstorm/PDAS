@@ -1,0 +1,287 @@
+body {
+  background-color: #212121;
+  /*the following is from the default sample app css.  probably don't need most of it*/
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* App Layout */
+
+.main-content {
+  position: absolute;
+  top: 60px;
+  bottom: 0px;
+  right: 0px;
+  left: 0px;
+  min-width: 675px;
+}
+
+.job-list {
+  position: absolute;
+  top: 0;
+  bottom: 100px;
+  left: 0;
+  right: 400px;
+}
+
+.job-list.full-width {
+  right: 0;
+}
+
+.job-list.full-height {
+  bottom: 0;
+}
+
+.details-pane {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 400px;
+  border-left: 3px solid #4b4b4b;
+}
+
+.details-pane.hidden {
+  display: none;
+}
+
+.log-pane {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 400px;
+  height: 100px;
+  border-top: 3px solid #4b4b4b;
+}
+
+.log-pane.hidden {
+  display: none;
+}
+
+.log-pane.full-width {
+  right: 0;
+}
+
+.check-box {
+  position:relative;
+  float: right;
+  right: 200px;
+  background-color:#4b4b4b ;
+  background-size: 300px 100px;
+  border-top: 3px solid #4b4b4b;
+}
+ul.checkbox {
+  column-count: 3;
+
+  list-style: none;
+}
+ul.checkbox li{
+  display:block;
+  position:relative;
+  padding-left: 10px;
+  padding-right: 20px;
+  margin-bottom: 12px;
+}
+.check-box.hidden {
+  display:none;
+}
+.check-columns{
+ column-gap: 40px;
+ columns: 100px 3;
+}
+.columnResizer {
+  background-color:#4b4b4b;
+  width: 6px;
+}
+/* App Header */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+}
+.app-searchbar {
+  display: flex;
+  align-items: center;
+}
+.coda-logo {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 32px;
+  font-weight: bold;
+  padding: 0px 8px 0px 16px;
+}
+.search-bar {
+  min-width: 450px;
+  display: inline-block;
+}
+.search-bar input {
+  height: 33px;
+}
+.checkboxes {
+  display: inline-block;
+}
+.header-buttons {
+  display: flex;
+  margin-right: 16px;
+}
+.header-buttons a,
+.header-buttons button {
+  background-color: #4b4b4b;
+  color: rgba(255,255,255,.6);
+  margin: 0px 4px;
+}
+.header-buttons a {
+  border-radius: 50%;
+  padding: 5px 7px;
+}
+.header-buttons button {
+  border: none;
+  border-radius: 2px;
+  padding: 4px 10px;
+}
+.header-buttons a span.material-icons,
+.header-buttons button span.material-icons {
+  font-size: 18px;
+}
+/*  Job List  */
+
+.job-list {
+  font-size: 14px;
+  overflow: scroll;
+}
+
+.column-headers {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.submit-date-header {
+  text-align: right;
+  background: #383838;
+}
+
+.job-rows {
+  background-color: #292929;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.job-list table {
+  width: 100%;
+}
+
+.job-rows td,
+.column-headers th {
+  text-align: center;
+}
+
+.job-rows td.user-name,
+.column-headers th.user-name,
+.job-rows td.submitted,
+.column-headers th.submitted {
+  text-align: right;
+}
+
+.job-rows td.title,
+.column-headers th.title,
+.job-rows td.job-id {
+  text-align: left;
+}
+
+.job-rows tr.dgraph-row,
+.job-rows tr.array-row,
+.job-rows tr.task-row {
+	cursor: pointer;
+}
+
+.job-rows tr.selected {
+	background-color: #3b3b3b;
+}
+
+.job-rows .toggle-icon {
+  cursor: pointer;
+}
+
+td.host span.thread-count {
+  color: #4b4b4b;
+}
+
+/* Details Pane */
+
+.details-pane {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Log Pane */
+
+.log-pane {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.check-box{
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.autocomplete-tag {
+  border-radius: 1px !important;
+  background: #333 !important;
+  margin: 0px 3px;
+  padding: 0px 5px;
+  color: white;
+}
+.autocomplete-tag-close {
+  cursor: pointer;
+}
+.autocomplete-tag-header {
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 2px;
+}
+.autocomplete-group {
+  display: flex;
+  border-bottom: 1px solid #1D25CD;
+}
+.autocomplete-group:last-child {
+  border-bottom: none !important;
+}
+.autocomplete-right {
+  background: #AAA;
+  padding: 0px;
+  width: 100%;
+}
+.autocomplete-right ul {
+  padding: 0px !important;
+}
+.MuiAutocomplete-popper * {
+  padding: 0px !important;
+}
+.MuiAutocomplete-popper li {
+  padding: 10px !important;
+}
+.autocomplete-left {
+  min-width: 100px !important;
+  text-align: right;
+  padding-top: 10px !important;
+  padding-right: 10px !important;
+  background: #EEE;
+}
+.MuiMenu-list {
+  padding: 0px !important;
+  background: #383838;
+  color: #A3A3A3;
+}
+.MuiMenu-list .MuiGrid2-grid-xs-3, .MuiMenu-list .MuiGrid2-grid-xs-6, .MuiMenu-list .MuiGrid2-grid-xs-12 {
+  padding-left: 10px;
+}
+.filter-title {
+  background: #282828;
+  padding: 5px 10px !important;
+}
+.filter-footer span {
+  color: #1976d2;
+  cursor: pointer;
+}
+.filter-footer span, .filter-footer button {
+  margin: 20px 20px 20px 0px;
+}
