@@ -17,6 +17,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 function submitTime(dateString) {
   let date = new Date(dateString+"Z");
+  date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
   let hours = date.getHours();
   let minutes = date.getMinutes();
   minutes = minutes < 10 ? "0"+minutes : minutes;
@@ -108,6 +109,13 @@ function JobList(props) {
           }
         }
       },
+      MuiTablePagination: {
+        styleOverrides: {
+          displayedRows: {
+            display: 'none',
+          }
+        }
+      }
     }
   })
 
@@ -179,6 +187,8 @@ function JobList(props) {
     expandableRowsOnClick: true,
     rowsExpanded: props.rowsExpanded,
     columnOrder: columnOrder,
+    rowsPerPage: props.rowsPerPage,
+    page: props.currentPage,
 
     onRowExpansionChange: (currentRowsExpanded, allRowsExpanded, rowsExpanded) => {
       props.onToggleClick(currentRowsExpanded[0].index)
@@ -251,6 +261,16 @@ function JobList(props) {
     onColumnOrderChange: (newColumnOrder) => {
       localStorage.setItem('columnOrder', newColumnOrder);
       setColumnOrder(newColumnOrder);
+    },
+
+    onTableChange: (action, tableState) => {
+      switch (action) {
+        case 'changePage': case 'changeRowsPerPage':
+          props.setCurrentPage(tableState.page);
+          props.setRowsPerPage(tableState.rowsPerPage);
+          props.setSearchQuery(props.autoCompleteValue, tableState.page * tableState.rowsPerPage, tableState.rowsPerPage * 2);
+          break;
+      }
     }
   }
 

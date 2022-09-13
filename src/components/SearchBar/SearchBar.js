@@ -8,11 +8,11 @@ import Tag from './Tag';
 
 function SearchBar({
   graphData,
-  initSearchQuery,
+  autoCompleteValue,
+  setAutoCompleteValue,
   setSearchQuery,
   filterQueryFlag,
 }) {
-  const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
   const elementRef = useRef();
   const isFirstRun = useRef(true);
   

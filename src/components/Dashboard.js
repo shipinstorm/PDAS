@@ -55,9 +55,13 @@ export default function Dashboard() {
 	const [rowsExpanded, setRowsExpanded] = useState(searchParamsObject.expanded ? JSON.parse("[" + searchParamsObject.expanded + "]") : []);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [initSearchQuery, ] = useState(getInitSearchQuery());
+	const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
 	const [filterQueryFlag, setFilterQueryFlag] = useState([]);
+	// For MUIDataTable pagination
+	const [rowsPerPage, setRowsPerPage] = useState(10);
+	const [currentPage, setCurrentPage] = useState(0);
 
-	const searchQueryHandle = (newSearchQuery) => {
+	const searchQueryHandle = (newSearchQuery, from=currentPage * rowsPerPage, size=rowsPerPage * 2) => {
 		var now = new Date();
 		now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 
@@ -144,12 +148,17 @@ export default function Dashboard() {
 		 * This is for ElasticSearch
 		 * Comment out below section when you work with Mock Data
 		 */
-		// ElasticSearchService.getDgraphs(elasticSearchQuery).then(
-		//  	(result) => {
-		// 		setGraphData(result.hits.hits.map(doc => doc._source));
-		// 		setJobListLoading(false);
-		// 	}
-		// )
+		ElasticSearchService.getDgraphs(elasticSearchQuery, from, size).then(
+		 	(result) => {
+				let tmpGraphData = [];
+				for (var i = 0; i < from; i++) {
+					tmpGraphData.push({});
+				}
+				result.hits.hits.map(doc => tmpGraphData.push(doc._source));
+				setGraphData(tmpGraphData);
+				setJobListLoading(false);
+			}
+		)
 				
 		navigate('/search?q=' + urlSearchQuery + '&exp=' + rowsExpanded.toString() + '&details=' + viewDetails + '&log=' + viewLog);
 
@@ -213,6 +222,7 @@ export default function Dashboard() {
 		}
 		
 		rowsExpanded.map(row => toggleJob(row))
+		setAutoCompleteValue(initSearchQuery);
 		searchQueryHandle(initSearchQuery);
 	}, []);
 	
@@ -301,7 +311,8 @@ export default function Dashboard() {
 					<div className="coda-logo">CODA</div>
 					<SearchBar
 						graphData={searchGraphData}
-						initSearchQuery={initSearchQuery}
+						autoCompleteValue={autoCompleteValue}
+						setAutoCompleteValue={setAutoCompleteValue}
 						setSearchQuery={searchQueryHandle}
 						filterQueryFlag={filterQueryFlag}
 					/>
@@ -309,7 +320,7 @@ export default function Dashboard() {
 				<HeaderButtons toggleDetails={toggleDetails} toggleLog={toggleLog} />
 			</div>
 			<div className="main-content">
-				<JobList 
+				<JobList
 					viewDetails={viewDetails} 
 					viewLog={viewLog} 
 					loading={jobListLoading} 
@@ -317,8 +328,14 @@ export default function Dashboard() {
 					searchArrayData={searchArrayData}
 					searchTaskData={searchTaskData}
 					onToggleClick={(jobId) => toggleJob(jobId)}
-					setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
 					rowsExpanded={rowsExpanded}
+					setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
+					rowsPerPage={rowsPerPage}
+					setRowsPerPage={setRowsPerPage}
+					currentPage={currentPage}
+					setCurrentPage={setCurrentPage}
+					autoCompleteValue={autoCompleteValue}
+					setSearchQuery={searchQueryHandle}
 				/>
 				<DetailsPane isHidden={!viewDetails}/>
 				<LogPane isHidden={!viewLog} viewDetails={viewDetails} />

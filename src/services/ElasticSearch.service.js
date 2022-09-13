@@ -5,9 +5,9 @@ class ElasticSearchService {
   //FUNCTIONS WILL NOT WORK SO USE MOCKDATA.JS to replace what this endpoints would had provided.
   // Q: ASK ME IF YOU HAVE ANY QUESTIONS.
 
-    static getDgraphs(query) {
+    static getDgraphs(query, from, size) {
         let searchQuery = query ? '_exists_:did !_exists_:aid '+query : '_exists_:did !_exists_:aid';
-        let searchUrl = elasticsearchURL+'/_search?default_operator=AND&sort=did:desc&q='+encodeURIComponent(searchQuery);
+        let searchUrl = elasticsearchURL+'/_search?default_operator=AND&sort=did:desc&from=' + from + '&size=' + size + '&q='+encodeURIComponent(searchQuery);
         return fetch(searchUrl).then(res => res.json());
     }
 
