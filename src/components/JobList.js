@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import MUIDataTable from 'mui-datatables';
 import TableRow from '@mui/material/TableRow';
@@ -9,6 +9,7 @@ import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { setTimeout } from 'table-dragger';
 
 // function submitDate(dateString) {
 //   let date = new Date(dateString+"Z");
@@ -16,6 +17,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 // }
 
 function submitTime(dateString) {
+  if (!dateString) return "";
+
   let date = new Date(dateString+"Z");
   date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
   let hours = date.getHours();
@@ -190,15 +193,15 @@ function JobList(props) {
     rowsPerPage: props.rowsPerPage,
     page: props.currentPage,
 
-    onRowExpansionChange: (currentRowsExpanded, allRowsExpanded, rowsExpanded) => {
-      props.onToggleClick(currentRowsExpanded[0].index)
+    onRowExpansionChange: async (currentRowsExpanded, allRowsExpanded, rowsExpanded) => {
+      await props.onToggleClick(props.graphData[currentRowsExpanded[0].index].did)
       props.setRowsExpanded(allRowsExpanded)
     },
 
     renderExpandableRow: (rowData, rowMeta) => {
       const did = rowData[1];
-      
-      const [searchArrayData, searchTaskData] = [props.searchArrayData[rowMeta.dataIndex], props.searchTaskData[rowMeta.dataIndex]];
+
+      const [searchArrayData, searchTaskData] = [props.searchArrayData[did], props.searchTaskData[did]];
       if (!searchArrayData || !searchArrayData.length || !searchTaskData || !searchTaskData.length) {
         return (
           <TableRow>

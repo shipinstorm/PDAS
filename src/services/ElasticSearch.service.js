@@ -1,13 +1,9 @@
-const  elasticsearchURL = '';
+const  elasticsearchURL = 'https://wdas-elastic.fas.fa.disney.com:9200/coda_6';
 
 class ElasticSearchService {
-
-  //FUNCTIONS WILL NOT WORK SO USE MOCKDATA.JS to replace what this endpoints would had provided.
-  // Q: ASK ME IF YOU HAVE ANY QUESTIONS.
-
-    static getDgraphs(query, from, size) {
-        let searchQuery = query ? '_exists_:did !_exists_:aid '+query : '_exists_:did !_exists_:aid';
-        let searchUrl = elasticsearchURL+'/_search?default_operator=AND&sort=did:desc&from=' + from + '&size=' + size + '&q='+encodeURIComponent(searchQuery);
+    static getDgraphs(query, from, size, hidden) {
+        let searchQuery = (hidden ? '' : '!clienthide:1 ') + (query ? ('_exists_:did !_exists_:aid ' + query) : '_exists_:did !_exists_:aid');
+        let searchUrl = elasticsearchURL+'/_search?default_operator=AND&sort=did:desc&from=' + from + '&size=' + size + '&q=' + encodeURIComponent(searchQuery);
         return fetch(searchUrl).then(res => res.json());
     }
 

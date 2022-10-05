@@ -15,7 +15,7 @@ function SearchBar({
 }) {
   const elementRef = useRef();
   const isFirstRun = useRef(true);
-  
+
   // Update searchQuery and redraw table
   useEffect(() => {
     if (isFirstRun.current) {

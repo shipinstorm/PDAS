@@ -423,88 +423,6 @@ export const dGraphData = {
         "sort": [
           35225735
         ]
-      },
-      {
-        "_index": "coda_6_v1",
-        "_type": "_doc",
-        "_id": "629e44ffab774cd6c9300e3a",
-        "_score": null,
-        "_source": {
-          "_userkill": 1,
-          "_running": 0,
-          "_done": 0,
-          "dgraphprio": 1000,
-          "icoda_fullname": "Diana Stone",
-          "hashid": 0,
-          "_lasttaskend": "2022-06-14T13:30:51.885000",
-          "_queued": 0,
-          "user": 4541,
-          "_statusname": "queued",
-          "_dgraphstatus": [
-            4
-          ],
-          "_lastupdate": "2022-06-14T13:30:53.049000",
-          "title": "PULP-244.0-002.00-tanim",
-          "did": 35225735,
-          "_syskill": 0,
-          "_firsttaskstart": "2022-06-06T18:19:01.298000",
-          "_suspended": 0,
-          "icoda_username": "sbae",
-          "dgraphresources": {
-            "memory": 500,
-            "os_release_id": "rhel",
-            "os_release_maj": "R7",
-            "cpus": 1,
-            "sysname": "Linux"
-          },
-          "_depend": 0,
-          "_exit": 0,
-          "_submittime": "2022-06-06T18:09:39.317000"
-        },
-        "sort": [
-          35225735
-        ]
-      },
-      {
-        "_index": "coda_6_v1",
-        "_type": "_doc",
-        "_id": "629e44ffab774cd6c9300e3a",
-        "_score": null,
-        "_source": {
-          "_userkill": 1,
-          "_running": 0,
-          "_done": 0,
-          "dgraphprio": 1000,
-          "icoda_fullname": "Diana Stone",
-          "hashid": 0,
-          "_lasttaskend": "2022-06-14T13:30:51.885000",
-          "_queued": 0,
-          "user": 4541,
-          "_statusname": "queued",
-          "_dgraphstatus": [
-            4
-          ],
-          "_lastupdate": "2022-06-14T13:30:53.049000",
-          "title": "PULP-244.0-002.00-tanim",
-          "did": 35225735,
-          "_syskill": 0,
-          "_firsttaskstart": "2022-06-06T18:19:01.298000",
-          "_suspended": 0,
-          "icoda_username": "sbae",
-          "dgraphresources": {
-            "memory": 500,
-            "os_release_id": "rhel",
-            "os_release_maj": "R7",
-            "cpus": 1,
-            "sysname": "Linux"
-          },
-          "_depend": 0,
-          "_exit": 0,
-          "_submittime": "2022-06-06T18:09:39.317000"
-        },
-        "sort": [
-          35225735
-        ]
       }
     ]
   }
@@ -635,5 +553,3 @@ export const dTaskData = {
       ]
     }
   }
-  
-
