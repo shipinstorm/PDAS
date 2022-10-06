@@ -1,20 +1,27 @@
-import React from 'react';
 import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams, useNavigate } from "react-router-dom"
+
+import {
+	globalGraphData,
+	globalArrayData,
+	globalTaskData
+} from '../store/actions/globalAction';
 
 import SearchBar from './SearchBar/SearchBar';
 import HeaderButtons from './HeaderButtons';
 import DetailsPane from './DetailsPane';
-import JobList from './JobList';
+import GraphTable from './GraphTable/GraphTable';
 import LogPane from './LogPane';
 import { dGraphData, dArrayData, dTaskData } from "../services/mockData";
 import ElasticSearchService from "../services/ElasticSearch.service";
 
-import '../css/MaterialIcons.css';
-import '../css/App.css';
+import '../assets/css/MaterialIcons.css';
+import '../assets/css/App.css';
 
 export default function Dashboard() {
 	const navigate = useNavigate();
+	const dispatch = useDispatch();
 
 	/**
 	 * The useSearchParams hook is used to read and modify the query string in the URL for the current location.
@@ -45,12 +52,14 @@ export default function Dashboard() {
 		return res;
 	}
 
-	// Initialize from searchParamsObject
+	/**
+	 * Initialize from searchParamsObject
+	 */
 	const [viewDetails, setViewDetails] = useState(searchParamsObject.details === 'true' ? true : false);
 	const [viewLog, setViewLog] = useState(searchParamsObject.log === 'true' ? true : false);
-	const [graphData, setGraphData] = useState([]);
-	const [searchArrayData, setSearchArrayData] = useState([]);
-	const [searchTaskData, setSearchTaskData] = useState([]);
+	const graphData = useSelector((state) => state.global.graphData);
+	const arrayData = useSelector((state) => state.global.arrayData);
+	const taskData = useSelector((state) => state.global.taskData);
 	const [jobListLoading, setJobListLoading] = useState(true);
 	const [rowsExpandedJobID, setRowsExpandedJobID] = useState(searchParamsObject.expanded ? JSON.parse("[" + searchParamsObject.expanded + "]") : []);
 	const [rowsExpandedIndex, setRowsExpandedIndex] = useState([]);
@@ -58,9 +67,15 @@ export default function Dashboard() {
 	const [initSearchQuery, ] = useState(getInitSearchQuery());
 	const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
 	const [filterQueryFlag, setFilterQueryFlag] = useState([]);
-	// For MUIDataTable pagination
+	/**
+	 * For MUIDataTable pagination
+	 */
 	const [rowsPerPage, setRowsPerPage] = useState(10);
 	const [currentPage, setCurrentPage] = useState(0);
+	/**
+	 * For DetailsPanel
+	 */
+	const [jobSelected, setJobSelected] = useState("");
 
 	const searchQueryHandle = (newSearchQuery, from=currentPage * rowsPerPage, size=rowsPerPage * 2) => {
 		var now = new Date();
@@ -207,7 +222,7 @@ export default function Dashboard() {
 				return doc._source._submittime >= after[0];
 			})
 		}
-		setGraphData(tmpGraphData.map((doc) => doc._source))
+		dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
 		setJobListLoading(false);
 	}
 
@@ -249,11 +264,11 @@ export default function Dashboard() {
 
 	const toggleJob = async (jobId) => {
 		// await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
-			let newArrayData = searchArrayData;
+			let newArrayData = arrayData;
 		    // newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
 			newArrayData[jobId] = dArrayData.hits.hits.map(doc => doc._source);
 
-			let newTaskData = searchTaskData;
+			let newTaskData = taskData;
 			newTaskData[jobId] = new Array();
 			await Promise.all(newArrayData[jobId].map(async (array) => {
 				// await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
@@ -261,8 +276,8 @@ export default function Dashboard() {
 					newTaskData[jobId][array.aid] = dTaskData.hits.hits.map(doc => doc._source);
 				// });
 			}))
-			setSearchArrayData(newArrayData);
-			setSearchTaskData(newTaskData);
+			dispatch(globalArrayData(newArrayData));
+			dispatch(globalTaskData(newTaskData));
 			setJobListLoading(false);
 	  // });
 	}
@@ -337,13 +352,10 @@ export default function Dashboard() {
 				<HeaderButtons toggleDetails={toggleDetails} toggleLog={toggleLog} />
 			</div>
 			<div className="main-content">
-				<JobList
+				<GraphTable
 					viewDetails={viewDetails}
 					viewLog={viewLog}
 					loading={jobListLoading}
-					graphData={graphData}
-					searchArrayData={searchArrayData}
-					searchTaskData={searchTaskData}
 					onToggleClick={async (jobId) => {await toggleJob(jobId);}}
 					rowsExpanded={rowsExpandedIndex}
 					setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
@@ -353,9 +365,17 @@ export default function Dashboard() {
 					setCurrentPage={setCurrentPage}
 					autoCompleteValue={autoCompleteValue}
 					setSearchQuery={searchQueryHandle}
+					jobSelected={jobSelected}
+					setJobSelected={setJobSelected}
 				/>
-				<DetailsPane isHidden={!viewDetails}/>
-				<LogPane isHidden={!viewLog} viewDetails={viewDetails} />
+				<DetailsPane
+					isHidden={!viewDetails}
+					jobSelected={jobSelected}
+				/>
+				<LogPane
+					isHidden={!viewLog}
+					viewDetails={viewDetails}
+				/>
 			</div>
 		</div>
 	);

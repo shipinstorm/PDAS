@@ -16,7 +16,9 @@ function SearchBar({
   const elementRef = useRef();
   const isFirstRun = useRef(true);
 
-  // Update searchQuery and redraw table
+  /**
+   * Update searchQuery and redraw table
+   */
   useEffect(() => {
     if (isFirstRun.current) {
       isFirstRun.current = false;
@@ -26,7 +28,9 @@ function SearchBar({
   }, [autoCompleteValue]);
 
   const handleAutoCompleteValueChange = (newValue) => {
-    // Update searchQuery and redraw table
+    /**
+     * Update searchQuery and redraw table
+     */
     setAutoCompleteValue(newValue);
     setSearchQuery(newValue);
   }
@@ -47,13 +51,17 @@ function SearchBar({
         getOptionLabel={(option) => option.title}
         groupBy={option => option.header}
         onChange={(e, newValue) => {
-          // Remove duplicated items
+          /**
+           * Remove duplicated items
+           */
           newValue = newValue.filter((value, index, self) => {
             return index === self.findIndex((t) => {
               return t.header === value.header && t.title === value.title;
             })
           })
-          // Update searchQuery and redraw table
+          /**
+           * Update searchQuery and redraw table
+           */
           setAutoCompleteValue(newValue)
         }}
         sx={{

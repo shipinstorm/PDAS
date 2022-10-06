@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 
 import MUIDataTable from 'mui-datatables';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
-import IconButton from '@material-ui/core/IconButton';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { setTimeout } from 'table-dragger';
+
+import ArrayTableRow from './ArrayTableRow';
 
 // function submitDate(dateString) {
 //   let date = new Date(dateString+"Z");
@@ -31,33 +30,11 @@ function submitTime(dateString) {
   }
 }
 
-const ExpandableTableRow = ({ children, expandComponent, ...otherProps }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <>
-      <TableRow {...otherProps}>
-        <TableCell
-          padding="checkbox"
-          sx={{
-            '& .MuiButtonBase-root': {
-              color: '#848285 !important',
-            },
-          }}
-        >
-          <IconButton onClick={() => setIsExpanded(!isExpanded)}>
-          {isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
-          </IconButton>
-        </TableCell>
-        {children}
-      </TableRow>
-      {isExpanded && expandComponent}
-    </>
-  );
-};
-
-function JobList(props) {
+function GraphTable(props) {
   const [columnOrder, setColumnOrder] = useState(localStorage.columnOrder ? JSON.parse("[" + localStorage.columnOrder + "]") : [0, 1, 2, 3, 4, 5, 6, 7]);
+  const graphData = useSelector((state) => state.global.graphData);
+	const arrayData = useSelector((state) => state.global.arrayData);
+	const taskData = useSelector((state) => state.global.taskData);
 
   let className = "job-list";
   className += props.viewDetails ? "" : " full-width";
@@ -157,7 +134,7 @@ function JobList(props) {
     },
   ]
 
-  const data = props.graphData.map((jobs) => {
+  const data = graphData.map((jobs) => {
     return {
       username: jobs.icoda_username,
       jobid: jobs.did,
@@ -187,78 +164,38 @@ function JobList(props) {
     viewColumns: true,
     expandableRows: true,
     expandableRowsHeader: false,
-    expandableRowsOnClick: true,
+    expandableRowsOnClick: false,
     rowsExpanded: props.rowsExpanded,
     columnOrder: columnOrder,
     rowsPerPage: props.rowsPerPage,
     page: props.currentPage,
 
     onRowExpansionChange: async (currentRowsExpanded, allRowsExpanded, rowsExpanded) => {
-      await props.onToggleClick(props.graphData[currentRowsExpanded[0].index].did)
+      await props.onToggleClick(graphData[currentRowsExpanded[0].index].did)
       props.setRowsExpanded(allRowsExpanded)
     },
 
     renderExpandableRow: (rowData, rowMeta) => {
       const did = rowData[1];
 
-      const [searchArrayData, searchTaskData] = [props.searchArrayData[did], props.searchTaskData[did]];
+      const [searchArrayData, searchTaskData] = [arrayData[did], taskData[did]];
       if (!searchArrayData || !searchArrayData.length || !searchTaskData || !searchTaskData.length) {
         return (
           <TableRow>
-            <TableCell></TableCell>
-            <TableCell colSpan={columns.length}></TableCell>
+            <TableCell colSpan={columns.length + 1}></TableCell>
           </TableRow>
         );
       }
-      return searchArrayData.map((arrayRow)=> {
-        const childArrayText = `${did}.${arrayRow.aid}`;
-        const tmpArray1 = [
-          { name: '' },
-          { name: childArrayText },
-          { name: '' },
-          { name: '' },
-          { name: '' },
-          { name: '' },
-          { name: '' },
-          { name: '' },
-        ]
-        return (
-          <ExpandableTableRow
-            key={childArrayText}
-            expandComponent={
-              searchTaskData[arrayRow.aid].map((taskRow) => {
-                const childTaskText = `${childArrayText}.${taskRow.aid}`;
-                const tmpArray2 = [
-                  { name: '' },
-                  { name: childTaskText },
-                  { name: taskRow.title },
-                  { name: taskRow._statusname },
-                  { name: taskRow._exechost ? taskRow._exechost : '' + '(' + taskRow._granted?.cpus + ')' },
-                  { name: '' },
-                  { name: '' + taskRow._memused + '/' + taskRow._granted?.memory },
-                  { name: '' },
-                ]
-                return (
-                <TableRow key={childTaskText}>
-                  <TableCell padding="checkbox" />
-                  {[...Array(8)].map((value, index) => {
-                    return (
-                      <TableCell key={index}>{tmpArray2[columnOrder[index]].name}</TableCell>
-                    )
-                  })}
-                </TableRow>
-                )
-              })
-            }
-          >
-            {[...Array(8)].map((value, index) => {
-              return (
-                <TableCell key={index}>{tmpArray1[columnOrder[index]].name}</TableCell>
-              )
-            })}
-          </ExpandableTableRow>
-        );
-      });
+      return (
+        <ArrayTableRow
+          searchArrayData={searchArrayData}
+          searchTaskData={searchTaskData}
+          did={did}
+          columnOrder={columnOrder}
+          jobSelected={props.jobSelected}
+          setJobSelected={props.setJobSelected}
+        />
+      );
     },
 
     onColumnOrderChange: (newColumnOrder) => {
@@ -313,4 +250,4 @@ function JobList(props) {
   }
 }
 
-export default JobList;
+export default GraphTable;
