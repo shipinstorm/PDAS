@@ -9,7 +9,7 @@ import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 
 import TaskTableRow from "./TaskTableRow";
 
-const ExpandableTableRow = ({ children, expandComponent, ...otherProps }) => {
+const ExpandableTableRow = ({ children, expandComponent, isSelected, ...otherProps }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -17,10 +17,17 @@ const ExpandableTableRow = ({ children, expandComponent, ...otherProps }) => {
       <TableRow {...otherProps}>
         <TableCell
           padding="checkbox"
-          sx={{
+          sx={isSelected ?
+          {
+            background: '#383838 !important',
             '& .MuiButtonBase-root': {
               color: '#848285 !important',
             },
+          } : 
+          {
+            '& .MuiButtonBase-root': {
+              color: '#848285 !important',
+            }
           }}
         >
           <IconButton onClick={() => setIsExpanded(!isExpanded)}>
@@ -65,25 +72,23 @@ export default function ArrayTableRow({
               arrayRow={arrayRow}
               childArrayText={childArrayText}
               columnOrder={columnOrder}
+              jobSelected={jobSelected}
               setJobSelected={setJobSelected}
             />
           }
-          sx={jobSelected ?
-          {
-            cursor: 'pointer',
-            backgroundColor: 'red'
-          } :
-          {
-            cursor: 'pointer'
-          }}
+          sx={{ cursor: 'pointer' }}
           onClick={() => {
             setJobSelected(childArrayText);
           }}
+          isSelected={isSelected}
         >
           {[...Array(8)].map((value, index) => {
             return (
               <TableCell
                 key={index}
+                sx={isSelected ?
+                { background: '#383838 !important' } :
+                { background: '#282828 !important' }}
               >
                 {tmpArray1[columnOrder[index]].name}
               </TableCell>

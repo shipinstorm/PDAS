@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import MUIDataTable from 'mui-datatables';
+
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import ArrayTableRow from './ArrayTableRow';
 
@@ -95,6 +97,13 @@ function GraphTable(props) {
             display: 'none',
           }
         }
+      },
+      MUIDataTable: {
+        styleOverrides: {
+          responsiveBase: {
+            overflow: 'inherit',
+          }
+        }
       }
     }
   })
@@ -169,6 +178,11 @@ function GraphTable(props) {
     columnOrder: columnOrder,
     rowsPerPage: props.rowsPerPage,
     page: props.currentPage,
+    /**
+     * Row select for DetailsPane
+     */
+    selectableRows: 'single',
+    selectableRowsOnClick: true,
 
     onRowExpansionChange: async (currentRowsExpanded, allRowsExpanded, rowsExpanded) => {
       await props.onToggleClick(graphData[currentRowsExpanded[0].index].did)
@@ -213,7 +227,23 @@ function GraphTable(props) {
         default:
           break;
       }
-    }
+    },
+
+    onRowSelectionChange: (currentRowsSelected, allRowsSelected, rowsSelected) => {
+      if (rowsSelected[0]) {
+        /**
+         * Select current row
+         * jobSelected: current row's id
+         */
+        props.setJobSelected(graphData[rowsSelected[0]].did);
+      } else {
+        /**
+         * Deselect current row
+         * jobSelected: none
+         */
+        props.setJobSelected('');
+      }
+    },
   }
 
   if (props.loading) {

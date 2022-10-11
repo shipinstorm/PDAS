@@ -151,7 +151,7 @@ ul.checkbox li{
 
 .job-list {
   font-size: 14px;
-  overflow: scroll;
+  overflow: auto;
 }
 
 .column-headers {
@@ -284,4 +284,7 @@ td.host span.thread-count {
 }
 .filter-footer span, .filter-footer button {
   margin: 20px 20px 20px 0px;
+}
+.MuiTableRow-root.Mui-selected > .MuiTableCell-root {
+  background-color: #383838 !important;
 }

@@ -6,11 +6,13 @@ export default function TaskTableRow({
   arrayRow,
   childArrayText,
   columnOrder,
+  jobSelected,
   setJobSelected
 }) {
   return (
     searchTaskData[arrayRow.aid].map((taskRow) => {
       const childTaskText = `${childArrayText}.${taskRow.aid}`;
+      const isSelected = (jobSelected === childTaskText);
       const tmpArray2 = [
         { name: '' },
         { name: childTaskText },
@@ -29,10 +31,22 @@ export default function TaskTableRow({
             setJobSelected(childTaskText);
           }}
         >
-          <TableCell padding="checkbox" />
+          <TableCell
+            padding="checkbox"
+            sx={isSelected ?
+            { background: '#383838 !important' } :
+            { background: '#282828 !important' }}
+          />
           {[...Array(8)].map((value, index) => {
             return (
-              <TableCell key={index}>{tmpArray2[columnOrder[index]].name}</TableCell>
+              <TableCell
+                key={index}
+                sx={isSelected ?
+                { background: '#383838 !important' } :
+                { background: '#282828 !important' }}
+              >
+                {tmpArray2[columnOrder[index]].name}
+              </TableCell>
             )
           })}
         </TableRow>
