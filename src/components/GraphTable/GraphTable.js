@@ -210,6 +210,8 @@ function GraphTable(props) {
           props.setRowsPerPage(tableState.rowsPerPage);
           props.setSearchQuery(props.autoCompleteValue, tableState.page * tableState.rowsPerPage, tableState.rowsPerPage * 2);
           break;
+        default:
+          break;
       }
     }
   }

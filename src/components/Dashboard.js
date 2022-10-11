@@ -226,30 +226,33 @@ export default function Dashboard() {
 		setJobListLoading(false);
 	}
 
-	useEffect(async () => {
-		/**
-		 * When a user first logs or navigates to the base url
-		 * Auto populate the search bar to query for jobs submitted by them in the last two days.
-		 */
-		if (searchParamsObject.details == null && searchParamsObject.expanded == null && searchParamsObject.log == null && searchParamsObject.query == null) {
-			var yesterday = new Date();
-			yesterday.setDate(yesterday.getDate() - 1);
-			yesterday.setMinutes(yesterday.getMinutes() - yesterday.getTimezoneOffset());
-
-			initSearchQuery.push({
-				header: 'after',
-				title: yesterday.toISOString().slice(0, 16),
-			});
-
-			initSearchQuery.push({
-				header: 'user',
-				title: 'lean',
-			});
+	useEffect(() => {
+		async function foo() {
+			/**
+			 * When a user first logs or navigates to the base url
+			 * Auto populate the search bar to query for jobs submitted by them in the last two days.
+			 */
+			if (searchParamsObject.details == null && searchParamsObject.expanded == null && searchParamsObject.log == null && searchParamsObject.query == null) {
+				var yesterday = new Date();
+				yesterday.setDate(yesterday.getDate() - 1);
+				yesterday.setMinutes(yesterday.getMinutes() - yesterday.getTimezoneOffset());
+	
+				initSearchQuery.push({
+					header: 'after',
+					title: yesterday.toISOString().slice(0, 16),
+				});
+	
+				initSearchQuery.push({
+					header: 'user',
+					title: 'lean',
+				});
+			}
+	
+			await Promise.all(rowsExpandedJobID.map(async (row) => {await toggleJob(row);}));
+			setAutoCompleteValue(initSearchQuery);
+			searchQueryHandle(initSearchQuery);
 		}
-
-		await Promise.all(rowsExpandedJobID.map(async (row) => {await toggleJob(row);}));
-		setAutoCompleteValue(initSearchQuery);
-		searchQueryHandle(initSearchQuery);
+		foo();
 	}, []);
 
 	const toggleDetails = () => {
@@ -289,7 +292,7 @@ export default function Dashboard() {
 		let tmpRowsExpanded = [];
 		newExpanded.map((exp) => {
 			graphData.map((graph, index) => {
-				if (graph.did == exp) {
+				if (graph.did === exp) {
 					tmpRowsExpanded.push(index);
 				}
 			})
