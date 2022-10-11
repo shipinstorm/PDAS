@@ -222,11 +222,6 @@ export default function Dashboard() {
 				return doc._source._submittime >= after[0];
 			})
 		}
-		let tmpArray = new Array();
-		tmpGraphData.map((doc) => {
-			tmpArray[doc._source.did] = doc._source;
-		});
-		console.log(tmpGraphData);
 		dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
 		setJobListLoading(false);
 	}

@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
+
+import { submitTime } from '../utils/utils';
 
 import '../assets/css/DetailsPane.scss';
 
@@ -10,6 +13,29 @@ function DetailsPane({
   className += isHidden ? " hidden" : "";
 
   const [showMetaData, setShowMetaData] = useState(false);
+  const graphData = useSelector((state) => state.global.graphData);
+  const arrayData = useSelector((state) => state.global.arrayData);
+  const taskData = useSelector((state) => state.global.taskData);
+  let jobID = null;
+  let graphID = null, arrayID = null, taskID = null;
+  if (jobSelected) {
+    jobID = jobSelected.toString().split('.');
+  }
+  if (jobID) {
+    graphID = jobID.length >= 1 ? jobID[0] : null;
+    arrayID = jobID.length >= 2 ? jobID[1] : null;
+    taskID = jobID.length >= 3 ? jobID[2] : null;
+  }
+
+  let selectedGraphData = graphData.filter((data) => data.did === Number(graphID));
+  let selectedArrayData, selectedTaskData;
+  if (arrayID) {
+    selectedArrayData = arrayData[Number(graphID)].filter((data) => data.aid === Number(arrayID));
+    if (taskID) {
+      selectedTaskData = taskData[Number(graphID)][Number(arrayID)].filter((data) => data.tid === Number(taskID));
+    }
+  }
+  console.log(selectedGraphData);
   
   return (
     <div className={className}>
@@ -22,10 +48,10 @@ function DetailsPane({
             Job ID:&nbsp;
             <span className='Details-Light'>{jobSelected}</span>
           </p>
-          <p className='Details-Title'>sleep 100</p>
+          <p className='Details-Title'>{selectedGraphData[0].title}</p>
           <div className='Details-Row'>
-            <p className='Details-Header'>gwhitted</p>
-            <p className='Details-Right'>5:44 pm</p>
+            <p className='Details-Header'>{selectedGraphData[0].icoda_username}</p>
+            <p className='Details-Right'>{submitTime(selectedGraphData[0]._submittime)}</p>
           </div>
           <div className='Details-Row'>
             <p className='Details-Header'>Frames</p>
@@ -60,27 +86,27 @@ function DetailsPane({
             </div>
             <div className='Details-Row'>
               <p className='Details-Header'>_arraydepend</p>
-              <p className='Details-Light'>0</p>
+              <p className='Details-Light'>{selectedGraphData[0].depend}</p>
             </div>
             <div className='Details-Row'>
               <p className='Details-Header'>_arraydone</p>
-              <p className='Details-Light'>0</p>
+              <p className='Details-Light'>{selectedGraphData[0]._done}</p>
             </div>
             <div className='Details-Row'>
               <p className='Details-Header'>_arrayexit</p>
-              <p className='Details-Light'>0</p>
+              <p className='Details-Light'>{selectedGraphData[0]._exit}</p>
             </div>
             <div className='Details-Row'>
               <p className='Details-Header'>_arraykilled</p>
-              <p className='Details-Light'>1</p>
+              <p className='Details-Light'>{selectedGraphData[0]._killed}</p>
             </div>
             <div className='Details-Row'>
               <p className='Details-Header'>_arrayqueued</p>
-              <p className='Details-Light'>0</p>
+              <p className='Details-Light'>{selectedGraphData[0]._queued}</p>
             </div>
             <div className='Details-Row'>
               <p className='Details-Header'>_arrayrunning</p>
-              <p className='Details-Light'>0</p>
+              <p className='Details-Light'>{selectedGraphData[0]._running}</p>
             </div>
             <div className='Details-Row'>
               <p className='Details-Header'>_arraysuspended</p>
