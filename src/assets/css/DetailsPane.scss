@@ -1,0 +1,31 @@
+.Details {
+  padding: 0px 20px;
+  p {
+    margin: 0px 0px 20px 0px;
+  }.Details-Light {
+    color: rgba(255, 255, 255, 0.6);
+  }.Details-Dark {
+    color: rgba(255, 255, 255, 0.35);
+  }.Details-No-Margin {
+    margin-bottom: 0px;
+  }.Details-Title {
+    margin-bottom: 0px;
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.6);
+  }.Details-Row {
+    display: flex;
+  }.Details-Right {
+    width: 100%;
+    text-align: right;
+    color: rgba(255, 255, 255, 0.6);
+  }.Details-Header {
+    width: 150px;
+    color: rgba(255, 255, 255, 0.6);
+  }.Details-Show-Metadata {
+    padding: 10px 0px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+  }
+}
