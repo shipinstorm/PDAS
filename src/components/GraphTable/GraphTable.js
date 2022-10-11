@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import MUIDataTable from 'mui-datatables';
 
@@ -9,6 +9,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
+
+import { jobRowsSelected } from '../../store/actions/jobAction';
 
 import ArrayTableRow from './ArrayTableRow';
 
@@ -33,10 +35,12 @@ function submitTime(dateString) {
 }
 
 function GraphTable(props) {
+  const dispatch = useDispatch();
   const [columnOrder, setColumnOrder] = useState(localStorage.columnOrder ? JSON.parse("[" + localStorage.columnOrder + "]") : [0, 1, 2, 3, 4, 5, 6, 7]);
   const graphData = useSelector((state) => state.global.graphData);
 	const arrayData = useSelector((state) => state.global.arrayData);
 	const taskData = useSelector((state) => state.global.taskData);
+  const rowsSelected = useSelector((state) => state.job.rowsSelected);
 
   let className = "job-list";
   className += props.viewDetails ? "" : " full-width";
@@ -183,6 +187,7 @@ function GraphTable(props) {
      */
     selectableRows: 'single',
     selectableRowsOnClick: true,
+    rowsSelected: rowsSelected,
 
     onRowExpansionChange: async (currentRowsExpanded, allRowsExpanded, rowsExpanded) => {
       await props.onToggleClick(graphData[currentRowsExpanded[0].index].did)
@@ -230,7 +235,8 @@ function GraphTable(props) {
     },
 
     onRowSelectionChange: (currentRowsSelected, allRowsSelected, rowsSelected) => {
-      if (rowsSelected[0]) {
+      dispatch(jobRowsSelected(rowsSelected));
+      if (rowsSelected.length) {
         /**
          * Select current row
          * jobSelected: current row's id

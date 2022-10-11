@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDispatch } from 'react-redux';
 
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
@@ -6,6 +7,8 @@ import TableCell from '@mui/material/TableCell';
 import IconButton from '@material-ui/core/IconButton';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
+
+import { jobRowsSelected } from '../../store/actions/jobAction';
 
 import TaskTableRow from "./TaskTableRow";
 
@@ -30,7 +33,12 @@ const ExpandableTableRow = ({ children, expandComponent, isSelected, ...otherPro
             }
           }}
         >
-          <IconButton onClick={() => setIsExpanded(!isExpanded)}>
+          <IconButton
+            onClick={(event) => {
+              event.preventDefault();
+              setIsExpanded(!isExpanded);
+            }}
+          >
           {isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
           </IconButton>
         </TableCell>
@@ -49,6 +57,8 @@ export default function ArrayTableRow({
   jobSelected,
   setJobSelected
 }) {
+  const dispatch = useDispatch();
+
   return (
     searchArrayData.map((arrayRow)=> {
       const childArrayText = `${did}.${arrayRow.aid}`;
@@ -78,6 +88,10 @@ export default function ArrayTableRow({
           }
           sx={{ cursor: 'pointer' }}
           onClick={() => {
+            /**
+             * Remove select of graph data when array is selected
+             */
+            dispatch(jobRowsSelected([]));
             setJobSelected(childArrayText);
           }}
           isSelected={isSelected}
