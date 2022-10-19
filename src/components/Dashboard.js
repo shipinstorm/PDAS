@@ -181,12 +181,12 @@ export default function Dashboard() {
 		// 			})
 		// 		})
 		// 		setRowsExpandedIndex(tmpRowsExpanded);
-		// 		setGraphData(tmpGraphData);
+		// 		dispatch(globalGraphData(tmpGraphData));
 		// 		setJobListLoading(false);
 		// 	}
 		// )
 
-		// navigate('/search?q=' + urlSearchQuery + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + viewLog);
+		navigate('/search?q=' + urlSearchQuery + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + viewLog);
 
 		/**
 		 * This is for Mock Data
@@ -268,7 +268,7 @@ export default function Dashboard() {
 	const toggleJob = async (jobId) => {
 		// await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
 			let newArrayData = arrayData;
-		    // newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
+		  // newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
 			newArrayData[jobId] = dArrayData.hits.hits.map(doc => doc._source);
 
 			let newTaskData = taskData;
@@ -305,7 +305,9 @@ export default function Dashboard() {
 	const convertToSearchGraphData = (graphData) => {
 		let data = [], uniqueChars, tmp;
 		tmp = graphData.map((d) => {
-			return d.icoda_username;
+			if (d) {
+				return d.icoda_username;
+			}
 		})
 		uniqueChars = [...new Set(tmp)];
 		uniqueChars.map((d) => {
