@@ -373,14 +373,8 @@ export default function Dashboard() {
 					jobSelected={jobSelected}
 					setJobSelected={setJobSelected}
 				/>
-				<DetailsPane
-					isHidden={!viewDetails}
-					jobSelected={jobSelected}
-				/>
-				<LogPane
-					isHidden={!viewLog}
-					viewDetails={viewDetails}
-				/>
+				{viewDetails && <DetailsPane jobSelected={jobSelected} />}
+				{viewLog && <LogPane viewDetails={viewDetails} />}
 			</div>
 		</div>
 	);

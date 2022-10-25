@@ -1,4 +1,4 @@
-export const submitTime = (dateString) => {
+export const submittedTime = (dateString) => {
   if (!dateString) return "";
 
   let date = new Date(dateString+"Z");
@@ -17,17 +17,17 @@ export const elapsedTime = (graphData, arrayData, taskData) => {
   if (!graphData) return '';
   
   let status = '';
-  if (graphData._statusname){
-    if (taskData.tid != undefined){
+  if (graphData._statusname) {
+    if (taskData.tid !== undefined) {
       status = taskData._statusname;
-    } else if (arrayData.aid != undefined){
+    } else if (arrayData.aid !== undefined) {
       status = arrayData._statusname;
     } else {
       status = graphData._statusname;
     }
   }
 
-  if (!(graphData._firsttaskstart || taskData._starttime) || !status || status == "dependent" || status == "in-queue") {
+  if (!(graphData._firsttaskstart || taskData._starttime) || !status || status === "dependent" || status === "in-queue") {
     return "";
   }
 
@@ -36,7 +36,7 @@ export const elapsedTime = (graphData, arrayData, taskData) => {
       startTime = typeof taskData._starttime == "number" ? new Date(taskData._starttime*1000) : new Date(taskData._starttime);
   }
   let elapsedTime;
-  if (status == "done" || status == "paused" || status == "killed" || status == "exited" || status == "killed-wait" || status == "exit-wait"){
+  if (status === "done" || status === "paused" || status === "killed" || status === "exited" || status === "killed-wait" || status === "exit-wait"){
     let endTime = typeof graphData._lasttaskend == "number" ? new Date(graphData._lasttaskend*1000) : new Date(graphData._lasttaskend);
     if (taskData._endtime){
       endTime = typeof taskData._endtime == "number" ? new Date(taskData._endtime*1000) : new Date(taskData._endtime);
@@ -53,10 +53,10 @@ export const elapsedTime = (graphData, arrayData, taskData) => {
 export const timeString = (num) => {
   let hours = Math.floor(num / 3600000);
   let minutes = Math.floor(num / 60000) - hours * 60;
-  if (hours == 0 && minutes == 0) {
+  if (hours === 0 && minutes === 0) {
     return "< 1m";
   }
-  if (hours == 0) {
+  if (hours === 0) {
     return minutes + "m";
   }
   return hours + "h " + minutes + "m";

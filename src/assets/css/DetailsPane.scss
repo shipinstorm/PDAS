@@ -1,35 +1,372 @@
-.Details {
-  padding: 0px 20px;
-  p {
-    margin: 0px 0px 20px 0px;
-  }.Details-Light {
-    color: rgba(255, 255, 255, 0.6);
-  }.Details-Dark {
-    color: rgba(255, 255, 255, 0.35);
-  }.Details-No-Margin {
-    margin-bottom: 0px;
-    font-size: 12px;
-    span {
-      font-size: 16px;
-    }
-  }.Details-Title {
-    margin-bottom: 0px;
-    font-size: 20px;
-    color: rgba(255, 255, 255, 0.6);
-  }.Details-Row {
-    display: flex;
-  }.Details-Right {
-    width: 100%;
-    text-align: right;
-    color: rgba(255, 255, 255, 0.6);
-  }.Details-Header {
-    width: 150px;
-    color: rgba(255, 255, 255, 0.6);
-  }.Details-Show-Metadata {
-    padding: 10px 0px;
-    border: 2px solid rgba(255, 255, 255, 0.35);
-    border-radius: 4px;
-    text-align: center;
-    cursor: pointer;
-  }
+// .Details {
+//   padding: 0px 20px;
+//   p {
+//     margin: 0px 0px 20px 0px;
+//   }.Details-Light {
+//     color: rgba(255, 255, 255, 0.6);
+//   }.Details-Dark {
+//     color: rgba(255, 255, 255, 0.35);
+//   }.Details-No-Margin {
+//     margin-bottom: 0px;
+//     font-size: 12px;
+//     span {
+//       font-size: 16px;
+//     }
+//   }.Details-Title {
+//     margin-bottom: 0px;
+//     font-size: 20px;
+//     color: rgba(255, 255, 255, 0.6);
+//   }.Details-Row {
+//     display: flex;
+//   }.Details-Right {
+//     width: 100%;
+//     text-align: right;
+//     color: rgba(255, 255, 255, 0.6);
+//   }.Details-Header {
+//     width: 150px;
+//     color: rgba(255, 255, 255, 0.6);
+//   }.Details-Show-Metadata {
+//     padding: 10px 0px;
+//     border: 2px solid rgba(255, 255, 255, 0.35);
+//     border-radius: 4px;
+//     text-align: center;
+//     cursor: pointer;
+//   }
+// }
+.object-details-content {
+  font-size: 14px;
+  background: #212121;
+  color: rgba(255, 255, 255, 0.65);
+  height: 100%;
+  width: 100%;
+  display: table;
+  word-break: break-word;
+}
+.object-details-content .control-label.text-left {
+  text-align: left;
+}
+.object-details-content .detail-form label,
+.object-details-content .detail-form p {
+  font-weight: normal;
+  position: relative;
+  min-height: 30px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.object-details-content .detail-form label {
+  width: 30%;
+}
+.object-details-content .detail-form p {
+  width: 70%;
+  padding-bottom: 5px;
+}
+.object-details-content .detail-form input {
+  height: 25px;
+  background: transparent;
+  border: 1px solid;
+  border-radius: 0px;
+}
+.object-details-content .detail-form .input-group.form-control-static {
+  padding-top: 7px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.object-details-content .detail-form .input-group-btn .btn-sm {
+  padding: 1px 9px;
+}
+.object-details-content .status-color.exited,
+.object-details-content .status-color.syskilled {
+  color: #dc322f;
+}
+.object-details-content .status-color.running {
+  color: #1DA237;
+}
+.object-details-content .status-color.killed {
+  color: #707070;
+  font-style: italic;
+}
+.object-details-content .status-color.dependent {
+  color: #6699cc;
+}
+.object-details-content .status-numbers-text {
+  display: none;
+}
+.object-details-content dgraph-status .status-text,
+.object-details-content array-status .status-text {
+  padding-right: 7px;
+  text-align: left;
+  width: auto;
+  max-width: 80px;
+}
+.object-details-content dgraph-status .done-percentage,
+.object-details-content array-status .done-percentage,
+.object-details-content dgraph-status .done-count,
+.object-details-content array-status .done-count {
+  padding: 0px 0px 0px 7px;
+}
+.object-details-content .panel-heading .row {
+  padding-bottom: 5px;
+  font-size: 14px;
+}
+.object-details-content small {
+  color: rgba(255, 255, 255, 0.2);
+}
+.object-details-content a {
+  color: #BEBEBE;
+}
+.object-details-content .panel-title .glyphicon.glyphicon-pencil {
+  font-size: 14px;
+}
+.object-details-content .glyphicon.glyphicon-pencil {
+  padding-left: 4px;
+  color: #6699cc;
+}
+.object-details-content .collapsed-obj {
+  height: 33px;
+}
+.object-details-content .collapsed-obj .glyphicon.glyphicon-pencil {
+  top: -2px;
+}
+.object-details-content .editable {
+  cursor: pointer;
+}
+.object-details-content input:focus,
+.object-details-content textarea:focus {
+  outline: none;
+}
+.object-details-content .edit-metadata button.btn-sm.btn-primary,
+.object-details-content .edit-metadata button.btn-sm.btn-default {
+  height: 20px;
+  padding: 0px 12px;
+  margin-top: 4px;
+}
+.object-details-content .edit-metadata button.btn-sm.btn-primary.btn-primary,
+.object-details-content .edit-metadata button.btn-sm.btn-default.btn-primary {
+  border: none;
+}
+.object-details-content .edit-metadata button.btn-sm.btn-primary small,
+.object-details-content .edit-metadata button.btn-sm.btn-default small {
+  color: rgba(255, 255, 255, 0.6);
+}
+.object-details-content .edit-metadata button.btn-sm.btn-primary .glyphicon-save,
+.object-details-content .edit-metadata button.btn-sm.btn-default .glyphicon-save {
+  padding-right: 4px;
+}
+.object-details-content .edit-spinner img {
+  height: 17px;
+}
+.object-details-content .edit-saved-span small {
+  color: #2aa198;
+}
+.object-details-content .edit-saved-span small .glyphicon {
+  padding-right: 4px;
+}
+.object-details-content .panel-heading .edit-saved-span small {
+  padding-left: 15px;
+}
+.object-details-content .status-history ul {
+  list-style-type: none;
+  padding-left: 0px;
+}
+.object-details-content .status-history ul span.glyphicon.glyphicon-triangle-right,
+.object-details-content .status-history ul span.glyphicon.glyphicon-triangle-bottom {
+  position: absolute;
+  top: 13px;
+  left: 0px;
+  color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 12px;
+}
+.object-details-content .status-history ul span.glyphicon.glyphicon-triangle-right:hover,
+.object-details-content .status-history ul span.glyphicon.glyphicon-triangle-bottom:hover {
+  color: #949494;
+}
+.object-details-content .status-history ul span.glyphicon.glyphicon-info-sign {
+  color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 12px;
+}
+.object-details-content .status-history .status-time {
+  float: left;
+  width: 52px;
+}
+.object-details-content .status-history .status-msg {
+  position: relative;
+}
+.object-details-content .status-history .hoverable-msg {
+  cursor: pointer;
+  font-family: "LatoBold";
+}
+.object-details-content .status-history ul li.show-more {
+  text-align: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.2);
+  margin-left: -38px;
+  font-size: 12px;
+}
+.object-details-content .status-history ul li.show-more:hover {
+  color: #949494;
+}
+.object-details-content .status-history ul li.show-more span.glyphicon.glyphicon-chevron-down {
+  left: -2px;
+  top: 2px;
+  font-size: 10px;
+}
+.object-details-content .status-history ul .hover-div {
+  position: absolute;
+  top: 20px;
+  left: -115px;
+  width: 354px;
+  font-size: 12px;
+  z-index: 1;
+  background-color: #383838;
+  color: #BEBEBE;
+  padding: 4px 10px;
+}
+.object-details-content .status-history ul .hover-div div {
+  padding: 0px;
+}
+.object-details-content .status-history ul .hover-div span.hoverTime {
+  color: rgba(255, 255, 255, 0.2);
+}
+.object-details-content .show-more pre {
+  display: inline;
+  color: inherit;
+  background-color: inherit;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  word-wrap: break-word;
+}
+.object-details-content .edit-metadata textarea {
+  background: inherit;
+  color: inherit;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+  resize: none;
+}
+.object-details-content .edit-metadata.edit-memory textarea {
+  width: 50%;
+}
+.object-details-content .show-more .glyphicon.glyphicon-triangle-right,
+.object-details-content .show-more .glyphicon.glyphicon-triangle-bottom {
+  top: 15px;
+  position: absolute;
+  left: 2px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.object-details-content .obj-details-error-message {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.35);
+}
+.object-details-content .obj-details-error-message p {
+  width: 100%;
+}
+.object-details-content .obj-details-error-message p:first-child {
+  padding-top: 28px;
+  padding-bottom: 0px;
+}
+.pool {
+  padding-top: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 1px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #383838;
+  color: rgba(255, 255, 255, 0.2);
+}
+.pool-main {
+  background-color: #383838;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.65);
+}
+.pool-other {
+  background-color: #212121;
+  color: rgba(255, 255, 255, 0.2);
+}
+.pool-allocated {
+  background-color: #212121;
+  border-style: none;
+}
+.pool-slot-text {
+  color: rgba(255, 255, 255, 0.65);
+}
+.pool-show-more {
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  position: relative;
+  top: 2px;
+}
+.pool-show-more:hover {
+  color: #949494;
+}
+.pool-show-more span.glyphicon.glyphicon-chevron-down {
+  top: 2px;
+  font-size: 10px;
+}
+.pool-detail-dropbox {
+  z-index: 100;
+  padding: 12px;
+  position: absolute;
+  background-color: #383838;
+  color: rgba(255, 255, 255, 0.65);
+  min-width: 342px;
+  top: 31px;
+  right: 14px;
+  -webkit-box-shadow: 0px 4px 23px 0px rgba(0, 0, 0, 0.34);
+  -moz-box-shadow: 0px 4px 23px 0px rgba(0, 0, 0, 0.34);
+  box-shadow: 0px 4px 23px 0px rgba(0, 0, 0, 0.34);
+}
+.pool-detail-dropbox hr {
+  border-top: 1px solid #383838;
+  margin: 0 -10px;
+}
+.pool-detail-dropbox .clear-link {
+  text-decoration: underline;
+  color: rgba(255, 255, 255, 0.65);
+  margin-right: 10px;
+}
+.pool-separator {
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+.pool-pad {
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.pool-hint {
+  color: rgba(255, 255, 255, 0.2);
+}
+.pool-maxed {
+  color: #dc322f;
+}
+.pool-lowpad-right {
+  padding-right: 1px;
+}
+.pool-lowpad-left {
+  padding-left: 1px;
+}
+.pool-nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.slot-name,
+.slot-grid {
+  display: inline-block;
+}
+.slot-grid {
+  width: 240px;
+}
+.slot-name {
+  padding: 0px 15px 0px 0px;
+}
+.pool-detail-dropbox .btn-link {
+  padding: 0px;
 }

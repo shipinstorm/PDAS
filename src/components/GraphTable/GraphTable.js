@@ -12,14 +12,10 @@ import { CacheProvider } from "@emotion/react";
 
 import { jobRowsSelected } from '../../store/actions/jobAction';
 
-import { submitTime } from '../../utils/utils';
+import { submittedTime } from '../../utils/utils';
 
 import ArrayTableRow from './ArrayTableRow';
-
-// function submitDate(dateString) {
-//   let date = new Date(dateString+"Z");
-//   return (date.getMonth()+1)+"/"+date.getDate()+"/"+date.getFullYear();
-// }
+import { globalSelectedData, globalSelectedFlag } from '../../store/actions/globalAction';
 
 function GraphTable(props) {
   const dispatch = useDispatch();
@@ -140,7 +136,7 @@ function GraphTable(props) {
       jobid: jobs.did,
       title: jobs.title,
       status: jobs._statusname,
-      submitted: submitTime(jobs._submittime)
+      submitted: submittedTime(jobs._submittime)
     }
   })
 
@@ -229,12 +225,16 @@ function GraphTable(props) {
          * jobSelected: current row's id
          */
         props.setJobSelected(graphData[rowsSelected[0]].did);
+        dispatch(globalSelectedData(graphData[rowsSelected[0]]));
+        dispatch(globalSelectedFlag(1));
       } else {
         /**
          * Deselect current row
          * jobSelected: none
          */
         props.setJobSelected('');
+        dispatch(globalSelectedData({}));
+        dispatch(globalSelectedFlag(0));
       }
     },
   }
