@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 
 import StatusBar from "./StatusBar";
+import { DGRAPH_STATUS_CODES } from "./StatusCodes";
 
-const statuses = [
-  { name: "done", mapping: "_done", percent: 0, statusClass: "done" },
-  { name: "running", mapping: "_running", percent: 0, statusClass: "running" },
-  { name: "exited", mapping: "_exit", percent: 0, statusClass: "exited" },
-  { name: "sys killed", mapping: "_syskill", percent: 0, statusClass: "sys-killed" },
-  { name: "in queue", mapping: "_queued", percent: 0, statusClass: "in-queue" },
-  { name: "dependent", mapping: "_depend", percent: 0, statusClass: "dependent" },
-  { name: "paused", mapping: "_suspended", percent: 0, statusClass: "paused" },
-  { name: "killed", mapping: "_userkill", percent: 0, statusClass: "killed" }
-];
+import IconKilled from '../../assets/images/icon-killed.svg';
+import IconExited from '../../assets/images/icon-exited.svg';
+import IconRun from '../../assets/images/icon-run.svg';
+import IconDependent from '../../assets/images/icon-dependent.svg';
+import IconQueued from '../../assets/images/icon-queued.svg';
+import IconDone from '../../assets/images/icon-done.svg';
 
 export default function GraphStatus({
   selectedGraphData
@@ -19,6 +16,16 @@ export default function GraphStatus({
   const [selected, setSelected] = useState();
   const [pending, setPending] = useState();
   const [isSpeculative, setIsSpeculative] = useState();
+  const [statuses, setStatuses] = useState([
+    { name: "done", mapping: "_done", percent: 0, statusClass: "done" },
+    { name: "running", mapping: "_running", percent: 0, statusClass: "running" },
+    { name: "exited", mapping: "_exit", percent: 0, statusClass: "exited" },
+    { name: "sys killed", mapping: "_syskill", percent: 0, statusClass: "sys-killed" },
+    { name: "in queue", mapping: "_queued", percent: 0, statusClass: "in-queue" },
+    { name: "dependent", mapping: "_depend", percent: 0, statusClass: "dependent" },
+    { name: "paused", mapping: "_suspended", percent: 0, statusClass: "paused" },
+    { name: "killed", mapping: "_userkill", percent: 0, statusClass: "killed" }
+  ]);
   const [status, setStatus] = useState('');
   const [statusClass, setStatusClass] = useState('');
   const [donePercent, setDonePercent] = useState(0);
@@ -46,6 +53,7 @@ export default function GraphStatus({
     if (total > 0){
       for (var status of statuses){
         status.percent = parseInt(selectedGraphData[status.mapping])/total*100;
+        console.log(status.percent);
         if (status.percent > 0 && status.percent < 1){
           status.percent = 1;
         } else {
@@ -56,16 +64,18 @@ export default function GraphStatus({
         }
         setHoverTextCount(status);
       }
+      setStatuses(statuses);
       checkForHundredPercent();
     }
     setStatusAndColor();
   }
 
   const setStatusAndColor = () => {
-    // if (DGRAPH_STATUS_CODES[selectedGraphData._statusname]){
-    //   setStatus(DGRAPH_STATUS_CODES[selectedGraphData._statusname].name);
-    //   setStatusClass(DGRAPH_STATUS_CODES[selectedGraphData._statusname].statusClass);
-    // }
+    if (DGRAPH_STATUS_CODES[selectedGraphData._statusname]){
+      console.log(DGRAPH_STATUS_CODES[selectedGraphData._statusname].name);
+      setStatus(DGRAPH_STATUS_CODES[selectedGraphData._statusname].name);
+      setStatusClass(DGRAPH_STATUS_CODES[selectedGraphData._statusname].statusClass);
+    }
   }
 
   const setHoverTextCount = (status) => {
@@ -169,17 +179,17 @@ export default function GraphStatus({
       <div className={"row status-" + statusClass}>
         <div className="status-text text-center crop-long-text">
           {status==='killed' &&
-          <img alt='' src='../../../images/icon-killed.svg' className="status-icon"/>}
+          <img alt='' src={IconKilled} className="status-icon"/>}
           {status==='exited' &&
-          <img alt='' src='../../../images/icon-exited.svg' className="status-icon"/>}
+          <img alt='' src={IconExited} className="status-icon"/>}
           {status==='running' &&
-          <img alt='' src='../../../images/icon-run.svg' className="status-icon"/>}
+          <img alt='' src={IconRun} className="status-icon"/>}
           {status==='dependent' &&
-          <img alt='' src='../../../images/icon-dependent.svg' className="status-icon"/>}
+          <img alt='' src={IconDependent} className="status-icon"/>}
           {status==='in queue' &&
-          <img alt='' src='../../../images/icon-queued.svg' className="status-icon"/>}
+          <img alt='' src={IconQueued} className="status-icon"/>}
           {status==='done' &&
-          <img alt='' src='../../../images/icon-done.svg' className="status-icon"/>}
+          <img alt='' src={IconDone} className="status-icon"/>}
           {/* {status} */}
           <span
             title="Running Speculatively"

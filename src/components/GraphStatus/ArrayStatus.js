@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 
+import { ARRAY_STATUS_CODES } from "./StatusCodes";
 import StatusBar from "./StatusBar";
 
-const statuses = [
-  { name: "done", mapping: "_done", percent: 0, statusClass: "done" },
-  { name: "running", mapping: "_running", percent: 0, statusClass: "running" },
-  { name: "exited", mapping: "_exit", percent: 0, statusClass: "exited" },
-  { name: "sys killed", mapping: "_syskill", percent: 0, statusClass: "sys-killed" },
-  { name: "in queue", mapping: "_queued", percent: 0, statusClass: "in-queue" },
-  { name: "dependent", mapping: "_depend", percent: 0, statusClass: "dependent" },
-  { name: "paused", mapping: "_suspended", percent: 0, statusClass: "paused" },
-  { name: "killed", mapping: "_userkill", percent: 0, statusClass: "killed" }
-];
+import IconKilled from '../../assets/images/icon-killed.svg';
+import IconExited from '../../assets/images/icon-exited.svg';
+import IconRun from '../../assets/images/icon-run.svg';
+import IconDependent from '../../assets/images/icon-dependent.svg';
+import IconQueued from '../../assets/images/icon-queued.svg';
+import IconDone from '../../assets/images/icon-done.svg';
 
 export default function ArrayStatus({
   selectedArrayData
@@ -19,6 +16,16 @@ export default function ArrayStatus({
   const [selected, setSelected] = useState();
   const [pending, setPending] = useState();
   const [isSpeculative, setIsSpeculative] = useState();
+  const [statuses, setStatuses] = useState([
+    { name: "done", mapping: "_done", percent: 0, statusClass: "done" },
+    { name: "running", mapping: "_running", percent: 0, statusClass: "running" },
+    { name: "exited", mapping: "_exit", percent: 0, statusClass: "exited" },
+    { name: "sys killed", mapping: "_syskill", percent: 0, statusClass: "sys-killed" },
+    { name: "in queue", mapping: "_queued", percent: 0, statusClass: "in-queue" },
+    { name: "dependent", mapping: "_depend", percent: 0, statusClass: "dependent" },
+    { name: "paused", mapping: "_suspended", percent: 0, statusClass: "paused" },
+    { name: "killed", mapping: "_userkill", percent: 0, statusClass: "killed" }
+  ]);
   const [status, setStatus] = useState('');
   const [statusClass, setStatusClass] = useState('');
   const [numTotal, setNumTotal] = useState(0);
@@ -52,6 +59,7 @@ export default function ArrayStatus({
         }
         setHoverTextCount(status);
       }
+      setStatuses(statuses);
       checkForHundredPercent();
     }
     setStatusAndColor();
@@ -61,10 +69,10 @@ export default function ArrayStatus({
   }
 
   const setStatusAndColor = () => {
-    // if (ARRAY_STATUS_CODES[selectedArrayData._statusname]){
-    //   setStatus(ARRAY_STATUS_CODES[selectedArrayData._statusname].name);
-    //   setStatusClass(ARRAY_STATUS_CODES[selectedArrayData._statusname].statusClass);
-    // }
+    if (ARRAY_STATUS_CODES[selectedArrayData._statusname]){
+      setStatus(ARRAY_STATUS_CODES[selectedArrayData._statusname].name);
+      setStatusClass(ARRAY_STATUS_CODES[selectedArrayData._statusname].statusClass);
+    }
   }
 
   const setHoverTextCount = (status) => {
@@ -168,17 +176,17 @@ export default function ArrayStatus({
       <div className={"row status-" + statusClass}>
         <div className="status-text text-center">
           {status==='killed' &&
-          <img alt='' src='../../../images/icon-killed.svg' className="status-icon"/>}
+          <img alt='' src={IconKilled} className="status-icon"/>}
           {status==='exited' &&
-          <img alt='' src='../../../images/icon-exited.svg' className="status-icon"/>}
+          <img alt='' src={IconExited} className="status-icon"/>}
           {status==='running' &&
-          <img alt='' src='../../../images/icon-run.svg' className="status-icon"/>}
+          <img alt='' src={IconRun} className="status-icon"/>}
           {status==='dependent' &&
-          <img alt='' src='../../../images/icon-dependent.svg' className="status-icon"/>}
+          <img alt='' src={IconDependent} className="status-icon"/>}
           {status==='in queue' &&
-          <img alt='' src='../../../images/icon-queued.svg' className="status-icon"/>}
+          <img alt='' src={IconQueued} className="status-icon"/>}
           {status==='done' &&
-          <img alt='' src='../../../images/icon-done.svg' className="status-icon"/>}
+          <img alt='' src={IconDone} className="status-icon"/>}
           {/* {status} */}
           <span
             title="Running Speculatively"

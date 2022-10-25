@@ -536,17 +536,18 @@ a.list-group-item-danger.active:hover {
 .status-column div.row div.text-left {
   padding-left: 7px;
 }
-status-bar {
+.status-bar {
   border-style: solid;
   border-width: 1px;
   top: 4px;
   padding: 0;
+  font-size: 5px;
 }
-status-bar div {
+.status-bar div {
   display: inline-block;
   font-size: 5px;
 }
-status-bar,
+.status-bar,
 .status-bar-div {
   width: 75px;
 }
@@ -576,7 +577,7 @@ status-bar,
 .done-count {
   width: 70px;
 }
-status-bar,
+.status-bar,
 .status-text,
 .done-parcentage,
 .done-count {
@@ -590,15 +591,15 @@ status-bar,
   text-overflow: ellipsis;
   display: inline-block;
 }
-.status-running status-bar {
+.status-running .status-bar {
   border-color: #1DA237;
 }
 .status-running .status-text {
   color: #1DA237;
 }
-.status-dependent status-bar,
-.status-in-queue status-bar,
-.status-paused status-bar {
+.status-dependent .status-bar,
+.status-in-queue .status-bar,
+.status-paused .status-bar {
   border-color: #6699cc;
 }
 .status-dependent .status-text,
@@ -606,10 +607,10 @@ status-bar,
 .status-paused .status-text {
   color: #6699cc;
 }
-.status-exit-run status-bar,
-.status-exit-wait status-bar,
-.status-exited status-bar,
-.status-sys-killed status-bar {
+.status-exit-run .status-bar,
+.status-exit-wait .status-bar,
+.status-exited .status-bar,
+.status-sys-killed .status-bar {
   border-color: #dc322f;
 }
 .status-exit-run .status-text,
@@ -618,15 +619,15 @@ status-bar,
 .status-sys-killed .status-text {
   color: #dc322f;
 }
-.status-done status-bar {
+.status-done .status-bar {
   border-color: #BEBEBE;
 }
 .status-done .status-text {
   color: #BEBEBE;
 }
-.status-killed status-bar,
-.status-killed-run status-bar,
-.status-killed-wait status-bar {
+.status-killed .status-bar,
+.status-killed-run .status-bar,
+.status-killed-wait .status-bar {
   border-color: #949494;
 }
 .status-killed .status-text,
@@ -639,9 +640,9 @@ status-bar,
 .status-killed-wait array-status .row .done-count {
   color: #949494;
 }
-.status-killed status-bar .percentage-done,
-.status-killed-run status-bar .percentage-done,
-.status-killed-wait status-bar .percentage-done {
+.status-killed .status-bar .percentage-done,
+.status-killed-run .status-bar .percentage-done,
+.status-killed-wait .status-bar .percentage-done {
   background-color: rgba(255, 255, 255, 0.65);
 }
 .percentage-running {

@@ -85,7 +85,6 @@ export default function DetailsPane({
       setExpandedObj({});
     }
     let previousIdStr = displayIdStr;
-    console.log(getDisplayId());
     setDisplayIdStr(getDisplayId());
     setIdCopyLink(getIdCopyLink());
     setMetadataKeys(getMetadataKeys());
@@ -141,8 +140,6 @@ export default function DetailsPane({
   }
 
   const getMetadataKeys = () => {
-    console.log(selectedGraphData);
-    console.log(graph());
     if (graph()){
       return Object.keys(selectedGraphData);
     } else if (array()){
