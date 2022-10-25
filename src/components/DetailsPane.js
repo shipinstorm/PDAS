@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
-import classNames from "classnames";
-
 import { elapsedTime, submittedTime } from '../utils/utils';
 
 import '../assets/css/DetailsPane.scss';
@@ -556,11 +554,7 @@ export default function DetailsPane({
                    * The job must also be using more than 10GB.  This is also an arbitrary choice.  Feel free to adjust in the future
                    */}
                   {task() &&
-                  <span
-                    className={classNames(
-                      (selectedTaskData?._memused > selectedTaskData?.memoryreserved * 1.25) && (selectedTaskData?._memused > 10240) ? "memory-maxed" : ""
-                    )}
-                  >
+                  <span className={(selectedTaskData?._memused > selectedTaskData?.memoryreserved * 1.25) && (selectedTaskData?._memused > 10240) ? "memory-maxed" : ""}>
                     {selectedTaskData?._memused}
                   </span>}
                   {task() && <span>/</span>}
@@ -648,9 +642,7 @@ export default function DetailsPane({
                           {selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === false &&
                           <span className="pool-slot-text glyphicon glyphicon-circle-arrow-right"></span>}
                           <span
-                            className={classNames(
-                              selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === false ? "pool-main" : ""
-                            )}
+                            className={selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === false ? "pool-main" : ""}
                           >
                             Normal
                           </span>
@@ -659,9 +651,7 @@ export default function DetailsPane({
                           {selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === true &&
                           <span className="pool-slot-text glyphicon glyphicon-circle-arrow-right"></span>}
                           <span
-                            className={classNames(
-                              selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === true ? "pool-main" : ""
-                            )}
+                            className={selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === true ? "pool-main" : ""}
                           >
                             Spec
                           </span>
@@ -679,10 +669,9 @@ export default function DetailsPane({
                         {/* Get top level pool data from dgraph */}
                         {(poolData[selectedGraphData?.cpupool] || poolData[selectedGraphData?._poolname]) &&
                         <div
-                          className={classNames(
-                            "col-xs-4 text-right pool-separator",
-                            poolData[selectedGraphData?.cpupool]['realcount'] >= poolData[selectedGraphData?.cpupool]['entitled'] ? "pool-maxed" : ''
-                          )}
+                          className={poolData[selectedGraphData?.cpupool]['realcount'] >= poolData[selectedGraphData?.cpupool]['entitled'] ?
+                          "col-xs-4 text-right pool-separator pool-maxed" :
+                          'col-xs-4 text-right pool-separator'}
                         >
                           {poolData[selectedGraphData?.cpupool]['realcount']}
                         </div>}
@@ -697,10 +686,9 @@ export default function DetailsPane({
                         {/* Get top level pool data from array */}
                         {(poolData[selectedArrayData?.cpupool] || poolData[selectedArrayData?._poolname]) &&
                         <div
-                          className={classNames(
-                            "col-xs-4 text-right pool-separator",
-                            poolData[selectedArrayData?._poolname]['realcount'] >= poolData[selectedArrayData?._poolname]['entitled'] ? "pool-maxed" : ""
-                          )}
+                          className={poolData[selectedArrayData?._poolname]['realcount'] >= poolData[selectedArrayData?._poolname]['entitled'] ?
+                          "col-xs-4 text-right pool-separator pool-maxed" :
+                          "col-xs-4 text-right pool-separator"}
                         >
                           {(poolData[selectedArrayData?._poolname]['realcount']) || (poolData[selectedArrayData?.cpupool]['realcount'])}
                         </div>}
@@ -715,20 +703,19 @@ export default function DetailsPane({
                         {/* Get top level pool data from task */}
                         {poolData[selectedTaskData?._poolname] &&
                         <div
-                          className={classNames(
-                            "col-xs-4 text-right pool-separator",
-                            poolData[selectedTaskData?._poolname]['realcount'] >= poolData[selectedTaskData?._poolname]['entitled'] ? "pool-maxed" : "",
-                            (poolData[selectedTaskData?._poolname]['realcount'] < poolData[selectedTaskData?._poolname]['entitled']) && selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === false ? "pool-main" : ""
-                          )}
+                          className={poolData[selectedTaskData?._poolname]['realcount'] >= poolData[selectedTaskData?._poolname]['entitled'] ?
+                          "col-xs-4 text-right pool-separator pool-maxed" :
+                          selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === false ?
+                          "col-xs-4 text-right pool-separator pool-main" :
+                          "col-xs-4 text-right pool-separator"}
                         >
                           {(poolData[selectedTaskData?._poolname]['realcount']) || (poolData[selectedTaskData?.cpupool]['realcount'])}
                         </div>}
                         {poolData[selectedTaskData?._poolname] &&
                         <div
-                          className={classNames(
-                            "col-xs-4 text-right pool-separator",
-                            selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === true ? "pool-main" : ""
-                          )}
+                          className={selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === true ?
+                          "col-xs-4 text-right pool-separator pool-main" :
+                          "col-xs-4 text-right pool-separator"}
                         >
                           {(poolData[selectedTaskData?._poolname]['speccount']) || (poolData[selectedTaskData?.cpupool]['speccount'])}
                         </div>}
@@ -747,10 +734,9 @@ export default function DetailsPane({
                             <div className="row pool-hint pool-pad slot-grid pull-right">
                               {poolData[subpool] &&
                               <div
-                                className={classNames(
-                                  "col-xs-4 text-right pool-separator",
-                                  poolData[subpool]['realcount'] >= poolData[subpool]['entitled'] ? "pool-maxed" : ""
-                                )}
+                                className={poolData[subpool]['realcount'] >= poolData[subpool]['entitled'] ?
+                                "col-xs-4 text-right pool-separator pool-maxed" :
+                                "col-xs-4 text-right pool-separator"}
                               >
                                 {poolData[subpool]['realcount']}
                               </div>}
@@ -766,10 +752,9 @@ export default function DetailsPane({
                       <div className="text-left slot-name pool-hint">Total</div>
                       <div className="row pool-hint pool-pad slot-grid pull-right">
                         <div
-                          className={classNames(
-                            "col-xs-4 text-right pool-separator",
-                            poolData['Total']['realcount'] >= poolData['Total']['entitled'] ? "pool-maxed" : ""
-                          )}
+                          className={poolData['Total']['realcount'] >= poolData['Total']['entitled'] ?
+                          "col-xs-4 text-right pool-separator pool-maxed" :
+                          "col-xs-4 text-right pool-separator"}
                         >
                           {poolData["Total"]['realcount']}
                         </div>
@@ -821,68 +806,64 @@ export default function DetailsPane({
                 <label className="col-xs-4 control-label"></label>
                 <div className="container-fluid col-xs-8">
                   <div
-                    className={classNames(
-                      "pool col-xs-4 form-control-static text-right",
-                      selectedTaskData?._statusname === 'run' && selectedTaskData?._isspeculative === false ? "pool-main" : "",
-                      selectedTaskData?._isspeculative === true ? "pool-other" : ""
-                    )}
+                    className={selectedTaskData?._isspeculative === true ?
+                    "pool col-xs-4 form-control-static text-right pool-other" :
+                    selectedTaskData?._statusname === 'run' ?
+                    "pool col-xs-4 form-control-static text-right pool-main" :
+                    "pool col-xs-4 form-control-static text-right"}
                   >
                     <small>
                       {selectedTaskData?._statusname === 'run' && selectedTaskData?._isspeculative === false &&
                       <span className="pool-slot-text glyphicon glyphicon-circle-arrow-right"></span>}
                       <span
-                        className={classNames(
-                          selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === false ? "pool-main" : "",
-                          selectedTaskData?._isspeculative === true ? "pool-other" : ""
-                        )}
+                        className={selectedTaskData?._isspeculative === true ?
+                        "pool-other" :
+                        selectedTaskData?._statusname ==='run' ?
+                        "pool-main" :
+                        ""}
                       >
                         Normal
                       </span>
                     </small>
                     {(poolData[selectedGraphData?.cpupool] || poolData[selectedGraphData?._poolname]) &&
                     <div
-                      className={classNames(
-                        "text-right",
-                        poolData[selectedGraphData?.cpupool]['realcount'] >= poolData[selectedGraphData?.cpupool]['entitled'] ? "pool-maxed" : ""
-                      )}
+                      className={poolData[selectedGraphData?.cpupool]['realcount'] >= poolData[selectedGraphData?.cpupool]['entitled'] ?
+                      "text-right pool-maxed" :
+                      "text-right"}
                     >
                       {(poolData[selectedGraphData?.cpupool]['realcount']) || (poolData[selectedGraphData?._poolname]['realcount'])}
                     </div>}
                     {poolData[selectedArrayData?._poolname] &&
                     <div
-                      className={classNames(
-                        "text-right",
-                        poolData[selectedArrayData?._poolname]['realcount'] >= poolData[selectedArrayData?._poolname]['entitled'] ? "pool-maxed" : ""
-                      )}
+                      className={poolData[selectedArrayData?._poolname]['realcount'] >= poolData[selectedArrayData?._poolname]['entitled'] ?
+                      "text-right pool-maxed" :
+                      "text-right"}
                     >
                       {(poolData[selectedArrayData?._poolname]['realcount']) || (poolData[selectedArrayData?.cpupool]['realcount'])}
                     </div>}
                     {poolData[selectedTaskData?._poolname] &&
                     <div
-                      className={classNames(
-                        "text-right",
-                        poolData[selectedTaskData?._poolname]['realcount'] >= poolData[selectedTaskData?._poolname]['entitled'] ? "pool-maxed" : ""
-                      )}
+                      className={poolData[selectedTaskData?._poolname]['realcount'] >= poolData[selectedTaskData?._poolname]['entitled'] ?
+                      "text-right pool-maxed" :
+                      "text-right"}
                     >
                       {(poolData[selectedTaskData?._poolname]['realcount']) || (poolData[selectedTaskData?.cpupool]['realcount'])}
                     </div>}
                   </div>
                   <div
-                    className={classNames(
-                      "pool col-xs-4 form-control-static text-right",
-                      selectedTaskData?._isspeculative === false ? "pool-other" : "",
-                      selectedTaskData?._isspeculative === true ? "pool-main" : ""
-                    )}
+                    className={selectedTaskData?._isspeculative === false ?
+                    "pool col-xs-4 form-control-static text-right pool-other" :
+                    "pool col-xs-4 form-control-static text-right pool-main"}
                   >
                     <small>
                       {selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === true &&
                       <span className="pool-slot-text glyphicon glyphicon-circle-arrow-right"></span>}
                       <span
-                        className={classNames(
-                          "text-right",
-                          selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === true ? "pool-main" : "",
-                          selectedTaskData?._isspeculative === false ? "pool-other" : ""
-                        )}
+                        className={selectedTaskData?._isspeculative === false ?
+                        "text-right pool-other" :
+                        selectedTaskData?._statusname ==='run' ?
+                        "text-right pool-main" :
+                        "text-right"}
                       >
                         Spec
                       </span>
@@ -1199,7 +1180,7 @@ export default function DetailsPane({
                     return (
                       <div className="row">
                         {item != 'arrays' && item != 'tasks' &&
-                        <div>
+                        <>
                           <label className="col-xs-4 control-label text-left crop-long-text" title={item}>{item}</label>
                           {/* {!editMode[item] && !savingEdit[item] && isObject(selectedObj()[item]) && expandedObj[item] && */}
                           {!editMode[item] && !savingEdit[item] && isObject(selectedObj()[item]) &&
@@ -1291,7 +1272,7 @@ export default function DetailsPane({
                           </p>}
                           {savingEdit[item] &&
                           <p className="col-xs-8 form-control-static edit-spinner"><img src="images/spinner_dark.gif" alt="" /></p>}
-                        </div>}
+                        </>}
                       </div>
                     )
                   })
