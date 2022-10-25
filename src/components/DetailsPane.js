@@ -3,19 +3,10 @@ import { useSelector } from "react-redux";
 
 import { elapsedTime, submittedTime } from '../utils/utils';
 
+import GraphStatus from "./GraphStatus/GraphStatus";
+import ArrayStatus from "./GraphStatus/ArrayStatus";
+
 import '../assets/css/DetailsPane.scss';
-
-const GraphStatus = () => {
-  return (
-    <span>Hello World</span>
-  )
-}
-
-const ArrayStatus = () => {
-  return (
-    <span>Hello World</span>
-  )
-}
 
 export default function DetailsPane({
   jobSelected
@@ -429,7 +420,7 @@ export default function DetailsPane({
       fullVal.memory = val;
     }
     saveEdit(field, JSON.stringify(fullVal), "_topItems.mem", "There was an error saving changes to memory reserved:", ()=>{
-      selectedObj()['memoryreserved'] = val;
+      selectedObj()['dgraphresources.memory'] = val;
     });
   }
 
@@ -557,8 +548,8 @@ export default function DetailsPane({
               <div className="row">
                 <label htmlFor="status" className="col-xs-4 control-label text-left">Status</label>
                 <p className="col-xs-8 form-control-static">
-                  {graph() && <GraphStatus />}
-                  {array() && <ArrayStatus />}
+                  {graph() && <GraphStatus selectedGraphData={selectedGraphData} />}
+                  {array() && <ArrayStatus selectedArrayData={selectedArrayData} />}
                   {/* {task() && <span className="status-color {task._statusname | statusClass:'task'}">{task._statusname | statusName:"task"}</span>} */}
                 </p>
               </div>
@@ -573,7 +564,7 @@ export default function DetailsPane({
                    * The job must also be using more than 10GB.  This is also an arbitrary choice.  Feel free to adjust in the future
                    */}
                   {task() &&
-                  <span className={(selectedTaskData?._memused > selectedTaskData?.memoryreserved * 1.25) && (selectedTaskData?._memused > 10240) ? "memory-maxed" : ""}>
+                  <span className={(selectedTaskData?._memused > selectedTaskData?.dgraphresources?.memory * 1.25) && (selectedTaskData?._memused > 10240) ? "memory-maxed" : ""}>
                     {selectedTaskData?._memused}
                   </span>}
                   {task() && <span>/</span>}
@@ -583,7 +574,7 @@ export default function DetailsPane({
                     onMouseLeave={() => fieldHoverLeave("_topItems.mem")}
                     onClick={() => editField('_topItems.mem')}
                   >
-                    {selectedGraphData?.memoryreserved}{selectedArrayData?.memoryreserved}{selectedTaskData?.memoryreserved}
+                    {selectedGraphData?.dgraphresources?.memory}{selectedArrayData?.dgraphresources?.memory}{selectedTaskData?.dgraphresources?.memory}
                   </span>
                   {task() && <small><span>used/</span>reserved</small>}
                   {showEditIcon['_topItems.mem'] && <span className="glyphicon glyphicon-pencil"></span>}
@@ -597,7 +588,7 @@ export default function DetailsPane({
                     // (input)="adjustHeight($event.target)"
                     rows="1"
                   >
-                    {selectedObj().memoryreserved}
+                    {selectedObj().dgraphresources.memory}
                   </textarea>
                   <small> reserved</small>
                   <br/>
