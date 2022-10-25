@@ -117,6 +117,7 @@ ul.checkbox li{
 .search-bar {
   min-width: 450px;
   display: inline-block;
+  margin-left: 32px;
 }
 .search-bar input {
   height: 33px;

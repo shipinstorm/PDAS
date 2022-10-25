@@ -30,6 +30,7 @@ export default function DetailsPane({
   const [metadataKeys, setMetadataKeys] = useState([]);
   const [imgUrl, setImgUrl] = useState("");
   const [showImage, setShowImage] = useState(false);
+  const [currentImgUrlRequest, setCurrentImgUrlRequest] = useState();
   const [hidePlayImage, setHidePlayImage] = useState(true);
   const [noFrames, setNoFrames] = useState(false);
   const [showPoolDetail, setShowPoolDetail] = useState(false);
@@ -41,6 +42,7 @@ export default function DetailsPane({
   const [editMode, setEditMode] = useState({});
   const [savingEdit, setSavingEdit] = useState({});
   const [savedEdit, setSavedEdit] = useState({});
+  const [expandedObj, setExpandedObj] = useState({});
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
   const taskData = useSelector((state) => state.global.taskData);
@@ -79,6 +81,18 @@ export default function DetailsPane({
   }, [graphData, arrayData, taskData, jobSelected]);
 
   useEffect(() => {
+    if (displayIdStr !== getDisplayId()) {
+      setShowImage(false);
+      setImgUrl(undefined);
+      setHidePlayImage(true);
+      setNoFrames(false);
+      if (currentImgUrlRequest) { currentImgUrlRequest.unsubscribe(); }
+      setShowEditIcon({});
+      setEditMode({});
+      setSavingEdit({});
+      setSavedEdit({});
+      setExpandedObj({});
+    }
     let previousIdStr = displayIdStr;
     console.log(getDisplayId());
     setDisplayIdStr(getDisplayId());
@@ -386,7 +400,12 @@ export default function DetailsPane({
   }
 
   const selectedObj = () => {
-    return graph() || array() || task();
+    return selectedGraphData || selectedArrayData || selectedTaskData;
+  }
+
+  const toggleObj = (field) => {
+    expandedObj[field] = !expandedObj[field];
+    setExpandedObj(expandedObj);
   }
 
   const editTitle = (val) => {
@@ -1179,15 +1198,14 @@ export default function DetailsPane({
                   metadataKeys.map((item) => {
                     return (
                       <div className="row">
-                        {item != 'arrays' && item != 'tasks' &&
+                        {item !== 'arrays' && item !== 'tasks' &&
                         <>
                           <label className="col-xs-4 control-label text-left crop-long-text" title={item}>{item}</label>
-                          {/* {!editMode[item] && !savingEdit[item] && isObject(selectedObj()[item]) && expandedObj[item] && */}
-                          {!editMode[item] && !savingEdit[item] && isObject(selectedObj()[item]) &&
+                          {!editMode[item] && !savingEdit[item] && isObject(selectedObj()[item]) && expandedObj[item] &&
                           <p className="col-xs-8 form-control-static">
                             <span
                               className="glyphicon glyphicon-triangle-bottom"
-                              // onClick={() => toggleObj(item)}
+                              onClick={() => toggleObj(item)}
                             />
                             {item.charAt(0) !== '_' &&
                             <span
@@ -1205,12 +1223,11 @@ export default function DetailsPane({
                             {savedEdit[item] &&
                             <span className="edit-saved-span"><br/><small><span className="glyphicon glyphicon-ok"></span>saved</small></span>}
                           </p>}
-                          {/* {!editMode[item] && !savingEdit[item] && isObject(selectedObj()[item]) && !expandedObj[item] && */}
-                          {!editMode[item] && !savingEdit[item] && isObject(selectedObj()[item]) &&
+                          {!editMode[item] && !savingEdit[item] && isObject(selectedObj()[item]) && !expandedObj[item] &&
                           <p className="col-xs-8 form-control-static collapsed-obj">
                             <span
                               className="glyphicon glyphicon-triangle-right"
-                              // onClick={() => toggleObj(item)}
+                              onClick={() => toggleObj(item)}
                             />
                             {item.charAt(0) !== '_' &&
                             <span
@@ -1251,7 +1268,7 @@ export default function DetailsPane({
                             <textarea
                               // #editVal
                               id="editTextArea"
-                              // (input)="adjustHeight($event.target)"
+                              onInput={(event) => adjustHeight(event.target)}
                               rows="1"
                             >
                               {selectedObj()[item]}
