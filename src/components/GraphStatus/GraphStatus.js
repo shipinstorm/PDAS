@@ -53,7 +53,6 @@ export default function GraphStatus({
     if (total > 0){
       for (var status of statuses){
         status.percent = parseInt(selectedGraphData[status.mapping])/total*100;
-        console.log(status.percent);
         if (status.percent > 0 && status.percent < 1){
           status.percent = 1;
         } else {
@@ -72,7 +71,6 @@ export default function GraphStatus({
 
   const setStatusAndColor = () => {
     if (DGRAPH_STATUS_CODES[selectedGraphData._statusname]){
-      console.log(DGRAPH_STATUS_CODES[selectedGraphData._statusname].name);
       setStatus(DGRAPH_STATUS_CODES[selectedGraphData._statusname].name);
       setStatusClass(DGRAPH_STATUS_CODES[selectedGraphData._statusname].statusClass);
     }

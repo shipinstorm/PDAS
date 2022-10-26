@@ -7,7 +7,7 @@ export default function StatusBar({
       statuses.map((status) => {
         return (
           <div
-            class={"percentage-" + status.statusClass}
+            className={"percentage-" + status.statusClass}
             style={{
               width: status.percent + "%"
             }}

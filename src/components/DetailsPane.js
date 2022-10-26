@@ -1,16 +1,26 @@
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 import { elapsedTime, submittedTime } from '../utils/utils';
 
+import ElasticSearchService from "../services/ElasticSearch.service";
+
 import GraphStatus from "./GraphStatus/GraphStatus";
 import ArrayStatus from "./GraphStatus/ArrayStatus";
+
+import SelectImage from '../assets/images/select.png';
 
 import '../assets/css/DetailsPane.scss';
 
 export default function DetailsPane({
   jobSelected
 }) {
+  const editVal1 = useRef(null);
+  const editVal2 = useRef(null);
+  const editVal3 = useRef(null);
+  const editVal4 = useRef(null);
+  const editVal5 = useRef(null);
+  const editVal6 = useRef(null);
   const [selectedGraphData, setSelectedGraphData] = useState({});
   const [selectedArrayData, setSelectedArrayData] = useState({});
   const [selectedTaskData, setSelectedTaskData] = useState({});
@@ -72,6 +82,7 @@ export default function DetailsPane({
   }, [graphData, arrayData, taskData, jobSelected]);
 
   useEffect(() => {
+    refreshPools();
     if (displayIdStr !== getDisplayId()) {
       setShowImage(false);
       setImgUrl(undefined);
@@ -83,6 +94,31 @@ export default function DetailsPane({
       setSavingEdit({});
       setSavedEdit({});
       setExpandedObj({});
+      /*
+      for (let propName in changes) {
+        let chng = changes[propName];
+        let cur  = JSON.stringify(chng.currentValue);
+        let prev = JSON.stringify(chng.previousValue);
+        console.log(`${propName}: currentValue = ${cur}, previousValue = ${prev}`);
+      }
+      */
+      if (!externalIP){
+        setCurrentImgUrlRequest(
+          getImgUrl()
+          // .then(url => {
+          //   if (url){
+          //     setImgUrl(url);
+          //     let imgElement = document.getElementById('framePreview');
+          //     if (imgElement && imgElement.complete && imgElement.src == url){
+          //       setShowImage(true);
+          //     }
+          //   } else {
+          //     setNoFrames(true);
+          //   }
+          // })
+        );
+      }
+
     }
     let previousIdStr = displayIdStr;
     setDisplayIdStr(getDisplayId());
@@ -149,6 +185,33 @@ export default function DetailsPane({
     }
   }
 
+  const getImgUrl = () => {
+    // return new Observable<string>(observer => {
+      if (task()) {
+        let imgUrl = this._dgraphService.nfsBaseURL+"image/" + this.task.did+"/" + this.task.aid + "/" + this.task.tid;
+        // observer.next(imgUrl);
+      } else if (array()) {
+        // imagePaths[this.array.did+'.'+this.array.aid].then(imagePaths => {
+        //   if (imagePaths && imagePaths.length > 0) {
+        //     let firstImg = imagePaths[0];
+        //     observer.next(this._dgraphService.nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
+        //   } else {
+        //     observer.next(undefined);
+        //   }
+        // });
+      } else if (graph()) {
+        // imagePaths[this.dgraph.did].then(imagePaths => {
+        //   if (imagePaths && imagePaths.length > 0) {
+        //     let firstImg = imagePaths[0];
+        //     observer.next(this._dgraphService.nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
+        //   } else {
+        //     observer.next(undefined);s
+        //   }
+        // });
+      }
+    // });
+  }
+
   const playImage = (id) => {
 
   }
@@ -159,7 +222,7 @@ export default function DetailsPane({
 
   const errorLoadingImg = (event) => {
     if (task()) {
-      this._dgraphService.getImagePaths(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid)
+      ElasticSearchService.getImagePaths(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid)
         .subscribe(imagePaths => {
           if(imagePaths && imagePaths.length > 0) {
             console.log("Image exists, must login");
@@ -311,63 +374,72 @@ export default function DetailsPane({
 
   const fieldHoverLeave = (field) => {
     showEditIcon[field] = false;
-    setShowEditIcon(showEditIcon);
+    setShowEditIcon({...showEditIcon});
   }
 
   const editField = (field) => {
-    editMode = {};
-    editMode[field] = true;
-    setEditMode(editMode);
+    let tmpEditMode = {};
+    tmpEditMode[field] = true;
+    setEditMode(tmpEditMode);
   }
 
   const cancelEdit = (field) => {
     editMode[field] = false;
-    setEditMode(editMode);
+    setEditMode({...editMode});
     showEditIcon[field] = false;
-    setShowEditIcon(showEditIcon);
+    setShowEditIcon({...showEditIcon});
   }
 
   const saveEdit = (field, val, topItemField = null, errorMsg = null, success = null) => {
     let editedField = topItemField || field;
     let savedError = (errMsg) => {
-      this.codaModal.showError({
-        modalTitle: "Invalid Value",
-        modalBody: errorMsg ? errorMsg : "There was an error saving changes to "+field+":",
-        modalBodyDetails: errMsg
-      }, () => {
-        savingEdit[editedField] = false;
-        editMode[editedField] = true;
-      });
+      // codaModal.showError({
+      //   modalTitle: "Invalid Value",
+      //   modalBody: errorMsg ? errorMsg : "There was an error saving changes to "+field+":",
+      //   modalBodyDetails: errMsg
+      // }, () => {
+      //   savingEdit[editedField] = false;
+      //   setSavingEdit(savingEdit);
+      //   editMode[editedField] = true;
+      //   setEditMode(editMode);
+      // });
     }
     try{
       let newVal = JSON.parse(val);
       savingEdit[editedField] = true;
+      setSavingEdit({...savingEdit});
       editMode[editedField] = false;
+      setEditMode({...editMode});
       let savedSuccess = () => {
         // saved successfully
-        this.selectedObj()[field] = newVal;
+        selectedObj()[field] = newVal;
         if (success) { success(); }
-        savingEdit[editedField] = false;
-        showEditIcon[editedField] = false;
-        savedEdit[editedField] = true;
+        savingEdit[{...editedField}] = false;
+        setSavingEdit(savingEdit);
+        showEditIcon[{...editedField}] = false;
+        setShowEditIcon(showEditIcon);
+        savedEdit[{...editedField}] = true;
+        setSavedEdit(saveEdit);
         window.setTimeout(() => {
-          savedEdit[editedField] = false;
+          savedEdit[{...editedField}] = false;
+          setSavedEdit(saveEdit);
         }, 15000);
       };
       if (graph()) {
-        this._dgraphService.setDgraphMeta(selectedGraphData.did, field, val, savedError).subscribe(result => {
+        console.log(111);
+        ElasticSearchService.setDgraphMeta(selectedGraphData.did, field, val, savedError).subscribe(result => {
           savedSuccess();
         }, error => {
           savedError(error);
         });
       } else if (array()) {
-        this._dgraphService.setArrayMeta(selectedArrayData.did, selectedArrayData.aid, field, val).subscribe(result => {
+        ElasticSearchService.setArrayMeta(selectedArrayData.did, selectedArrayData.aid, field, val).subscribe(result => {
           savedSuccess();
         }, error => {
           savedError(error);
         })
       } else if (task()) {
-        this._dgraphService.setTaskMeta(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid, field, val).subscribe(result => {
+        ElasticSearchService.setTaskMeta(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid, field, val).subscribe(result => {
           savedSuccess();
         }, error => {
           savedError(error);
@@ -433,7 +505,65 @@ export default function DetailsPane({
     saveEdit('notes', '"'+val+'"', "_topItems.notes", "There was an error saving changes to notes:");
   }
 
+  const refreshPools = () => {
+    ElasticSearchService.getPoolData()
+    .then(data => {
+      let tmpPoolData = data;
+      var totalSpec = 0;
+      var totalNonspec = 0;
+      var totalAvailable = 0;
+      var tempSubpools = [];
+      for (let item in tmpPoolData) {
+        totalSpec += tmpPoolData[item]['speccount'];
+        totalNonspec += tmpPoolData[item]['realcount'];
+        totalAvailable += tmpPoolData[item]['entitled'];
+        if ('splits' in tmpPoolData[item]) {
+          var mytemp = makePoolTopLevel(item, tmpPoolData[item]['splits']);
+          tempSubpools.push(mytemp);
+        }
+      }
+      for (let i = 0; i < tempSubpools.length; i++) {
+        for (var key in tempSubpools[i]) {
+          tmpPoolData[key] = tempSubpools[i][key];
+        }
+      }
+      tmpPoolData['Total'] = {'speccount': totalSpec, 'realcount': totalNonspec, 'entitled': totalAvailable};
+      setPoolData(tmpPoolData);
+    });
+  }
+
+  // This recursive function copies all the subpools into top-level items
+  // in tempDict to match the pool keys that exist on specific tasks
+  const makePoolTopLevel = (name, splits) => {
+    var tempDict = {};
+    var tempSubpools = [];
+    for (let subpool in splits) {
+      if ('splits' in splits[subpool]) {
+        tempDict[name+'.'+subpool] = splits[subpool];
+        tempSubpools.push(this.makePoolTopLevel(name+'.'+subpool, splits[subpool]['splits']));
+      }
+      for (var i = 0; i < tempSubpools.length; i++) {
+        for (let key in tempSubpools[i]) {
+          tempDict[key] = tempSubpools[i][key]
+        }
+      }
+      tempSubpools = [];
+      tempDict[name+'.'+subpool] = splits[subpool];
+    }
+    return tempDict;
+  }
+
   return (
+    <>
+    {!(graph() || array() || task()) &&
+    <div className="loading-div object-details-content">
+      <br/><br/>
+      <img src={SelectImage} alt='' />
+      <br/>
+      Select job to view details
+    </div>}
+
+    {(graph() || array() || task()) &&
     <div className="object-details-content">
       <div className="panel panel-default">
         <div className="panel-heading container-fluid">
@@ -457,7 +587,7 @@ export default function DetailsPane({
             {editMode['_topItems.title'] && !savingEdit['_topItems.title'] &&
             <p className="col-xs-12 edit-metadata">
               <textarea
-                // #editVal
+                ref={editVal1}
                 id="editTextArea"
                 onInput={(event) => adjustHeight(event.target)}
                 rows="1"
@@ -467,7 +597,7 @@ export default function DetailsPane({
               <br/>
               <button
                 className="btn-sm btn-primary"
-                // onClick={() => editTitle(editVal.value)}
+                onClick={() => editTitle(editVal1.current.value)}
               >
                 <small><span className="glyphicon glyphicon-save"></span>Save</small>
               </button>
@@ -580,9 +710,9 @@ export default function DetailsPane({
                 {editMode['_topItems.mem'] && !savingEdit['_topItems.mem'] &&
                 <p className="col-xs-4 form-control-static edit-metadata edit-memory">
                   <textarea
-                    // #editVal
+                    ref={editVal2}
                     id="editTextArea"
-                    // (input)="adjustHeight($event.target)"
+                    onInput={(event) => adjustHeight(event.target)}
                     rows="1"
                   >
                     {selectedObj().dgraphresources.memory}
@@ -591,7 +721,7 @@ export default function DetailsPane({
                   <br/>
                   <button
                     className="btn-sm btn-primary"
-                    // onClick={() => editMemoryRes(editVal.value)}
+                    onClick={() => editMemoryRes(editVal2.current.value)}
                   >
                     <small><span className="glyphicon glyphicon-save"></span>Save</small>
                   </button>
@@ -779,9 +909,9 @@ export default function DetailsPane({
                 {editMode['_topItems.pool'] && !savingEdit['_topItems.pool'] &&
                 <p className="col-xs-8 form-control-static edit-metadata">
                   <textarea
-                    // #editVal
+                    ref={editVal3}
                     id="editTextArea"
-                    // (input)="adjustHeight($event.target)"
+                    onInput={(event) => adjustHeight(event.target)}
                     rows="1"
                   >
                     {selectedObj()._poolname || selectedObj().cpupool}
@@ -789,7 +919,7 @@ export default function DetailsPane({
                   <br/>
                   <button
                     className="btn-sm btn-primary"
-                    // onClick={() => editPool(editVal.value)}
+                    onClick={() => editPool(editVal3.current.value)}
                   >
                     <small><span className="glyphicon glyphicon-save"></span>Save</small>
                   </button>
@@ -925,9 +1055,9 @@ export default function DetailsPane({
                 {editMode['_topItems.prio'] && !savingEdit['_topItems.prio'] &&
                 <p className="col-xs-8 form-control-static edit-metadata">
                   <textarea
-                    // #editVal
+                    ref={editVal4}
                     id="editTextArea"
-                    // (input)="adjustHeight($event.target)"
+                    onInput={(event) => adjustHeight(event.target)}
                     rows="1"
                   >
                     {selectedGraphData?.dgraphprio || selectedArrayData?.dgraphprio || selectedTaskData?.dgraphprio}
@@ -935,7 +1065,7 @@ export default function DetailsPane({
                   <br/>
                   <button
                     className="btn-sm btn-primary"
-                    // onClick={() => editPriority(editVal.value)}
+                    onClick={() => editPriority(editVal4.current.value)}
                   >
                     <small><span className="glyphicon glyphicon-save"></span>Save</small>
                   </button>
@@ -978,9 +1108,9 @@ export default function DetailsPane({
                 {editMode['_topItems.notes'] && !savingEdit['_topItems.notes'] &&
                 <p className="col-xs-8 form-control-static edit-metadata">
                   <textarea
-                    // #editVal
+                    ref={editVal5}
                     id="editTextArea"
-                    // (input)="adjustHeight($event.target)"
+                    onInput={(event) => adjustHeight(event.target)}
                     rows="1"
                   >
                     {selectedGraphData?.notes || selectedArrayData?.notes || selectedTaskData?.notes}
@@ -988,7 +1118,7 @@ export default function DetailsPane({
                   <br/>
                   <button
                     className="btn-sm btn-primary"
-                    // onClick={() => editNotes(editVal.value)}
+                    onClick={() => editNotes(editVal5.current.value)}
                   >
                     <small><span className="glyphicon glyphicon-save"></span>Save</small>
                   </button>
@@ -1254,7 +1384,7 @@ export default function DetailsPane({
                           {editMode[item] &&
                           <p className="col-xs-8 form-control-static edit-metadata">
                             <textarea
-                              // #editVal
+                              ref={editVal6}
                               id="editTextArea"
                               onInput={(event) => adjustHeight(event.target)}
                               rows="1"
@@ -1264,7 +1394,7 @@ export default function DetailsPane({
                             <br/>
                             <button
                               className="btn-sm btn-primary"
-                              // onClick={() => saveEdit(item, editVal.value)}
+                              onClick={() => saveEdit(item, editVal6.current.value)}
                             >
                               <small><span className="glyphicon glyphicon-save"></span>Save</small>
                             </button>
@@ -1287,6 +1417,7 @@ export default function DetailsPane({
           </form>
         </div>
       </div>
-    </div>
+    </div>}
+    </>
   )
 }
