@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { elapsedTime, submittedTime } from '../utils/utils';
 
 import ElasticSearchService from "../services/ElasticSearch.service";
+import { baseUrl, nfsBaseURL } from "../services/ElasticSearch.service";
 
 import GraphStatus from "./GraphStatus/GraphStatus";
 import ArrayStatus from "./GraphStatus/ArrayStatus";
@@ -188,22 +189,22 @@ export default function DetailsPane({
   const getImgUrl = () => {
     // return new Observable<string>(observer => {
       if (task()) {
-        let imgUrl = this._dgraphService.nfsBaseURL+"image/" + this.task.did+"/" + this.task.aid + "/" + this.task.tid;
+        let imgUrl = nfsBaseURL+"image/" + selectedTaskData.did+"/" + selectedTaskData.aid + "/" + selectedTaskData.tid;
         // observer.next(imgUrl);
       } else if (array()) {
-        // imagePaths[this.array.did+'.'+this.array.aid].then(imagePaths => {
+        // imagePaths[selectedArrayData.did+'.'+selectedArrayData.aid].then(imagePaths => {
         //   if (imagePaths && imagePaths.length > 0) {
         //     let firstImg = imagePaths[0];
-        //     observer.next(this._dgraphService.nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
+        //     observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
         //   } else {
         //     observer.next(undefined);
         //   }
         // });
       } else if (graph()) {
-        // imagePaths[this.dgraph.did].then(imagePaths => {
+        // imagePaths[selectedGraphData.did].then(imagePaths => {
         //   if (imagePaths && imagePaths.length > 0) {
         //     let firstImg = imagePaths[0];
-        //     observer.next(this._dgraphService.nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
+        //     observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
         //   } else {
         //     observer.next(undefined);s
         //   }
@@ -244,8 +245,8 @@ export default function DetailsPane({
     //   console.log("Image exists, must login");
     //   // TODO popup login for SSO/icoda image
     //   // alert("Image exists, must login");
-    //   this.noFrames = true; //for now
-    //   this.showImage = false;
+    //   setNoFrames(true); //for now
+    //   setShowImage(false);
     } else {
       setNoFrames(true);
       setShowImage(false);
@@ -302,8 +303,8 @@ export default function DetailsPane({
 
       let me = this;
       document.body.onclick = function(event){
-        if (event.target != document.getElementById('poolDetailMainToggle') &&
-          event.target != document.getElementById('poolDetailTriangleToggle') &&
+        if (event.target !== document.getElementById('poolDetailMainToggle') &&
+          event.target !== document.getElementById('poolDetailTriangleToggle') &&
           document.getElementById('poolDetail') &&
           !document.getElementById('poolDetail').contains(event.srcElement)){
           me.showPoolDetail = false;
@@ -414,36 +415,41 @@ export default function DetailsPane({
         // saved successfully
         selectedObj()[field] = newVal;
         if (success) { success(); }
-        savingEdit[{...editedField}] = false;
-        setSavingEdit(savingEdit);
-        showEditIcon[{...editedField}] = false;
-        setShowEditIcon(showEditIcon);
-        savedEdit[{...editedField}] = true;
-        setSavedEdit(saveEdit);
+        savingEdit[editedField] = false;
+        setSavingEdit({...savingEdit});
+        showEditIcon[editedField] = false;
+        setShowEditIcon({...showEditIcon});
+        savedEdit[editedField] = true;
+        setSavedEdit({...savedEdit});
         window.setTimeout(() => {
-          savedEdit[{...editedField}] = false;
-          setSavedEdit(saveEdit);
+          savedEdit[editedField] = false;
+          setSavedEdit({...savedEdit});
         }, 15000);
       };
       if (graph()) {
-        console.log(111);
-        ElasticSearchService.setDgraphMeta(selectedGraphData.did, field, val, savedError).subscribe(result => {
+        ElasticSearchService.setDgraphMeta(selectedGraphData.did, field, val, savedError)
+        .then(result => {
           savedSuccess();
-        }, error => {
+        })
+        .catch(error => {
           savedError(error);
         });
       } else if (array()) {
-        ElasticSearchService.setArrayMeta(selectedArrayData.did, selectedArrayData.aid, field, val).subscribe(result => {
+        ElasticSearchService.setArrayMeta(selectedArrayData.did, selectedArrayData.aid, field, val)
+        .then(result => {
           savedSuccess();
-        }, error => {
-          savedError(error);
         })
+        .catch(error => {
+          savedError(error);
+        });
       } else if (task()) {
-        ElasticSearchService.setTaskMeta(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid, field, val).subscribe(result => {
+        ElasticSearchService.setTaskMeta(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid, field, val)
+        .then(result => {
           savedSuccess();
-        }, error => {
-          savedError(error);
         })
+        .catch(error => {
+          savedError(error);
+        });
       }
     } catch(e) {
       savedError(e.message);
@@ -508,6 +514,7 @@ export default function DetailsPane({
   const refreshPools = () => {
     ElasticSearchService.getPoolData()
     .then(data => {
+      console.log(data)
       let tmpPoolData = data;
       var totalSpec = 0;
       var totalNonspec = 0;
@@ -540,7 +547,7 @@ export default function DetailsPane({
     for (let subpool in splits) {
       if ('splits' in splits[subpool]) {
         tempDict[name+'.'+subpool] = splits[subpool];
-        tempSubpools.push(this.makePoolTopLevel(name+'.'+subpool, splits[subpool]['splits']));
+        tempSubpools.push(makePoolTopLevel(name+'.'+subpool, splits[subpool]['splits']));
       }
       for (var i = 0; i < tempSubpools.length; i++) {
         for (let key in tempSubpools[i]) {
@@ -674,11 +681,11 @@ export default function DetailsPane({
 
               <div className="row">
                 <label htmlFor="status" className="col-xs-4 control-label text-left">Status</label>
-                <p className="col-xs-8 form-control-static">
+                <div className="col-xs-8 form-control-static">
                   {graph() && <GraphStatus selectedGraphData={selectedGraphData} />}
                   {array() && <ArrayStatus selectedArrayData={selectedArrayData} />}
                   {/* {task() && <span className="status-color {task._statusname | statusClass:'task'}">{task._statusname | statusName:"task"}</span>} */}
-                </p>
+                </div>
               </div>
 
               <div className="row">
@@ -901,7 +908,7 @@ export default function DetailsPane({
                     </div>
                     <div>
                       <div className="btn btn-link btn-xs text-left">
-                        <a href={this._dgraphService.baseURL + 'noauth/status'} target="_blank">View all pool info...</a>
+                        <a href={baseUrl + 'noauth/status'} target="_blank">View all pool info...</a>
                       </div>
                     </div>
                   </div>}

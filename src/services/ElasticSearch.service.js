@@ -1,5 +1,6 @@
-const baseUrl = 'http://coda-rest.dyn.fa.disney.com';
-const elasticsearchURL = 'https://wdas-elastic.fas.fa.disney.com:9200/coda_6';
+export const baseUrl = 'http://coda-rest.dyn.fa.disney.com/';
+export const nfsBaseURL = 'http://coda-rest-nfs.dyn.fa.disney.com/';
+export const elasticsearchURL = 'https://wdas-elastic.fas.fa.disney.com:9200/coda_6';
 
 class ElasticSearchService {
   static getDgraphs(query, from, size, hidden) {
@@ -26,7 +27,7 @@ class ElasticSearchService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(value),
-    }).then(res => res.json());
+    }).then(res => res);
   };
 
   static setArrayMeta(did, aid, key, value) {
@@ -37,7 +38,7 @@ class ElasticSearchService {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(value),
-    }).then(res => res.json());
+    }).then(res => res);
   };
 
   static setTaskMeta(did, aid, tid, key, value) {
@@ -48,7 +49,7 @@ class ElasticSearchService {
       method: 'POST',
       headers: headers,
       body: JSON.stringify(value),
-    }).then(res => res.json());
+    }).then(res => res);
   };
 
   static getPoolData = () => {
