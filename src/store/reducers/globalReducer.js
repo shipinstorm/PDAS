@@ -2,18 +2,15 @@ import {
   GLOBAL_GRAPH_DATA,
   GLOBAL_ARRAY_DATA,
   GLOBAL_TASK_DATA,
-  GLOBAL_SELECTED_DATA,
-  GLOBAL_SELECTED_FLAG,
   GLOBAL_EXTERNAL_IP,
-  GLOBAL_CODA_HEALTH
+  GLOBAL_CODA_HEALTH,
+  GLOBAL_IMAGE_PATHS
 } from '../actionTypes';
 
 const initialState = {
   graphData: [],
   arrayData: [],
   taskData: [],
-  selectedData: {},
-  selectedFlag: 0, // 1 for dGraph, 2 for Array, 3 for Task
   externalIP: false,
   codaHealth: {
     "ES-coda_6": {
@@ -32,6 +29,7 @@ const initialState = {
       "status": "green"
     }
   },
+  imagePaths: {}
 };
 
 export default function foo(state = initialState, action) {
@@ -51,16 +49,6 @@ export default function foo(state = initialState, action) {
         ...state,
         taskData: action.payload
       }
-    case GLOBAL_SELECTED_DATA:
-      return {
-        ...state,
-        selectedData: action.payload
-      }
-    case GLOBAL_SELECTED_FLAG:
-      return {
-        ...state,
-        selectedFlag: action.payload
-      }
     case GLOBAL_EXTERNAL_IP:
       return {
         ...state,
@@ -70,6 +58,11 @@ export default function foo(state = initialState, action) {
       return {
         ...state,
         codaHealth: action.payload
+      }
+    case GLOBAL_IMAGE_PATHS:
+      return {
+        ...state,
+        imagePaths: action.payload
       }
     default: 
       return state;

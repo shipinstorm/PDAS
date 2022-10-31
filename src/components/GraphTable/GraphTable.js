@@ -10,12 +10,14 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 
+import ElasticSearchService from '../../services/ElasticSearch.service';
+
+import { globalImagePaths } from '../../store/actions/globalAction';
 import { jobRowsSelected } from '../../store/actions/jobAction';
 
 import { submittedTime } from '../../utils/utils';
 
 import ArrayTableRow from './ArrayTableRow';
-import { globalSelectedData, globalSelectedFlag } from '../../store/actions/globalAction';
 
 function GraphTable(props) {
   const dispatch = useDispatch();
@@ -23,6 +25,7 @@ function GraphTable(props) {
   const graphData = useSelector((state) => state.global.graphData);
 	const arrayData = useSelector((state) => state.global.arrayData);
 	const taskData = useSelector((state) => state.global.taskData);
+  const imagePaths = useSelector((state) => state.global.imagePaths);
   const rowsSelected = useSelector((state) => state.job.rowsSelected);
 
   let className = "job-list";
@@ -225,16 +228,14 @@ function GraphTable(props) {
          * jobSelected: current row's id
          */
         props.setJobSelected(graphData[rowsSelected[0]].did);
-        dispatch(globalSelectedData(graphData[rowsSelected[0]]));
-        dispatch(globalSelectedFlag(1));
+        imagePaths[graphData[rowsSelected[0]].did] = ElasticSearchService.playImages(graphData[rowsSelected[0]].did);
+        dispatch(globalImagePaths(imagePaths));
       } else {
         /**
          * Deselect current row
          * jobSelected: none
          */
         props.setJobSelected('');
-        dispatch(globalSelectedData({}));
-        dispatch(globalSelectedFlag(0));
       }
     },
   }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
@@ -8,6 +8,9 @@ import IconButton from '@material-ui/core/IconButton';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 
+import ElasticSearchService from "../../services/ElasticSearch.service";
+
+import { globalImagePaths } from "../../store/actions/globalAction";
 import { jobRowsSelected } from '../../store/actions/jobAction';
 
 import TaskTableRow from "./TaskTableRow";
@@ -58,6 +61,7 @@ export default function ArrayTableRow({
   setJobSelected
 }) {
   const dispatch = useDispatch();
+  const imagePaths = useSelector((state) => state.global.imagePaths);
 
   return (
     searchArrayData.map((arrayRow)=> {
@@ -93,6 +97,9 @@ export default function ArrayTableRow({
              */
             dispatch(jobRowsSelected([]));
             setJobSelected(childArrayText);
+            let jobID = childArrayText.toString().split('.');
+            imagePaths[jobID[0]+'.'+jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
+            dispatch(globalImagePaths(imagePaths));
           }}
           isSelected={isSelected}
         >

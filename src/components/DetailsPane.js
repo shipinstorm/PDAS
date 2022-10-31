@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { elapsedTime, submittedTime } from '../utils/utils';
 
@@ -12,10 +12,12 @@ import ArrayStatus from "./GraphStatus/ArrayStatus";
 import SelectImage from '../assets/images/select.png';
 
 import '../assets/css/DetailsPane.scss';
+import { globalExternalIP } from "../store/actions/globalAction";
 
 export default function DetailsPane({
   jobSelected
 }) {
+  const dispatch = useDispatch();
   const editVal1 = useRef(null);
   const editVal2 = useRef(null);
   const editVal3 = useRef(null);
@@ -50,6 +52,7 @@ export default function DetailsPane({
   const taskData = useSelector((state) => state.global.taskData);
   const externalIP = useSelector((state) => state.global.externalIP);
   const codaHealth = useSelector((state) => state.global.codaHealth);
+  const imagePaths = useSelector((state) => state.global.imagePaths);
 
   useEffect(() => {
     let jobID = null;
@@ -84,12 +87,13 @@ export default function DetailsPane({
 
   useEffect(() => {
     refreshPools();
+    checkNetwork();
     if (displayIdStr !== getDisplayId()) {
       setShowImage(false);
       setImgUrl(undefined);
       setHidePlayImage(true);
       setNoFrames(false);
-      if (currentImgUrlRequest) { currentImgUrlRequest.unsubscribe(); }
+      // if (currentImgUrlRequest) { currentImgUrlRequest.unsubscribe(); }
       setShowEditIcon({});
       setEditMode({});
       setSavingEdit({});
@@ -104,20 +108,20 @@ export default function DetailsPane({
       }
       */
       if (!externalIP){
-        setCurrentImgUrlRequest(
-          getImgUrl()
-          // .then(url => {
-          //   if (url){
-          //     setImgUrl(url);
-          //     let imgElement = document.getElementById('framePreview');
-          //     if (imgElement && imgElement.complete && imgElement.src == url){
-          //       setShowImage(true);
-          //     }
-          //   } else {
-          //     setNoFrames(true);
-          //   }
+        // setCurrentImgUrlRequest(
+          // getImgUrl().subscribe(url => {
+            let url = getImgUrl();
+            if (url){
+              setImgUrl(url);
+              let imgElement = document.getElementById('framePreview');
+              if (imgElement && imgElement.complete && imgElement.src === url){
+                setShowImage(true);
+              }
+            } else {
+              setNoFrames(true);
+            }
           // })
-        );
+        // );
       }
 
     }
@@ -178,37 +182,42 @@ export default function DetailsPane({
 
   const getMetadataKeys = () => {
     if (graph()){
-      return Object.keys(selectedGraphData);
+      return Object.keys(selectedGraphData).sort();
     } else if (array()){
-      return Object.keys(selectedArrayData);
+      return Object.keys(selectedArrayData).sort();
     } else if (task()){
-      return Object.keys(selectedTaskData);
+      return Object.keys(selectedTaskData).sort();
     }
   }
 
   const getImgUrl = () => {
-    // return new Observable<string>(observer => {
+    // return new Observable(observer => {
       if (task()) {
         let imgUrl = nfsBaseURL+"image/" + selectedTaskData.did+"/" + selectedTaskData.aid + "/" + selectedTaskData.tid;
-        // observer.next(imgUrl);
+        // observer.next(imgUrl);◘
+        return imgUrl;
       } else if (array()) {
-        // imagePaths[selectedArrayData.did+'.'+selectedArrayData.aid].then(imagePaths => {
-        //   if (imagePaths && imagePaths.length > 0) {
-        //     let firstImg = imagePaths[0];
-        //     observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
-        //   } else {
-        //     observer.next(undefined);
-        //   }
-        // });
+        imagePaths[selectedArrayData.did+'.'+selectedArrayData.aid].then(imagePaths => {
+          if (imagePaths && imagePaths.length > 0) {
+            let firstImg = imagePaths[0];
+            // observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
+            return (nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
+          } else {
+            // observer.next(undefined);
+            return (undefined);
+          }
+        });
       } else if (graph()) {
-        // imagePaths[selectedGraphData.did].then(imagePaths => {
-        //   if (imagePaths && imagePaths.length > 0) {
-        //     let firstImg = imagePaths[0];
-        //     observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
-        //   } else {
-        //     observer.next(undefined);s
-        //   }
-        // });
+        imagePaths[selectedGraphData.did].then(imagePaths => {
+          if (imagePaths && imagePaths.length > 0) {
+            let firstImg = imagePaths[0];
+            // observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
+            return (nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
+          } else {
+            // observer.next(undefined);
+            return (undefined);
+          }
+        });
       }
     // });
   }
@@ -319,32 +328,32 @@ export default function DetailsPane({
   }
 
   const getStatusHistData = (statusHistList) => {
-    // let primaryStatuses = ["queued", "run", "done", "exit", "userkill", "syskill", "wait", "usersus", "requeue", "reqsus", "resync", "depend", "paused"];
-    // let primaryPrefixes = ["run on host", "paused on host", "requeue due to", "reqsus due to"];
-    // let statusHistData = [];
+    let primaryStatuses = ["queued", "run", "done", "exit", "userkill", "syskill", "wait", "usersus", "requeue", "reqsus", "resync", "depend", "paused"];
+    let primaryPrefixes = ["run on host", "paused on host", "requeue due to", "reqsus due to"];
+    let statusHistData = [];
 
-    // let prevDate;
-    // let hoverMsgs = [];
-    // for (let status of statusHistList.slice().reverse()) {
-    //   if (primaryStatuses.indexOf(status.msg) > -1 || primaryPrefixes.filter((prefix) => {return status.msg.startsWith(prefix)}).length > 0) {
-    //     if (statusHistData.length > 0){
-    //       statusHistData[statusHistData.length-1]['hover'] = hoverMsgs;
-    //     }
-    //     hoverMsgs = [];
-    //     let currDate = moment(status.ts*1000).format('M/D/YY');
-    //     let date = currDate != prevDate ? currDate : undefined;
-    //     let time = moment(status.ts*1000).format('h:mma').replace("m", "");
-    //     statusHistData.push({'date': date, 'time': time, 'msg': status.msg});
-    //     if (date) {
-    //       prevDate = date;
-    //     }
-    //   } else {
-    //     let time = moment(status.ts*1000).format('h:mma').replace("m", "");
-    //     hoverMsgs.unshift({'time': time, 'msg': status.msg});
-    //   }
-    // }
+    let prevDate;
+    let hoverMsgs = [];
+    for (let status of statusHistList.slice().reverse()) {
+      if (primaryStatuses.indexOf(status.msg) > -1 || primaryPrefixes.filter((prefix) => {return status.msg.startsWith(prefix)}).length > 0) {
+        if (statusHistData.length > 0){
+          statusHistData[statusHistData.length-1]['hover'] = hoverMsgs;
+        }
+        hoverMsgs = [];
+        let currDate = new Date(status.ts*1000).format('M/D/YY');
+        let date = currDate !== prevDate ? currDate : undefined;
+        let time = new Date(status.ts*1000).format('h:mma').replace("m", "");
+        statusHistData.push({'date': date, 'time': time, 'msg': status.msg});
+        if (date) {
+          prevDate = date;
+        }
+      } else {
+        let time = new Date(status.ts*1000).format('h:mma').replace("m", "");
+        hoverMsgs.unshift({'time': time, 'msg': status.msg});
+      }
+    }
 
-    // return statusHistData;
+    return statusHistData;
   }
 
   const toggleStatusHistory = () => {
@@ -471,7 +480,7 @@ export default function DetailsPane({
 
   const toggleObj = (field) => {
     expandedObj[field] = !expandedObj[field];
-    setExpandedObj(expandedObj);
+    setExpandedObj({...expandedObj});
   }
 
   const editTitle = (val) => {
@@ -511,11 +520,27 @@ export default function DetailsPane({
     saveEdit('notes', '"'+val+'"', "_topItems.notes", "There was an error saving changes to notes:");
   }
 
+  const checkNetwork = (callback =null) => {
+    ElasticSearchService.networkCheck()
+    .then(result => {
+      dispatch(globalExternalIP(false));
+      if (callback) {callback();}
+    })
+    .catch(error => {
+      if (error.status === 403) {
+        dispatch(globalExternalIP(true));
+      } else {
+        console.log("networkCheck error");
+        console.log(error);
+      }
+      if (callback) {callback();}
+    })
+  }
+
   const refreshPools = () => {
     ElasticSearchService.getPoolData()
     .then(data => {
-      console.log(data)
-      let tmpPoolData = data;
+      let tmpPoolData = data.data;
       var totalSpec = 0;
       var totalNonspec = 0;
       var totalAvailable = 0;
@@ -710,7 +735,11 @@ export default function DetailsPane({
                   >
                     {selectedGraphData?.dgraphresources?.memory}{selectedArrayData?.dgraphresources?.memory}{selectedTaskData?.dgraphresources?.memory}
                   </span>
-                  {task() && <small><span>used/</span>reserved</small>}
+                  <small>
+                    &nbsp;
+                    {task() && <span>used/</span>}
+                    reserved
+                  </small>
                   {showEditIcon['_topItems.mem'] && <span className="glyphicon glyphicon-pencil"></span>}
                   {savedEdit['_topItems.mem'] && <span className="edit-saved-span"><br/><small><span className="glyphicon glyphicon-ok"></span>saved</small></span>}
                 </p>}
@@ -817,15 +846,15 @@ export default function DetailsPane({
                           "col-xs-4 text-right pool-separator pool-maxed" :
                           'col-xs-4 text-right pool-separator'}
                         >
-                          {poolData[selectedGraphData?.cpupool]['realcount']}
+                          {JSON.stringify(poolData[selectedGraphData?.cpupool]['realcount'])}
                         </div>}
                         {(poolData[selectedGraphData?.cpupool] || poolData[selectedGraphData?._poolname]) &&
                         <div className="col-xs-4 text-right pool-separator">
-                          {poolData[selectedGraphData?.cpupool]['speccount']}
+                          {JSON.stringify(poolData[selectedGraphData?.cpupool]['speccount'])}
                         </div>}
                         {(poolData[selectedGraphData?.cpupool] || poolData[selectedGraphData?._poolname]) &&
                         <div className="col-xs-4 text-right">
-                          {poolData[selectedGraphData?.cpupool]['entitled']}
+                          {JSON.stringify(poolData[selectedGraphData?.cpupool]['entitled'])}
                         </div>}
                         {/* Get top level pool data from array */}
                         {(poolData[selectedArrayData?.cpupool] || poolData[selectedArrayData?._poolname]) &&
@@ -834,15 +863,15 @@ export default function DetailsPane({
                           "col-xs-4 text-right pool-separator pool-maxed" :
                           "col-xs-4 text-right pool-separator"}
                         >
-                          {(poolData[selectedArrayData?._poolname]['realcount']) || (poolData[selectedArrayData?.cpupool]['realcount'])}
+                          {JSON.stringify(poolData[selectedArrayData?._poolname]['realcount']) || JSON.stringify(poolData[selectedArrayData?.cpupool]['realcount'])}
                         </div>}
                         {(poolData[selectedArrayData?._poolname] || poolData[selectedArrayData?.cpupool]) &&
                         <div className="col-xs-4 text-right pool-separator">
-                          {(poolData[selectedArrayData?._poolname]['speccount']) || (poolData[selectedArrayData?.cpupool]['speccount'])}
+                          {JSON.stringify(poolData[selectedArrayData?._poolname]['speccount']) || JSON.stringify(poolData[selectedArrayData?.cpupool]['speccount'])}
                         </div>}
                         {(poolData[selectedArrayData?._poolname] || poolData[selectedArrayData?.cpupool]) &&
                         <div className="col-xs-4 text-right">
-                          {(poolData[selectedArrayData?._poolname]['entitled']) || (poolData[selectedArrayData?.cpupool]['entitled'])}
+                          {JSON.stringify(poolData[selectedArrayData?._poolname]['entitled']) || JSON.stringify(poolData[selectedArrayData?.cpupool]['entitled'])}
                         </div>}
                         {/* Get top level pool data from task */}
                         {poolData[selectedTaskData?._poolname] &&
@@ -853,7 +882,7 @@ export default function DetailsPane({
                           "col-xs-4 text-right pool-separator pool-main" :
                           "col-xs-4 text-right pool-separator"}
                         >
-                          {(poolData[selectedTaskData?._poolname]['realcount']) || (poolData[selectedTaskData?.cpupool]['realcount'])}
+                          {JSON.stringify(poolData[selectedTaskData?._poolname]['realcount']) || JSON.stringify(poolData[selectedTaskData?.cpupool]['realcount'])}
                         </div>}
                         {poolData[selectedTaskData?._poolname] &&
                         <div
@@ -861,11 +890,11 @@ export default function DetailsPane({
                           "col-xs-4 text-right pool-separator pool-main" :
                           "col-xs-4 text-right pool-separator"}
                         >
-                          {(poolData[selectedTaskData?._poolname]['speccount']) || (poolData[selectedTaskData?.cpupool]['speccount'])}
+                          {JSON.stringify(poolData[selectedTaskData?._poolname]['speccount']) || JSON.stringify(poolData[selectedTaskData?.cpupool]['speccount'])}
                         </div>}
                         {poolData[selectedTaskData?._poolname] &&
                         <div className="col-xs-4 text-right">
-                          {(poolData[selectedTaskData?._poolname]['entitled']) || (poolData[selectedTaskData?.cpupool]['entitled'])}
+                          {JSON.stringify(poolData[selectedTaskData?._poolname]['entitled']) || JSON.stringify(poolData[selectedTaskData?.cpupool]['entitled'])}
                         </div>}
                       </div>
                     </div>}
@@ -952,7 +981,7 @@ export default function DetailsPane({
                   <div
                     className={selectedTaskData?._isspeculative === true ?
                     "pool col-xs-4 form-control-static text-right pool-other" :
-                    selectedTaskData?._statusname === 'run' ?
+                    selectedTaskData?._statusname === 'run' && selectedTaskData?._isspeculative === false ?
                     "pool col-xs-4 form-control-static text-right pool-main" :
                     "pool col-xs-4 form-control-static text-right"}
                   >
@@ -962,7 +991,7 @@ export default function DetailsPane({
                       <span
                         className={selectedTaskData?._isspeculative === true ?
                         "pool-other" :
-                        selectedTaskData?._statusname ==='run' ?
+                        selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === false ?
                         "pool-main" :
                         ""}
                       >
@@ -975,7 +1004,7 @@ export default function DetailsPane({
                       "text-right pool-maxed" :
                       "text-right"}
                     >
-                      {(poolData[selectedGraphData?.cpupool]['realcount']) || (poolData[selectedGraphData?._poolname]['realcount'])}
+                      {JSON.stringify(poolData[selectedGraphData?.cpupool]['realcount']) || JSON.stringify(poolData[selectedGraphData?._poolname]['realcount'])}
                     </div>}
                     {poolData[selectedArrayData?._poolname] &&
                     <div
@@ -983,7 +1012,7 @@ export default function DetailsPane({
                       "text-right pool-maxed" :
                       "text-right"}
                     >
-                      {(poolData[selectedArrayData?._poolname]['realcount']) || (poolData[selectedArrayData?.cpupool]['realcount'])}
+                      {JSON.stringify(poolData[selectedArrayData?._poolname]['realcount']) || JSON.stringify(poolData[selectedArrayData?.cpupool]['realcount'])}
                     </div>}
                     {poolData[selectedTaskData?._poolname] &&
                     <div
@@ -991,13 +1020,15 @@ export default function DetailsPane({
                       "text-right pool-maxed" :
                       "text-right"}
                     >
-                      {(poolData[selectedTaskData?._poolname]['realcount']) || (poolData[selectedTaskData?.cpupool]['realcount'])}
+                      {JSON.stringify(poolData[selectedTaskData?._poolname]['realcount']) || JSON.stringify(poolData[selectedTaskData?.cpupool]['realcount'])}
                     </div>}
                   </div>
                   <div
                     className={selectedTaskData?._isspeculative === false ?
                     "pool col-xs-4 form-control-static text-right pool-other" :
-                    "pool col-xs-4 form-control-static text-right pool-main"}
+                    selectedTaskData?._isspeculative === true ?
+                    "pool col-xs-4 form-control-static text-right pool-main" :
+                    "pool col-xs-4 form-control-static text-right"}
                   >
                     <small>
                       {selectedTaskData?._statusname ==='run' && selectedTaskData?._isspeculative === true &&
@@ -1339,12 +1370,12 @@ export default function DetailsPane({
                               onClick={() => editField(item)}
                               className="editable"
                             >
-                              <pre>{selectedObj()[item]}</pre>
+                              <pre>{JSON.stringify(selectedObj()[item])}</pre>
                               {showEditIcon[item] &&
                               <span className="glyphicon glyphicon-pencil"></span>}
                             </span>}
                             {item.charAt(0) === '_' &&
-                            <span><pre>{selectedObj()[item]}</pre></span>}
+                            <span><pre>{JSON.stringify(selectedObj()[item])}</pre></span>}
                             {savedEdit[item] &&
                             <span className="edit-saved-span"><br/><small><span className="glyphicon glyphicon-ok"></span>saved</small></span>}
                           </p>}
@@ -1379,12 +1410,12 @@ export default function DetailsPane({
                                 onClick={() => editField(item)}
                                 className="editable"
                               >
-                                <span style={{maxWidth:"185px"}}>{selectedObj()[item]}</span>
+                                <span style={{maxWidth:"185px"}}>{JSON.stringify(selectedObj()[item])}</span>
                                 {showEditIcon[item] &&
                                 <span className="glyphicon glyphicon-pencil"></span>}
                               </span>}
                               {item.charAt(0) === '_' &&
-                              <span>{selectedObj()[item]}</span>}
+                              <span>{JSON.stringify(selectedObj()[item])}</span>}
                               {savedEdit[item] &&
                               <span className="edit-saved-span"><br/><small><span className="glyphicon glyphicon-ok"></span>saved</small></span>}
                           </p>}
@@ -1396,7 +1427,7 @@ export default function DetailsPane({
                               onInput={(event) => adjustHeight(event.target)}
                               rows="1"
                             >
-                              {selectedObj()[item]}
+                              {JSON.stringify(selectedObj()[item])}
                             </textarea>
                             <br/>
                             <button

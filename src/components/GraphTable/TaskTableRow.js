@@ -1,8 +1,11 @@
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 
+import ElasticSearchService from '../../services/ElasticSearch.service';
+
+import { globalImagePaths } from '../../store/actions/globalAction';
 import { jobRowsSelected } from '../../store/actions/jobAction';
 
 export default function TaskTableRow({
@@ -14,6 +17,7 @@ export default function TaskTableRow({
   setJobSelected
 }) {
   const dispatch = useDispatch();
+  const imagePaths = useSelector((state) => state.global.imagePaths);
 
   return (
     searchTaskData[arrayRow.aid].map((taskRow) => {
@@ -39,6 +43,9 @@ export default function TaskTableRow({
              */
             dispatch(jobRowsSelected([]));
             setJobSelected(childTaskText);
+            let jobID = childTaskText.toString().split('.');
+            imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
+            dispatch(globalImagePaths(imagePaths));
           }}
         >
           <TableCell
