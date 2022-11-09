@@ -68,16 +68,18 @@ export default function Dashboard() {
 	const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
 	const [filterQueryFlag, setFilterQueryFlag] = useState([]);
 	/**
-	 * For MUIDataTable pagination
-	 */
-	const [rowsPerPage, setRowsPerPage] = useState(10);
-	const [currentPage, setCurrentPage] = useState(0);
-	/**
 	 * For DetailsPanel
 	 */
 	const [jobSelected, setJobSelected] = useState("");
 
-	const searchQueryHandle = (newSearchQuery, from=currentPage * rowsPerPage, size=rowsPerPage * 2) => {
+	const searchQueryHandle = (newSearchQuery, expandFlag =false) => {
+		let from = 0;
+		let size = 200;
+
+		if (expandFlag) {
+			from = graphData.length;
+		}
+
 		var now = new Date();
 		now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 
@@ -166,25 +168,25 @@ export default function Dashboard() {
 		 * This is for ElasticSearch
 		 * Comment out below section when you work with Mock Data
 		 */
-		// ElasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
-		//  	(result) => {
-		// 		let tmpGraphData = [];
-		// 		for (var i = 0; i < from; i++) {
-		// 			tmpGraphData.push({});
-		// 		}
-		// 		result.hits.hits.map(doc => tmpGraphData.push(doc._source));
-		// 		let tmpRowsExpanded = [];
-		// 		rowsExpandedJobID.map((exp) => {
-		// 			result.hits.hits.map((doc, index) => {
-		// 				if (doc._source.did == exp)
-		// 					tmpRowsExpanded.push(index);
-		// 			})
-		// 		})
-		// 		setRowsExpandedIndex(tmpRowsExpanded);
-		// 		dispatch(globalGraphData(tmpGraphData));
-		// 		setJobListLoading(false);
-		// 	}
-		// )
+		ElasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
+		 	(result) => {
+				let tmpGraphData = [];
+				if (expandFlag) {
+					tmpGraphData = graphData;
+				}
+				result.hits.hits.map(doc => tmpGraphData.push(doc._source));
+				let tmpRowsExpanded = [];
+				rowsExpandedJobID.map((exp) => {
+					result.hits.hits.map((doc, index) => {
+						if (doc._source.did == exp)
+							tmpRowsExpanded.push(index);
+					})
+				})
+				setRowsExpandedIndex(tmpRowsExpanded);
+				dispatch(globalGraphData(tmpGraphData));
+				setJobListLoading(false);
+			}
+		)
 
 		navigate('/search?q=' + urlSearchQuery + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + viewLog);
 
@@ -192,38 +194,38 @@ export default function Dashboard() {
 		 * This is for Mock Data
 		 * Comment out below section when you work with ElasticSearch
 		 */
-		let icoda_username = [], title = [], status = [], after = [], dept = [], type = [], show = [];
-		newSearchQuery.map((query) => {
-			if (query.header === 'user') {
-				icoda_username.push(query.title)
-			} else if (query.header === 'title') {
-				title.push(query.title)
-			} else if (query.header === 'status') {
-				status.push(query.title)
-			} else if (query.header === 'dept') {
-				dept.push(query.title)
-			} else if (query.header === 'type') {
-				type.push(query.title)
-			} else if (query.header === 'show') {
-				show.push(query.title)
-			} else if (query.header === 'after') {
-				after.push(query.title)
-			}
-		})
+		// let icoda_username = [], title = [], status = [], after = [], dept = [], type = [], show = [];
+		// newSearchQuery.map((query) => {
+		// 	if (query.header === 'user') {
+		// 		icoda_username.push(query.title)
+		// 	} else if (query.header === 'title') {
+		// 		title.push(query.title)
+		// 	} else if (query.header === 'status') {
+		// 		status.push(query.title)
+		// 	} else if (query.header === 'dept') {
+		// 		dept.push(query.title)
+		// 	} else if (query.header === 'type') {
+		// 		type.push(query.title)
+		// 	} else if (query.header === 'show') {
+		// 		show.push(query.title)
+		// 	} else if (query.header === 'after') {
+		// 		after.push(query.title)
+		// 	}
+		// })
 
-		let tmpGraphData = dGraphData.hits.hits.filter(doc => {
-			return (!icoda_username.length || icoda_username.includes(doc._source.icoda_username)) &&
-				(!title.length || title.includes(doc._source.title)) &&
-				(!status.length || status.includes(doc._source._statusname));
-		});
-		// Query after
-		if (after.length === 1) {
-			tmpGraphData = tmpGraphData.filter(doc => {
-				return doc._source._submittime >= after[0];
-			})
-		}
-		dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
-		setJobListLoading(false);
+		// let tmpGraphData = dGraphData.hits.hits.filter(doc => {
+		// 	return (!icoda_username.length || icoda_username.includes(doc._source.icoda_username)) &&
+		// 		(!title.length || title.includes(doc._source.title)) &&
+		// 		(!status.length || status.includes(doc._source._statusname));
+		// });
+		// // Query after
+		// if (after.length === 1) {
+		// 	tmpGraphData = tmpGraphData.filter(doc => {
+		// 		return doc._source._submittime >= after[0];
+		// 	})
+		// }
+		// dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
+		// setJobListLoading(false);
 	}
 
 	useEffect(() => {
@@ -266,23 +268,23 @@ export default function Dashboard() {
 	}
 
 	const toggleJob = async (jobId) => {
-		// await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
+		await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
 			let newArrayData = arrayData;
-		  // newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
-			newArrayData[jobId] = dArrayData.hits.hits.map(doc => doc._source);
+		  newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
+			// newArrayData[jobId] = dArrayData.hits.hits.map(doc => doc._source);
 
 			let newTaskData = taskData;
 			newTaskData[jobId] = new Array();
 			await Promise.all(newArrayData[jobId].map(async (array) => {
-				// await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
-					// newTaskData[jobId][array.aid] = resultTask.hits.hits.map(doc => doc._source);
-					newTaskData[jobId][array.aid] = dTaskData.hits.hits.map(doc => doc._source);
-				// });
+				await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
+					newTaskData[jobId][array.aid] = resultTask.hits.hits.map(doc => doc._source);
+					// newTaskData[jobId][array.aid] = dTaskData.hits.hits.map(doc => doc._source);
+				});
 			}))
 			dispatch(globalArrayData(newArrayData));
 			dispatch(globalTaskData(newTaskData));
 			setJobListLoading(false);
-	  // });
+	  });
 	}
 
 	const rowsExpandedHandle = (expanded) => {
@@ -364,10 +366,6 @@ export default function Dashboard() {
 					onToggleClick={async (jobId) => {await toggleJob(jobId);}}
 					rowsExpanded={rowsExpandedIndex}
 					setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
-					rowsPerPage={rowsPerPage}
-					setRowsPerPage={setRowsPerPage}
-					currentPage={currentPage}
-					setCurrentPage={setCurrentPage}
 					autoCompleteValue={autoCompleteValue}
 					setSearchQuery={searchQueryHandle}
 					jobSelected={jobSelected}

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
+import { Waypoint } from 'react-waypoint';
 import { useDispatch, useSelector } from 'react-redux';
 
 import MUIDataTable from 'mui-datatables';
@@ -101,7 +102,27 @@ function GraphTable(props) {
   const columns = [
     {
       name: 'username',
-      label: 'User'
+      label: 'User',
+      options: {
+        customBodyRender: (value, tableMeta, updateValue) => {
+          const rowIndex = tableMeta.rowIndex;
+
+          if (rowIndex === graphData.length - 10) {
+            return (
+              <Fragment>
+                <Waypoint
+                  onEnter={() => {
+                    props.setSearchQuery(props.autoCompleteValue, true);
+                  }}
+                />
+                {value}
+              </Fragment>
+            )
+          } else {
+            return <Fragment>{value}</Fragment>;
+          }
+        }
+      }
     },
     {
       name: 'jobid',
@@ -164,10 +185,9 @@ function GraphTable(props) {
     expandableRows: true,
     expandableRowsHeader: false,
     expandableRowsOnClick: false,
+    pagination: false,
     rowsExpanded: props.rowsExpanded,
     columnOrder: columnOrder,
-    rowsPerPage: props.rowsPerPage,
-    page: props.currentPage,
     /**
      * Row select for DetailsPane
      */
@@ -208,17 +228,17 @@ function GraphTable(props) {
       setColumnOrder(newColumnOrder);
     },
 
-    onTableChange: (action, tableState) => {
-      switch (action) {
-        case 'changePage': case 'changeRowsPerPage':
-          props.setCurrentPage(tableState.page);
-          props.setRowsPerPage(tableState.rowsPerPage);
-          props.setSearchQuery(props.autoCompleteValue, tableState.page * tableState.rowsPerPage, tableState.rowsPerPage * 2);
-          break;
-        default:
-          break;
-      }
-    },
+    // onTableChange: (action, tableState) => {
+    //   switch (action) {
+    //     case 'changePage': case 'changeRowsPerPage':
+    //       props.setCurrentPage(tableState.page);
+    //       props.setRowsPerPage(tableState.rowsPerPage);
+    //       props.setSearchQuery(props.autoCompleteValue, tableState.page * tableState.rowsPerPage, tableState.rowsPerPage * 2);
+    //       break;
+    //     default:
+    //       break;
+    //   }
+    // },
 
     onRowSelectionChange: (currentRowsSelected, allRowsSelected, rowsSelected) => {
       dispatch(jobRowsSelected(rowsSelected));

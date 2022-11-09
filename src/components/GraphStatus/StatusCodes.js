@@ -43,4 +43,3 @@ exports.DGRAPH_STATUS_CODES = {
     "killed/run": { name: "killed", statusClass: "killed-run", sortPriority: 3 },
     "killed/wait": { name: "killed", statusClass: "killed-wait", sortPriority: 3 },
 };
-//# sourceMappingURL=status-codes.js.map
