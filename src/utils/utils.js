@@ -138,8 +138,6 @@ export const generateSearchQueries = (newSearchQuery, filterQueryFlag) => {
     elasticSearchQuery = elasticSearchQuery.slice(0, -4) + '))';
   }
 
-  console.log(elasticSearchQuery);
-
   urlSearchQuery = urlSearchQuery.slice(0, -1);
 
   return [urlSearchQuery, elasticSearchQuery, tmpFilterQueryFlag];

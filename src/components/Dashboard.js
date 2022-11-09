@@ -7,6 +7,7 @@ import {
 	globalArrayData,
 	globalTaskData
 } from '../store/actions/globalAction';
+import { jobRowsSelected } from '../store/actions/jobAction';
 
 import { dGraphData, dArrayData, dTaskData } from "../services/mockData";
 import ElasticSearchService from "../services/ElasticSearch.service";
@@ -33,6 +34,7 @@ export default function Dashboard() {
 	const [searchParams, ] = useSearchParams();
 	let searchParamsObject = {
 		"query": searchParams.get('q'),
+		"selected": searchParams.get('sel'),
 		"expanded": searchParams.get("exp"),
 		"details": searchParams.get("details"),
 		"log": searchParams.get("log"),
@@ -80,11 +82,11 @@ export default function Dashboard() {
 	/**
 	 * For DetailsPanel
 	 */
-	const [jobSelected, setJobSelected] = useState("");
+	const [jobSelected, setJobSelected] = useState(searchParamsObject.selected ? searchParamsObject.selected : '');
 
-	const searchQueryHandle = (newSearchQuery, expandFlag =false) => {
+	const searchQueryHandle = (newSearchQuery, expandFlag =false, firstRun =false) => {
 		let from = 0;
-		let size = 200;
+		let size = 50;
 
 		if (expandFlag) {
 			from = graphData.length;
@@ -118,13 +120,18 @@ export default function Dashboard() {
 							tmpRowsExpanded.push(index);
 					})
 				})
+				if (firstRun && searchParamsObject.selected) {
+					tmpGraphData.map((data, index) => {
+						if(data.did.toString() == searchParamsObject.selected.toString()) {
+							dispatch(jobRowsSelected([index]));
+						}
+					})
+				}
 				setRowsExpandedIndex(tmpRowsExpanded);
 				dispatch(globalGraphData(tmpGraphData));
 				setJobListLoading(false);
 			}
 		)
-
-		navigate('/search?q=' + urlSearchQuery + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + viewLog);
 
 		/**
 		 * This is for Mock Data
@@ -162,7 +169,31 @@ export default function Dashboard() {
 		// }
 		// dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
 		// setJobListLoading(false);
+
+
+
+		navigate(
+			'/search?q=' + urlSearchQuery +
+			'&sel=' + jobSelected +
+			'&exp=' + rowsExpandedJobID.toString() +
+			'&details=' + viewDetails +
+			'&log=' + viewLog
+		);
 	}
+
+	const refreshDashboard = () => {
+		navigate(
+			'/search?q=' + searchQuery +
+			'&sel=' + jobSelected +
+			'&exp=' + rowsExpandedJobID.toString() +
+			'&details=' + viewDetails +
+			'&log=' + viewLog
+		);
+	}
+
+	useEffect(() => {
+		refreshDashboard();
+	}, [jobSelected])
 
 	useEffect(() => {
 		async function foo() {
@@ -188,7 +219,7 @@ export default function Dashboard() {
 	
 			await Promise.all(rowsExpandedJobID.map(async (row) => {await toggleJob(row);}));
 			setAutoCompleteValue(initSearchQuery);
-			searchQueryHandle(initSearchQuery);
+			searchQueryHandle(initSearchQuery, false, true);
 		}
 		foo();
 	}, []);
