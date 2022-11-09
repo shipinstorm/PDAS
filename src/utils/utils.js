@@ -61,3 +61,86 @@ export const timeString = (num) => {
   }
   return hours + "h " + minutes + "m";
 }
+
+export const generateSearchQueries = (newSearchQuery, filterQueryFlag) => {
+  var now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+
+  let elasticSearchQuery = '(';
+  let urlSearchQuery = '';
+  let tmpFilterQueryFlag = {
+    status: {},
+    dept: {},
+    type: {},
+    display: {},
+    show: "All Shows",
+    after: filterQueryFlag.after ? filterQueryFlag.after : now.toISOString().slice(0,16)
+  };
+
+  let beforeHeader = '-1';
+  const generateSubQuery = (header) => {
+    if (beforeHeader !== header) {
+      if (beforeHeader !== '-1') {
+        elasticSearchQuery = elasticSearchQuery.slice(0, -4);
+        elasticSearchQuery += ') AND '
+      }
+      elasticSearchQuery += '(';
+      beforeHeader = header;
+    }
+  }
+
+  newSearchQuery.map((query) => {
+    // Generate urlSearchQuery
+    if (query.header) {
+      urlSearchQuery += query.header + ':' + query.title + ',';
+    } else {
+      urlSearchQuery += query.title + ',';
+    }
+
+    // Generate elasticSearchQuery
+    if (query.header !== 'display') {
+      generateSubQuery(query.header);
+    }
+
+    if (query.header === '') {
+      elasticSearchQuery += 'icoda_username:' + query.title + ' OR title:' + query.title + ' OR did:' + query.title + ' OR ';
+    } else if (query.header === 'user') {
+      elasticSearchQuery += 'icoda_username:' + query.title + ' OR ';
+    } else if (query.header === 'title') {
+      elasticSearchQuery += 'title:' + query.title + ' OR ';
+    } else if (query.header === 'status') {
+      tmpFilterQueryFlag.status[query.title] = true;
+      elasticSearchQuery += '_statusname:' + query.title + ' OR ';
+    } else if (query.header === 'dept') {
+      tmpFilterQueryFlag.dept[query.title] = true;
+      elasticSearchQuery += 'title:*' + query.title + '* OR ';
+    } else if (query.header === 'type') {
+      tmpFilterQueryFlag.type[query.title] = true;
+      elasticSearchQuery += 'title:*' + query.title + '* OR ';
+    } else if (query.header === 'show') {
+      tmpFilterQueryFlag.show = query.title;
+      elasticSearchQuery += 'title:*' + query.title + '* OR ';
+    } else if (query.header === 'display') {
+      /**
+       * https://wdas-elastic.fas.fa.disney.com:9200/coda_6/_search?q=%20!clienthide%3A1%20_exists_%3Adid%20!_exists_%3Aaid&size=200&from=0&sort=did%3Adesc&default_operator=AND
+       * https://wdas-elastic.fas.fa.disney.com:9200/coda_6/_search?q=%20_exists_%3Adid%20!_exists_%3Aaid&size=200&from=0&sort=did%3Adesc&default_operator=AND
+       */
+       tmpFilterQueryFlag.display[query.title] = true;
+    } else if (query.header === 'after') {
+      tmpFilterQueryFlag.after = query.title;
+      elasticSearchQuery += '_submittime:[' + query.title + ' TO *] OR ';
+    }
+  })
+
+  if (elasticSearchQuery === '(') {
+    elasticSearchQuery = '';
+  } else {
+    elasticSearchQuery = elasticSearchQuery.slice(0, -4) + '))';
+  }
+
+  console.log(elasticSearchQuery);
+
+  urlSearchQuery = urlSearchQuery.slice(0, -1);
+
+  return [urlSearchQuery, elasticSearchQuery, tmpFilterQueryFlag];
+}

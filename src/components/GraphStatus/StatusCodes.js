@@ -1,4 +1,3 @@
-"use strict";
 exports.TASK_STATUS_CODES = {
     "unknown": { name: "in queue", statusClass: "in-queue", sortPriority: 1 },
     "queued": { name: "in queue", statusClass: "in-queue", sortPriority: 1 },

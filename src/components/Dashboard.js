@@ -8,13 +8,16 @@ import {
 	globalTaskData
 } from '../store/actions/globalAction';
 
+import { dGraphData, dArrayData, dTaskData } from "../services/mockData";
+import ElasticSearchService from "../services/ElasticSearch.service";
+
+import { generateSearchQueries } from '../utils/utils';
+
 import SearchBar from './SearchBar/SearchBar';
 import HeaderButtons from './HeaderButtons';
 import DetailsPane from './DetailsPane';
 import GraphTable from './GraphTable/GraphTable';
 import LogPane from './LogPane';
-import { dGraphData, dArrayData, dTaskData } from "../services/mockData";
-import ElasticSearchService from "../services/ElasticSearch.service";
 
 import '../assets/css/MaterialIcons.css';
 import '../assets/css/App.css';
@@ -43,10 +46,17 @@ export default function Dashboard() {
 		const filterArray = searchParamsObject.query.split(',');
 		filterArray.map((array) => {
 			const tmp = array.split(/:(.*)/s);
-			res.push({
-				header: tmp[0],
-				title: tmp[1],
-			});
+			if (tmp[1]) {
+				res.push({
+					header: tmp[0],
+					title: tmp[1],
+				});
+			} else {
+				res.push({
+					header: '',
+					title: tmp[0],
+				});
+			}
 		})
 
 		return res;
@@ -80,88 +90,14 @@ export default function Dashboard() {
 			from = graphData.length;
 		}
 
-		var now = new Date();
-		now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-
-		let elasticSearchQuery = '(';
-		let urlSearchQuery = '';
-		let tmpFilterQueryFlag = {
-			status: {},
-			dept: {},
-			type: {},
-			display: {},
-			show: "All Shows",
-			after: filterQueryFlag.after ? filterQueryFlag.after : now.toISOString().slice(0,16)
-		};
-
 		// Sort query by title
 		newSearchQuery.sort((a, b) => {
 			return a.header.charCodeAt(0) - b.header.charCodeAt(0);
 		});
 
-		// Generate ElasticSearch query
-		let beforeHeader = '';
-		const generateSubQuery = (header) => {
-			if (beforeHeader !== header) {
-				if (beforeHeader !== '') {
-					elasticSearchQuery = elasticSearchQuery.slice(0, -4);
-					elasticSearchQuery += ') AND '
-				}
-				elasticSearchQuery += '(';
-				beforeHeader = header;
-			}
-		}
-		newSearchQuery.map((query) => {
-			if (query.header === 'user') {
-				generateSubQuery(query.header);
-				elasticSearchQuery += 'icoda_username:' + query.title + ' OR ';
-				urlSearchQuery += 'user:' + query.title + ',';
-			} else if (query.header === 'title') {
-				generateSubQuery(query.header);
-				elasticSearchQuery += 'title:' + query.title + ' OR ';
-				urlSearchQuery += 'title:' + query.title + ',';
-			} else if (query.header === 'status') {
-				generateSubQuery(query.header);
-				tmpFilterQueryFlag.status[query.title] = true;
-				elasticSearchQuery += '_statusname:' + query.title + ' OR ';
-				urlSearchQuery += 'status:' + query.title + ',';
-			} else if (query.header === 'dept') {
-				generateSubQuery(query.header);
-				tmpFilterQueryFlag.dept[query.title] = true;
-				elasticSearchQuery += 'title:*' + query.title + '* OR ';
-				urlSearchQuery += 'dept:' + query.title + ',';
-			} else if (query.header === 'type') {
-				generateSubQuery(query.header);
-				tmpFilterQueryFlag.type[query.title] = true;
-				elasticSearchQuery += 'title:*' + query.title + '* OR ';
-				urlSearchQuery += 'type:' + query.title + ',';
-			} else if (query.header === 'show') {
-				generateSubQuery(query.header);
-				tmpFilterQueryFlag.show = query.title;
-				elasticSearchQuery += 'title:*' + query.title + '* OR ';
-				urlSearchQuery += 'show:' + query.title + ',';
-			} else if (query.header === 'display') {
-				/**
-				 * https://wdas-elastic.fas.fa.disney.com:9200/coda_6/_search?q=%20!clienthide%3A1%20_exists_%3Adid%20!_exists_%3Aaid&size=200&from=0&sort=did%3Adesc&default_operator=AND
-				 * https://wdas-elastic.fas.fa.disney.com:9200/coda_6/_search?q=%20_exists_%3Adid%20!_exists_%3Aaid&size=200&from=0&sort=did%3Adesc&default_operator=AND
-				 */
-				tmpFilterQueryFlag.display[query.title] = true;
-				urlSearchQuery += 'display:' + query.title + ',';
-			} else if (query.header === 'after') {
-				generateSubQuery(query.header);
-				tmpFilterQueryFlag.after = query.title;
-				elasticSearchQuery += '_submittime:[' + query.title + ' TO *] OR ';
-				urlSearchQuery += 'after:' + query.title + ',';
-			}
-		})
-		if (elasticSearchQuery === '(') {
-			elasticSearchQuery = '';
-		} else {
-			elasticSearchQuery = elasticSearchQuery.slice(0, -4) + '))';
-		}
-		urlSearchQuery = urlSearchQuery.slice(0, -1);
+		const [urlSearchQuery, elasticSearchQuery, tmpFilterQueryFlag] = generateSearchQueries(newSearchQuery, filterQueryFlag);
+		
 		setSearchQuery(urlSearchQuery);
-
 		setFilterQueryFlag(tmpFilterQueryFlag);
 
 		/**

@@ -52,16 +52,28 @@ function SearchBar({
         groupBy={option => option.header}
         onChange={(e, newValue) => {
           /**
-           * Remove duplicated items
+           * Fix searchQuery
+           * ['35225744', {title: 'lliu', header: 'user'}]
+           * =>
+           * [{title: '35225744', header: ''}, {title: 'lliu', header: 'user'}]
            */
+          newValue = newValue.map((value) => {
+            if (typeof value === "string") {
+              return {
+                'title': value,
+                'header': ''
+              }
+            }
+
+            return value;
+          })
+          // Remove duplicated items
           newValue = newValue.filter((value, index, self) => {
             return index === self.findIndex((t) => {
               return t.header === value.header && t.title === value.title;
             })
           })
-          /**
-           * Update searchQuery and redraw table
-           */
+          // Update searchQuery and redraw table
           setAutoCompleteValue(newValue)
         }}
         sx={{
