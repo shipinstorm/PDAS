@@ -61,54 +61,56 @@ class ElasticSearchService {
   };
 
   static networkCheck() {
-    let headers = new Headers();
-    // if(CodaGlobals.devmode === false) {
-    //   headers.append('X-Requested-With', 'XMLHtt•pRequest');
-    // }
-    let searchUrl = baseUrl+'noauth/health_rest';
-    return fetch(searchUrl, {
-      headers: headers
-    }).then(res => {
-      let body = res.json();
-      return body.data || { };
-    });
+    return new Promise((resolve, reject) => {resolve({})});
+    // let headers = new Headers();
+    // // if(CodaGlobals.devmode === false) {
+    // //   headers.append('X-Requested-With', 'XMLHtt•pRequest');
+    // // }
+    // let searchUrl = baseUrl+'noauth/health_rest';
+    // return fetch(searchUrl, {
+    //   headers: headers
+    // }).then(res => {
+    //   let body = res.json();
+    //   return body.data || { };
+    // });
   }
 
   static playImages(dgraphId, arrayId =0, taskId =0) {
-    let headers = new Headers();
-    let searchUrl = '';
-    console.log("[DEBUG] In playImages()")
-    if (taskId) {
-      console.log("[DEBUG] - dgraphId=" + dgraphId)
-      console.log("[DEBUG] - arrayId=" + arrayId)
-      console.log("[DEBUG] - taskId=" + taskId)
-      searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId + '/' + arrayId + '/' + taskId;
-      return fetch(searchUrl, {
-        headers: headers
-      }).then(res => {
-        let body = res.json();
-        return body.data || { };
-      })
-    }
-    else if (arrayId) {
-      console.log("[DEBUG] - dgraphId=" + dgraphId)
-      console.log("[DEBUG] - arrayId=" + arrayId)
-      searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId + '/' + arrayId;
-      return fetch(searchUrl, {
-        headers: headers
-      }).then(res => {
-        let body = res.json();
-        return body.data || { };
-      })
-    }
-    console.log("[DEBUG] - dgraphId=" + dgraphId)
-    searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId;
-    return fetch(searchUrl, {
-      headers: headers
-    }).then(res => {
-      let body = res.json();
-      return body.data || { };
-    })
+    return new Promise((resolve, reject) => {resolve([])});
+    // let headers = new Headers();
+    // let searchUrl = '';
+    // console.log("[DEBUG] In playImages()")
+    // if (taskId) {
+    //   console.log("[DEBUG] - dgraphId=" + dgraphId)
+    //   console.log("[DEBUG] - arrayId=" + arrayId)
+    //   console.log("[DEBUG] - taskId=" + taskId)
+    //   searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId + '/' + arrayId + '/' + taskId;
+    //   return fetch(searchUrl, {
+    //     headers: headers
+    //   }).then(res => {
+    //     let body = res.json();
+    //     return body.data || { };
+    //   })
+    // }
+    // else if (arrayId) {
+    //   console.log("[DEBUG] - dgraphId=" + dgraphId)
+    //   console.log("[DEBUG] - arrayId=" + arrayId)
+    //   searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId + '/' + arrayId;
+    //   return fetch(searchUrl, {
+    //     headers: headers
+    //   }).then(res => {
+    //     let body = res.json();
+    //     return body.data || { };
+    //   })
+    // }
+    // console.log("[DEBUG] - dgraphId=" + dgraphId)
+    // searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId;
+    // return fetch(searchUrl, {
+    //   headers: headers
+    // }).then(res => {
+    //   let body = res.json();
+    //   return body.data || { };
+    // })
   }
 }
 

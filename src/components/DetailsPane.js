@@ -68,12 +68,12 @@ export default function DetailsPane({
 
     let tmp = null;
     if (taskID) {
-      tmp = taskData[Number(graphID)][Number(arrayID)].filter((data) => data.tid === Number(taskID));
+      tmp = (taskData[Number(graphID)] && taskData[Number(graphID)][Number(arrayID)]) ? taskData[Number(graphID)][Number(arrayID)].filter((data) => data.tid === Number(taskID)) : [{}];
       setSelectedGraphData({});
       setSelectedArrayData({});
       setSelectedTaskData(tmp[0]);
     } else if (arrayID) {
-      tmp = arrayData[Number(graphID)].filter((data) => data.aid === Number(arrayID));
+      tmp = arrayData[Number(graphID)] ? arrayData[Number(graphID)].filter((data) => data.aid === Number(arrayID)) : [{}];
       setSelectedGraphData({});
       setSelectedArrayData(tmp[0]);
       setSelectedTaskData({});
