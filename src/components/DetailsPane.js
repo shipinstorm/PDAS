@@ -15,6 +15,9 @@ import '../assets/css/DetailsPane.scss';
 import { globalExternalIP } from "../store/actions/globalAction";
 
 export default function DetailsPane({
+  selectedGraphData,
+  selectedTaskData,
+  selectedArrayData,
   jobSelected
 }) {
   const dispatch = useDispatch();
@@ -24,9 +27,7 @@ export default function DetailsPane({
   const editVal4 = useRef(null);
   const editVal5 = useRef(null);
   const editVal6 = useRef(null);
-  const [selectedGraphData, setSelectedGraphData] = useState({});
-  const [selectedArrayData, setSelectedArrayData] = useState({});
-  const [selectedTaskData, setSelectedTaskData] = useState({});
+  
   const [poolData, setPoolData] = useState({});
   const [showErrorMsg, setShowErrorMsg] = useState(false);
   const [displayIdStr, setDisplayIdStr] = useState();
@@ -47,43 +48,9 @@ export default function DetailsPane({
   const [savingEdit, setSavingEdit] = useState({});
   const [savedEdit, setSavedEdit] = useState({});
   const [expandedObj, setExpandedObj] = useState({});
-  const graphData = useSelector((state) => state.global.graphData);
-  const arrayData = useSelector((state) => state.global.arrayData);
-  const taskData = useSelector((state) => state.global.taskData);
   const externalIP = useSelector((state) => state.global.externalIP);
   const codaHealth = useSelector((state) => state.global.codaHealth);
   const imagePaths = useSelector((state) => state.global.imagePaths);
-
-  useEffect(() => {
-    let jobID = null;
-    let graphID = null, arrayID = null, taskID = null;
-    if (jobSelected) {
-      jobID = jobSelected.toString().split('.');
-    }
-    if (jobID) {
-      graphID = jobID.length >= 1 ? jobID[0] : null;
-      arrayID = jobID.length >= 2 ? jobID[1] : null;
-      taskID = jobID.length >= 3 ? jobID[2] : null;
-    }
-
-    let tmp = null;
-    if (taskID) {
-      tmp = (taskData[Number(graphID)] && taskData[Number(graphID)][Number(arrayID)]) ? taskData[Number(graphID)][Number(arrayID)].filter((data) => data.tid === Number(taskID)) : [{}];
-      setSelectedGraphData({});
-      setSelectedArrayData({});
-      setSelectedTaskData(tmp[0]);
-    } else if (arrayID) {
-      tmp = arrayData[Number(graphID)] ? arrayData[Number(graphID)].filter((data) => data.aid === Number(arrayID)) : [{}];
-      setSelectedGraphData({});
-      setSelectedArrayData(tmp[0]);
-      setSelectedTaskData({});
-    } else {
-      tmp = graphData.filter((data) => data.did === Number(graphID));
-      setSelectedGraphData(tmp[0]);
-      setSelectedArrayData({});
-      setSelectedTaskData({});
-    }
-  }, [graphData, arrayData, taskData, jobSelected]);
 
   useEffect(() => {
     refreshPools();

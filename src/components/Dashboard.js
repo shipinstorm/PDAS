@@ -81,6 +81,9 @@ export default function Dashboard() {
 	const [initSearchQuery,] = useState(getInitSearchQuery());
 	const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
 	const [filterQueryFlag, setFilterQueryFlag] = useState([]);
+	const [selectedGraphData, setSelectedGraphData] = useState({});
+	const [selectedArrayData, setSelectedArrayData] = useState({});
+	const [selectedTaskData, setSelectedTaskData] = useState({});
 	/**
 	 * For DetailsPanel
 	 */
@@ -108,69 +111,69 @@ export default function Dashboard() {
 		 * This is for ElasticSearch
 		 * Comment out below section when you work with Mock Data
 		 */
-		// ElasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
-		//  	(result) => {
-		// 		let tmpGraphData = [];
-		// 		if (expandFlag) {
-		// 			tmpGraphData = graphData;
-		// 		}
-		// 		result.hits.hits.map(doc => tmpGraphData.push(doc._source));
-		// 		let tmpRowsExpanded = [];
-		// 		rowsExpandedJobID.map((exp) => {
-		// 			result.hits.hits.map((doc, index) => {
-		// 				if (doc._source.did == exp)
-		// 					tmpRowsExpanded.push(index);
-		// 			})
-		// 		})
-		// 		if (firstRun && searchParamsObject.selected) {
-		// 			tmpGraphData.map((data, index) => {
-		// 				if(data.did.toString() == searchParamsObject.selected.toString()) {
-		// 					dispatch(jobRowsSelected([index]));
-		// 				}
-		// 			})
-		// 		}
-		// 		setRowsExpandedIndex(tmpRowsExpanded);
-		// 		dispatch(globalGraphData(tmpGraphData));
-		// 		setJobListLoading(false);
-		// 	}
-		// )
+		ElasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
+		 	(result) => {
+				let tmpGraphData = [];
+				if (expandFlag) {
+					tmpGraphData = graphData;
+				}
+				result.hits.hits.map(doc => tmpGraphData.push(doc._source));
+				let tmpRowsExpanded = [];
+				rowsExpandedJobID.map((exp) => {
+					result.hits.hits.map((doc, index) => {
+						if (doc._source.did == exp)
+							tmpRowsExpanded.push(index);
+					})
+				})
+				if (firstRun && searchParamsObject.selected) {
+					tmpGraphData.map((data, index) => {
+						if(data.did.toString() == searchParamsObject.selected.toString()) {
+							dispatch(jobRowsSelected([index]));
+						}
+					})
+				}
+				setRowsExpandedIndex(tmpRowsExpanded);
+				dispatch(globalGraphData(tmpGraphData));
+				setJobListLoading(false);
+			}
+		)
 
 		/**
 		 * This is for Mock Data
 		 * Comment out below section when you work with ElasticSearch
 		 */
-		let icoda_username = [], title = [], status = [], after = [], dept = [], type = [], show = [];
-		newSearchQuery.map((query) => {
-			if (query.header === 'user') {
-				icoda_username.push(query.title)
-			} else if (query.header === 'title') {
-				title.push(query.title)
-			} else if (query.header === 'status') {
-				status.push(query.title)
-			} else if (query.header === 'dept') {
-				dept.push(query.title)
-			} else if (query.header === 'type') {
-				type.push(query.title)
-			} else if (query.header === 'show') {
-				show.push(query.title)
-			} else if (query.header === 'after') {
-				after.push(query.title)
-			}
-		})
+		// let icoda_username = [], title = [], status = [], after = [], dept = [], type = [], show = [];
+		// newSearchQuery.map((query) => {
+		// 	if (query.header === 'user') {
+		// 		icoda_username.push(query.title)
+		// 	} else if (query.header === 'title') {
+		// 		title.push(query.title)
+		// 	} else if (query.header === 'status') {
+		// 		status.push(query.title)
+		// 	} else if (query.header === 'dept') {
+		// 		dept.push(query.title)
+		// 	} else if (query.header === 'type') {
+		// 		type.push(query.title)
+		// 	} else if (query.header === 'show') {
+		// 		show.push(query.title)
+		// 	} else if (query.header === 'after') {
+		// 		after.push(query.title)
+		// 	}
+		// })
 
-		let tmpGraphData = dGraphData.hits.hits.filter(doc => {
-			return (!icoda_username.length || icoda_username.includes(doc._source.icoda_username)) &&
-				(!title.length || title.includes(doc._source.title)) &&
-				(!status.length || status.includes(doc._source._statusname));
-		});
-		// Query after
-		if (after.length === 1) {
-			tmpGraphData = tmpGraphData.filter(doc => {
-				return doc._source._submittime >= after[0];
-			})
-		}
-		dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
-		setJobListLoading(false);
+		// let tmpGraphData = dGraphData.hits.hits.filter(doc => {
+		// 	return (!icoda_username.length || icoda_username.includes(doc._source.icoda_username)) &&
+		// 		(!title.length || title.includes(doc._source.title)) &&
+		// 		(!status.length || status.includes(doc._source._statusname));
+		// });
+		// // Query after
+		// if (after.length === 1) {
+		// 	tmpGraphData = tmpGraphData.filter(doc => {
+		// 		return doc._source._submittime >= after[0];
+		// 	})
+		// }
+		// dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
+		// setJobListLoading(false);
 
 
 
@@ -180,6 +183,37 @@ export default function Dashboard() {
 	useEffect(() => {
 		navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + viewLog);
 	}, [jobSelected])
+
+	useEffect(() => {
+		let jobID = null;
+		let graphID = null, arrayID = null, taskID = null;
+		if (jobSelected) {
+			jobID = jobSelected.toString().split('.');
+		}
+		if (jobID) {
+			graphID = jobID.length >= 1 ? jobID[0] : null;
+			arrayID = jobID.length >= 2 ? jobID[1] : null;
+			taskID = jobID.length >= 3 ? jobID[2] : null;
+		}
+
+		let tmp = null;
+		if (taskID) {
+			tmp = (taskData[Number(graphID)] && taskData[Number(graphID)][Number(arrayID)]) ? taskData[Number(graphID)][Number(arrayID)].filter((data) => data.tid === Number(taskID)) : [{}];
+			setSelectedGraphData({});
+			setSelectedArrayData({});
+			setSelectedTaskData(tmp[0] ? tmp[0] : {});
+		} else if (arrayID) {
+			tmp = arrayData[Number(graphID)] ? arrayData[Number(graphID)].filter((data) => data.aid === Number(arrayID)) : [{}];
+			setSelectedGraphData({});
+			setSelectedArrayData(tmp[0] ? tmp[0] : {});
+			setSelectedTaskData({});
+		} else {
+			tmp = graphData.filter((data) => data.did === Number(graphID));
+			setSelectedGraphData(tmp[0] ? tmp[0] : {});
+			setSelectedArrayData({});
+			setSelectedTaskData({});
+		}
+	}, [graphData, arrayData, taskData, jobSelected]);
 
 	useEffect(() => {
 		async function foo() {
@@ -237,23 +271,23 @@ export default function Dashboard() {
 	}
 
 	const toggleJob = async (jobId) => {
-		// await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
+		await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
 		let newArrayData = arrayData;
-		// newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
-		newArrayData[jobId] = dArrayData.hits.hits.map(doc => doc._source);
+		newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
+		// newArrayData[jobId] = dArrayData.hits.hits.map(doc => doc._source);
 
 		let newTaskData = taskData;
 		newTaskData[jobId] = new Array();
 		await Promise.all(newArrayData[jobId].map(async (array) => {
-			// await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
-			// newTaskData[jobId][array.aid] = resultTask.hits.hits.map(doc => doc._source);
-			newTaskData[jobId][array.aid] = dTaskData.hits.hits.map(doc => doc._source);
-			// });
+			await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
+			newTaskData[jobId][array.aid] = resultTask.hits.hits.map(doc => doc._source);
+			// newTaskData[jobId][array.aid] = dTaskData.hits.hits.map(doc => doc._source);
+			});
 		}))
 		dispatch(globalArrayData(newArrayData));
 		dispatch(globalTaskData(newTaskData));
 		setJobListLoading(false);
-		// });
+		});
 	}
 
 	const rowsExpandedHandle = (expanded) => {
@@ -340,8 +374,11 @@ export default function Dashboard() {
 					jobSelected={jobSelected}
 					setJobSelected={setJobSelected}
 					setViewLog={setViewLog}
+					selectedGraphData={selectedGraphData}
+					selectedTaskData={selectedTaskData}
+					selectedArrayData={selectedArrayData}
 				/>
-				{viewDetails && <DetailsPane jobSelected={jobSelected} />}
+				{viewDetails && <DetailsPane selectedGraphData={selectedGraphData} selectedArrayData={selectedArrayData} selectedTaskData={selectedTaskData} jobSelected={jobSelected} />}
 				{viewLog && <LogPane jobSelected={jobSelected} viewDetails={viewDetails} />}
 			</div>
 		</div>

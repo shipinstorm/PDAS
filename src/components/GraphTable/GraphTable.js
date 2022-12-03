@@ -18,6 +18,7 @@ import { jobRowsSelected } from '../../store/actions/jobAction';
 
 import { submittedTime } from '../../utils/utils';
 
+import GraphStatus from '../GraphStatus/GraphStatus';
 import ArrayTableRow from './ArrayTableRow';
 
 function GraphTable(props) {
@@ -195,6 +196,24 @@ function GraphTable(props) {
     selectableRowsOnClick: true,
     rowsSelected: rowsSelected,
 
+    customRowRender: (data, dataIndex, rowIndex) => {
+      return (
+        <TableRow>
+          <TableCell>111</TableCell>
+          {[...Array(8)].map((value, index) => {
+            return (
+              <TableCell>
+                {index == 3 ?
+                <GraphStatus selectedGraphData={props.selectedGraphData} /> :
+                data[columnOrder[index]]
+                }
+              </TableCell>
+            )
+          })}
+        </TableRow>
+      );
+    },
+
     onRowExpansionChange: async (currentRowsExpanded, allRowsExpanded, rowsExpanded) => {
       await props.onToggleClick(graphData[currentRowsExpanded[0].index].did)
       props.setRowsExpanded(allRowsExpanded)
@@ -228,18 +247,6 @@ function GraphTable(props) {
       localStorage.setItem('columnOrder', newColumnOrder);
       setColumnOrder(newColumnOrder);
     },
-
-    // onTableChange: (action, tableState) => {
-    //   switch (action) {
-    //     case 'changePage': case 'changeRowsPerPage':
-    //       props.setCurrentPage(tableState.page);
-    //       props.setRowsPerPage(tableState.rowsPerPage);
-    //       props.setSearchQuery(props.autoCompleteValue, tableState.page * tableState.rowsPerPage, tableState.rowsPerPage * 2);
-    //       break;
-    //     default:
-    //       break;
-    //   }
-    // },
 
     onRowSelectionChange: (currentRowsSelected, allRowsSelected, rowsSelected) => {
       dispatch(jobRowsSelected(rowsSelected));
