@@ -27,13 +27,13 @@ import '../assets/css/App.css';
 export default function Dashboard() {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
-  const imagePaths = useSelector((state) => state.global.imagePaths);
+	const imagePaths = useSelector((state) => state.global.imagePaths);
 
 	/**
 	 * The useSearchParams hook is used to read and modify the query string in the URL for the current location.
 	 * Like React's own useState hook, useSearchParams returns an array of two values: the current location's search params and a function that may be used to update them.
 	 */
-	const [searchParams, ] = useSearchParams();
+	const [searchParams,] = useSearchParams();
 	let searchParamsObject = {
 		"query": searchParams.get('q'),
 		"selected": searchParams.get('sel'),
@@ -78,7 +78,7 @@ export default function Dashboard() {
 	const [rowsExpandedJobID, setRowsExpandedJobID] = useState(searchParamsObject.expanded ? JSON.parse("[" + searchParamsObject.expanded + "]") : []);
 	const [rowsExpandedIndex, setRowsExpandedIndex] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
-	const [initSearchQuery, ] = useState(getInitSearchQuery());
+	const [initSearchQuery,] = useState(getInitSearchQuery());
 	const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
 	const [filterQueryFlag, setFilterQueryFlag] = useState([]);
 	/**
@@ -86,7 +86,7 @@ export default function Dashboard() {
 	 */
 	const [jobSelected, setJobSelected] = useState(searchParamsObject.selected ? searchParamsObject.selected : '');
 
-	const searchQueryHandle = (newSearchQuery, expandFlag =false, firstRun =false) => {
+	const searchQueryHandle = (newSearchQuery, expandFlag = false, firstRun = false) => {
 		let from = 0;
 		let size = 50;
 
@@ -100,7 +100,7 @@ export default function Dashboard() {
 		});
 
 		const [urlSearchQuery, elasticSearchQuery, tmpFilterQueryFlag] = generateSearchQueries(newSearchQuery, filterQueryFlag);
-		
+
 		setSearchQuery(urlSearchQuery);
 		setFilterQueryFlag(tmpFilterQueryFlag);
 
@@ -191,19 +191,19 @@ export default function Dashboard() {
 				var yesterday = new Date();
 				yesterday.setDate(yesterday.getDate() - 1);
 				yesterday.setMinutes(yesterday.getMinutes() - yesterday.getTimezoneOffset());
-	
+
 				initSearchQuery.push({
 					header: 'after',
 					title: yesterday.toISOString().slice(0, 16),
 				});
-	
+
 				initSearchQuery.push({
 					header: 'user',
 					title: 'lean',
 				});
 			}
-	
-			await Promise.all(rowsExpandedJobID.map(async (row) => {await toggleJob(row);}));
+
+			await Promise.all(rowsExpandedJobID.map(async (row) => { await toggleJob(row); }));
 			setAutoCompleteValue(initSearchQuery);
 			searchQueryHandle(initSearchQuery, false, true);
 
@@ -212,7 +212,7 @@ export default function Dashboard() {
 				imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
 				dispatch(globalImagePaths(imagePaths));
 			} else if (jobID[1]) {
-				imagePaths[jobID[0]+'.'+jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
+				imagePaths[jobID[0] + '.' + jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
 				dispatch(globalImagePaths(imagePaths));
 			} else if (jobID[0]) {
 				imagePaths[jobID[0]] = ElasticSearchService.playImages(jobID[0]);
@@ -238,22 +238,22 @@ export default function Dashboard() {
 
 	const toggleJob = async (jobId) => {
 		// await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
-			let newArrayData = arrayData;
-		  // newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
-			newArrayData[jobId] = dArrayData.hits.hits.map(doc => doc._source);
+		let newArrayData = arrayData;
+		// newArrayData[jobId] = resultArray.hits.hits.map(doc => doc._source);
+		newArrayData[jobId] = dArrayData.hits.hits.map(doc => doc._source);
 
-			let newTaskData = taskData;
-			newTaskData[jobId] = new Array();
-			await Promise.all(newArrayData[jobId].map(async (array) => {
-				// await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
-					// newTaskData[jobId][array.aid] = resultTask.hits.hits.map(doc => doc._source);
-					newTaskData[jobId][array.aid] = dTaskData.hits.hits.map(doc => doc._source);
-				// });
-			}))
-			dispatch(globalArrayData(newArrayData));
-			dispatch(globalTaskData(newTaskData));
-			setJobListLoading(false);
-	  // });
+		let newTaskData = taskData;
+		newTaskData[jobId] = new Array();
+		await Promise.all(newArrayData[jobId].map(async (array) => {
+			// await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
+			// newTaskData[jobId][array.aid] = resultTask.hits.hits.map(doc => doc._source);
+			newTaskData[jobId][array.aid] = dTaskData.hits.hits.map(doc => doc._source);
+			// });
+		}))
+		dispatch(globalArrayData(newArrayData));
+		dispatch(globalTaskData(newTaskData));
+		setJobListLoading(false);
+		// });
 	}
 
 	const rowsExpandedHandle = (expanded) => {
@@ -332,16 +332,17 @@ export default function Dashboard() {
 					viewDetails={viewDetails}
 					viewLog={viewLog}
 					loading={jobListLoading}
-					onToggleClick={async (jobId) => {await toggleJob(jobId);}}
+					onToggleClick={async (jobId) => { await toggleJob(jobId); }}
 					rowsExpanded={rowsExpandedIndex}
 					setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
 					autoCompleteValue={autoCompleteValue}
 					setSearchQuery={searchQueryHandle}
 					jobSelected={jobSelected}
 					setJobSelected={setJobSelected}
+					setViewLog={setViewLog}
 				/>
 				{viewDetails && <DetailsPane jobSelected={jobSelected} />}
-				{viewLog && <LogPane viewDetails={viewDetails} />}
+				{viewLog && <LogPane jobSelected={jobSelected} viewDetails={viewDetails} />}
 			</div>
 		</div>
 	);

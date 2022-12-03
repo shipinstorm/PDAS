@@ -219,6 +219,7 @@ function GraphTable(props) {
           columnOrder={columnOrder}
           jobSelected={props.jobSelected}
           setJobSelected={props.setJobSelected}
+          setViewLog={props.setViewLog}
         />
       );
     },

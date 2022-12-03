@@ -14,7 +14,8 @@ export default function TaskTableRow({
   childArrayText,
   columnOrder,
   jobSelected,
-  setJobSelected
+  setJobSelected,
+  setViewLog
 }) {
   const dispatch = useDispatch();
   const imagePaths = useSelector((state) => state.global.imagePaths);
@@ -31,12 +32,12 @@ export default function TaskTableRow({
         { name: taskRow._exechost ? taskRow._exechost : '(' + taskRow._granted?.cpus + ')' },
         { name: '' },
         { name: '' + taskRow._memused + '/' + taskRow._granted?.memory },
-        { name: '' },
+        { name: 'View Log' },
       ]
       return (
         <TableRow
           key={childTaskText}
-          style={{cursor: 'pointer'}}
+          style={{ cursor: 'pointer' }}
           onClick={() => {
             /**
              * Remove select of graph data when task is selected
@@ -51,18 +52,20 @@ export default function TaskTableRow({
           <TableCell
             padding="checkbox"
             sx={isSelected ?
-            { background: '#383838 !important' } :
-            { background: '#282828 !important' }}
+              { background: '#383838 !important' } :
+              { background: '#282828 !important' }}
           />
           {[...Array(8)].map((value, index) => {
             return (
               <TableCell
                 key={index}
                 sx={isSelected ?
-                { background: '#383838 !important' } :
-                { background: '#282828 !important' }}
+                  { background: '#383838 !important' } :
+                  { background: '#282828 !important' }}
               >
-                {tmpArray2[columnOrder[index]].name}
+                {tmpArray2[columnOrder[index]].name === "View Log" ?
+                  <a onClick={() => setViewLog(true)}>{tmpArray2[columnOrder[index]].name}</a> :
+                  tmpArray2[columnOrder[index]].name}
               </TableCell>
             )
           })}
