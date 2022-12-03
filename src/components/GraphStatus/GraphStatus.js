@@ -13,7 +13,6 @@ import IconDone from '../../assets/images/icon-done.svg';
 export default function GraphStatus({
   selectedGraphData
 }) {
-  console.log(selectedGraphData);
   const [selected, setSelected] = useState();
   const [pending, setPending] = useState();
   const [isSpeculative, setIsSpeculative] = useState();
