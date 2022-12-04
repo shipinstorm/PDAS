@@ -15,7 +15,8 @@ export default function TaskTableRow({
   columnOrder,
   jobSelected,
   setJobSelected,
-  setViewLog
+  setViewLog,
+  updateLogPane
 }) {
   const dispatch = useDispatch();
   const imagePaths = useSelector((state) => state.global.imagePaths);
@@ -64,7 +65,10 @@ export default function TaskTableRow({
                   { background: '#282828 !important' }}
               >
                 {tmpArray2[columnOrder[index]].name === "View Log" ?
-                  <a onClick={() => setViewLog(true)} href="/">{tmpArray2[columnOrder[index]].name}</a> :
+                  <a onClick={() => {
+                    setViewLog(true);
+                    updateLogPane(true);
+                  }} href="/">{tmpArray2[columnOrder[index]].name}</a> :
                   tmpArray2[columnOrder[index]].name}
               </TableCell>
             )

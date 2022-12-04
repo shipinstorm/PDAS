@@ -89,7 +89,7 @@ function LogPane({
   }
 
   return (
-    <div>
+    <div id="error-log-wrapper">
       <div className={className}>
         Select a task to view log file
       </div>
@@ -118,7 +118,7 @@ function LogPane({
           <div>{logJSON}</div>
         </div>}
       </div>
-    </div >
+    </div>
   )
 }
 

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import React from "react";
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useSearchParams, useNavigate } from "react-router-dom"
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 import {
 	globalGraphData,
@@ -88,7 +89,52 @@ export default function Dashboard() {
 	 * For DetailsPanel
 	 */
 	const [jobSelected, setJobSelected] = useState(searchParamsObject.selected ? searchParamsObject.selected : '');
+	// For LogPane Resize
+	const sidebarRef = useRef(null);
+  const [isResizing, setIsResizing] = useState(false);
+  const [sidebarHeight, setSidebarHeight] = useState(268);
 
+	const startResizing = React.useCallback((mouseDownEvent) => {
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = React.useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = React.useCallback(
+    (mouseMoveEvent) => {
+      if (isResizing) {
+        setSidebarHeight(
+					sidebarRef.current.getBoundingClientRect().bottom -
+          mouseMoveEvent.clientY
+        );
+      }
+    },
+    [isResizing]
+  );
+
+	const updateLogPane = (flag) => {
+		if (!flag) {
+			if (sidebarHeight <= 8) {
+				setSidebarHeight(200);
+			}
+		} else {
+			if (sidebarHeight >= 8) {
+				setSidebarHeight(0);
+			}
+		}
+	}
+
+	React.useEffect(() => {
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [resize, stopResizing]);
+	
 	const searchQueryHandle = (newSearchQuery, expandFlag = false, firstRun = false) => {
 		let from = 0;
 		let size = 50;
@@ -268,6 +314,7 @@ export default function Dashboard() {
 	const toggleLog = () => {
 		navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + !viewLog);
 		setViewLog(!viewLog);
+		updateLogPane(!viewLog);
 	}
 
 	const toggleJob = async (jobId) => {
@@ -362,24 +409,39 @@ export default function Dashboard() {
 				<HeaderButtons toggleDetails={toggleDetails} toggleLog={toggleLog} />
 			</div>
 			<div className="main-content">
-				<GraphTable
-					viewDetails={viewDetails}
-					viewLog={viewLog}
-					loading={jobListLoading}
-					onToggleClick={async (jobId) => { await toggleJob(jobId); }}
-					rowsExpanded={rowsExpandedIndex}
-					setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
-					autoCompleteValue={autoCompleteValue}
-					setSearchQuery={searchQueryHandle}
-					jobSelected={jobSelected}
-					setJobSelected={setJobSelected}
-					setViewLog={setViewLog}
-					selectedGraphData={selectedGraphData}
-					selectedTaskData={selectedTaskData}
-					selectedArrayData={selectedArrayData}
-				/>
+				<div className="app-container">
+					<div className="app-frame" style={{ bottom: sidebarHeight }}>
+						<GraphTable
+							viewDetails={viewDetails}
+							viewLog={viewLog}
+							loading={jobListLoading}
+							onToggleClick={async (jobId) => { await toggleJob(jobId); }}
+							rowsExpanded={rowsExpandedIndex}
+							setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
+							autoCompleteValue={autoCompleteValue}
+							setSearchQuery={searchQueryHandle}
+							jobSelected={jobSelected}
+							setJobSelected={setJobSelected}
+							setViewLog={setViewLog}
+							updateLogPane={updateLogPane}
+							selectedGraphData={selectedGraphData}
+							selectedTaskData={selectedTaskData}
+							selectedArrayData={selectedArrayData}
+						/>
+					</div>
+					<div
+						ref={sidebarRef}
+						className="app-sidebar"
+						style={{ height: sidebarHeight }}
+						onMouseDown={(e) => e.preventDefault()}
+					>
+						<div className="app-sidebar-resizer" onMouseDown={startResizing} />
+						<div className="app-sidebar-content">
+							<LogPane jobSelected={jobSelected} viewDetails={viewDetails} />
+						</div>
+					</div>
+				</div>
 				{viewDetails && <DetailsPane selectedGraphData={selectedGraphData} selectedArrayData={selectedArrayData} selectedTaskData={selectedTaskData} jobSelected={jobSelected} />}
-				{viewLog && <LogPane jobSelected={jobSelected} viewDetails={viewDetails} />}
 			</div>
 		</div>
 	);

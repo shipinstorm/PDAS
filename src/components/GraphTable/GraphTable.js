@@ -284,6 +284,7 @@ function GraphTable(props) {
               jobSelected={props.jobSelected}
               setJobSelected={props.setJobSelected}
               setViewLog={props.setViewLog}
+              updateLogPane={props.updateLogPane}
             />
           }
           sx={{ cursor: 'pointer' }}
@@ -312,11 +313,23 @@ function GraphTable(props) {
             return (
               <TableCell
                 key={index}
-                sx={isSelected ?
-                  { background: '#383838 !important' } :
-                  { background: '#282828 !important' }}
+                sx={
+                  isSelected ?
+                  {
+                    background: '#383838 !important',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  } :
+                  {
+                    background: '#282828 !important',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }
+                }
               >
-                {index === 3 ?
+                {columnOrder[index] === 3 ?
                   <GraphStatus selectedGraphData={tmpGraphData} /> :
                   data[columnOrder[index]]
                 }

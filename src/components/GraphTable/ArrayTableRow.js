@@ -59,7 +59,8 @@ export default function ArrayTableRow({
   columnOrder,
   jobSelected,
   setJobSelected,
-  setViewLog
+  setViewLog,
+  updateLogPane
 }) {
   const dispatch = useDispatch();
   const imagePaths = useSelector((state) => state.global.imagePaths);
@@ -90,6 +91,7 @@ export default function ArrayTableRow({
               jobSelected={jobSelected}
               setJobSelected={setJobSelected}
               setViewLog={setViewLog}
+              updateLogPane={updateLogPane}
             />
           }
           sx={{ cursor: 'pointer' }}
