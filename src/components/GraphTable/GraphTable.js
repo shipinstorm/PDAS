@@ -64,7 +64,7 @@ const ExpandableTableRow = ({ children, expandComponent, updateRowsExpanded, isS
 
 function GraphTable(props) {
   const dispatch = useDispatch();
-  const [columnOrder, setColumnOrder] = useState(localStorage.columnOrder ? JSON.parse("[" + localStorage.columnOrder + "]") : [0, 1, 2, 3, 4, 5, 6, 7]);
+  const [columnOrder, setColumnOrder] = useState(localStorage.columnOrder ? JSON.parse("[" + localStorage.columnOrder + "]") : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
   const taskData = useSelector((state) => state.global.taskData);
@@ -177,8 +177,36 @@ function GraphTable(props) {
       label: 'Title'
     },
     {
-      name: 'status',
-      label: 'Status'
+      name: 'done',
+      label: 'Done'
+    },
+    {
+      name: 'running',
+      label: 'Running'
+    },
+    {
+      name: 'exited',
+      label: 'Exited'
+    },
+    {
+      name: 'sysKilled',
+      label: 'Sys Killed'
+    },
+    {
+      name: 'inQueue',
+      label: 'In Queue'
+    },
+    {
+      name: 'dependent',
+      label: 'Dependent'
+    },
+    {
+      name: 'paused',
+      label: 'Paused'
+    },
+    {
+      name: 'killed',
+      label: 'Killed'
     },
     {
       name: 'host',
@@ -244,7 +272,41 @@ function GraphTable(props) {
       const did = data[1];
       const [searchArrayData, searchTaskData] = [arrayData[did], taskData[did]];
       let tmp = graphData.filter((data) => data.did === did);
-			let tmpGraphData = tmp[0] ? tmp[0] : {};
+      let tmpGraphData = tmp[0] ? tmp[0] : {};
+
+      const statuses = [
+        { name: "done", mapping: "_done", percent: 0, statusClass: "done" },
+        { name: "running", mapping: "_running", percent: 0, statusClass: "running" },
+        { name: "exited", mapping: "_exit", percent: 0, statusClass: "exited" },
+        { name: "sys killed", mapping: "_syskill", percent: 0, statusClass: "sys-killed" },
+        { name: "in queue", mapping: "_queued", percent: 0, statusClass: "in-queue" },
+        { name: "dependent", mapping: "_depend", percent: 0, statusClass: "dependent" },
+        { name: "paused", mapping: "_suspended", percent: 0, statusClass: "paused" },
+        { name: "killed", mapping: "_userkill", percent: 0, statusClass: "killed" }
+      ];
+
+      const setStatusPercents = () => {
+        let total = 0;
+        for (var status of statuses) {
+          total += parseInt(tmpGraphData[status.mapping]);
+        }
+        if (total > 0) {
+          for (var status of statuses) {
+            status.percent = parseInt(tmpGraphData[status.mapping]) / total * 100;
+            if (status.percent > 0 && status.percent < 1) {
+              status.percent = 1;
+            } else {
+              status.percent = Math.round(status.percent)
+            }
+          }
+        }
+      }
+
+      setStatusPercents();
+
+      for (var i = 0; i < 8; i++) {
+        data[3 + i] = statuses[i].percent + "%";
+      }
 
       const updateRowsExpanded = async (isExpanded) => {
         let tmpCurrentRowsExpanded = [], tmpAllRowsExpanded = [];
@@ -309,30 +371,27 @@ function GraphTable(props) {
           updateRowsExpanded={updateRowsExpanded}
           isSelected={isSelected}
         >
-          {[...Array(8)].map((value, index) => {
+          {[...Array(15)].map((value, index) => {
             return (
               <TableCell
                 key={index}
                 sx={
                   isSelected ?
-                  {
-                    background: '#383838 !important',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  } :
-                  {
-                    background: '#282828 !important',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                  }
+                    {
+                      background: '#383838 !important',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    } :
+                    {
+                      background: '#282828 !important',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }
                 }
               >
-                {columnOrder[index] === 3 ?
-                  <GraphStatus selectedGraphData={tmpGraphData} /> :
-                  data[columnOrder[index]]
-                }
+                {data[columnOrder[index]]}
               </TableCell>
             )
           })}

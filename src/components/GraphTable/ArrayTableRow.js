@@ -78,6 +78,13 @@ export default function ArrayTableRow({
         { name: '' },
         { name: '' },
         { name: '' },
+        { name: '' },
+        { name: '' },
+        { name: '' },
+        { name: '' },
+        { name: '' },
+        { name: '' },
+        { name: '' }
       ]
       return (
         <ExpandableTableRow
@@ -107,7 +114,7 @@ export default function ArrayTableRow({
           }}
           isSelected={isSelected}
         >
-          {[...Array(8)].map((value, index) => {
+          {[...Array(15)].map((value, index) => {
             return (
               <TableCell
                 key={index}
