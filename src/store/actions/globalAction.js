@@ -4,7 +4,8 @@ import {
   GLOBAL_TASK_DATA,
   GLOBAL_EXTERNAL_IP,
   GLOBAL_CODA_HEALTH,
-  GLOBAL_IMAGE_PATHS
+  GLOBAL_IMAGE_PATHS,
+  GLOBAL_VIEW_LOG
 } from '../actionTypes';
 
 export const globalGraphData = (data) => (dispatch) => {
@@ -46,5 +47,12 @@ export const globalImagePaths = (data) => (dispatch) => {
   dispatch({
     type: GLOBAL_IMAGE_PATHS,
     payload: data
+  })
+}
+
+export const globalViewLog = (view) => (dispatch) => {
+  dispatch({
+    type: GLOBAL_VIEW_LOG,
+    payload: view
   })
 }

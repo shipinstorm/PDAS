@@ -5,21 +5,18 @@ import TableCell from '@mui/material/TableCell';
 
 import ElasticSearchService from '../../services/ElasticSearch.service';
 
-import { globalImagePaths } from '../../store/actions/globalAction';
-import { jobRowsSelected } from '../../store/actions/jobAction';
+import { globalImagePaths, globalViewLog } from '../../store/actions/globalAction';
+import { jobJobSelected, jobRowsSelected } from '../../store/actions/jobAction';
 
 export default function TaskTableRow({
   searchTaskData,
   arrayRow,
   childArrayText,
-  columnOrder,
-  jobSelected,
-  setJobSelected,
-  setViewLog,
-  updateLogPane
+  columnOrder
 }) {
   const dispatch = useDispatch();
   const imagePaths = useSelector((state) => state.global.imagePaths);
+  const jobSelected = useSelector((state) => state.job.jobSelected);
 
   return (
     searchTaskData[arrayRow.aid].map((taskRow) => {
@@ -47,11 +44,9 @@ export default function TaskTableRow({
           key={childTaskText}
           style={{ cursor: 'pointer' }}
           onClick={() => {
-            /**
-             * Remove select of graph data when task is selected
-             */
+            // Remove select of graph data when task is selected
             dispatch(jobRowsSelected([]));
-            setJobSelected(childTaskText);
+            dispatch(jobJobSelected(childTaskText));
             let jobID = childTaskText.toString().split('.');
             imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
             dispatch(globalImagePaths(imagePaths));
@@ -72,10 +67,14 @@ export default function TaskTableRow({
                   { background: '#282828 !important' }}
               >
                 {tmpArray2[columnOrder[index]].name === "View Log" ?
-                  <a onClick={() => {
-                    setViewLog(true);
-                    updateLogPane(true);
-                  }} href="/">{tmpArray2[columnOrder[index]].name}</a> :
+                  <p
+                    onClick={() => {
+                      dispatch(globalViewLog(true));
+                    }}
+                    className="btn btn-link btn-xs"
+                  >
+                    {tmpArray2[columnOrder[index]].name}
+                  </p> :
                   tmpArray2[columnOrder[index]].name}
               </TableCell>
             )

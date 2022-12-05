@@ -1,3 +1,5 @@
+import { logPaneData } from "./logPaneData";
+
 export const baseUrl = 'http://coda-rest.dyn.fa.disney.com/';
 export const nfsBaseURL = 'http://coda-rest-nfs.dyn.fa.disney.com/';
 export const elasticsearchURL = 'https://wdas-elastic.fas.fa.disney.com:9200/coda_6';
@@ -62,7 +64,7 @@ class ElasticSearchService {
 
   static getLogHtml(dgraphId, arrayId, taskId) {
     let searchUrl = nfsBaseURL + 'logJSON/' + dgraphId + '/' + arrayId + '/' + taskId + '/' + 1024000;
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl).then(res => res.json()).catch(() => logPaneData);
   }
 
   static networkCheck() {

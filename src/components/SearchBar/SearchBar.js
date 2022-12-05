@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useSelector } from "react-redux";
 
 import { Autocomplete, TextField } from "@mui/material";
 import InputAdornment from '@mui/material/InputAdornment';
@@ -7,7 +8,6 @@ import Filter from './Filter.js';
 import Tag from './Tag';
 
 function SearchBar({
-  graphData,
   autoCompleteValue,
   setAutoCompleteValue,
   setSearchQuery,
@@ -15,6 +15,51 @@ function SearchBar({
 }) {
   const elementRef = useRef();
   const isFirstRun = useRef(true);
+
+  const graphData = useSelector((state) => state.global.graphData);
+
+  const [searchGraphData, setSearchGraphData] = useState();
+
+  const convertToSearchGraphData = (graphData) => {
+		let data = [], uniqueChars, tmp;
+		tmp = graphData.map((d) => {
+			if (d) {
+				return d.icoda_username;
+			}
+		})
+		uniqueChars = [...new Set(tmp)];
+		uniqueChars.map((d) => {
+			data.push({
+				title: '' + d,
+				header: 'user'
+			})
+		})
+		tmp = graphData.map((d) => {
+			return d.title;
+		})
+		uniqueChars = [...new Set(tmp)];
+		uniqueChars.map((d) => {
+			data.push({
+				title: '' + d,
+				header: 'title'
+			})
+		})
+		tmp = graphData.map((d) => {
+			return d._statusname;
+		})
+		uniqueChars = [...new Set(tmp)];
+		uniqueChars.map((d) => {
+			data.push({
+				title: '' + d,
+				header: 'status'
+			})
+		})
+		return data;
+	}
+
+  useEffect(() => {
+    setSearchGraphData(convertToSearchGraphData(graphData));
+  }, [graphData])
 
   /**
    * Update searchQuery and redraw table
@@ -46,7 +91,7 @@ function SearchBar({
         freeSolo
         multiple
         filterSelectedOptions
-        options={graphData}
+        options={searchGraphData}
         className="autocomplete-searchbar"
         getOptionLabel={(option) => option.title}
         groupBy={option => option.header}

@@ -4,7 +4,8 @@ import {
   GLOBAL_TASK_DATA,
   GLOBAL_EXTERNAL_IP,
   GLOBAL_CODA_HEALTH,
-  GLOBAL_IMAGE_PATHS
+  GLOBAL_IMAGE_PATHS,
+  GLOBAL_VIEW_LOG
 } from '../actionTypes';
 
 const initialState = {
@@ -29,7 +30,8 @@ const initialState = {
       "status": "green"
     }
   },
-  imagePaths: {}
+  imagePaths: {},
+  viewLog: false
 };
 
 export default function foo(state = initialState, action) {
@@ -63,6 +65,11 @@ export default function foo(state = initialState, action) {
       return {
         ...state,
         imagePaths: action.payload
+      }
+    case GLOBAL_VIEW_LOG:
+      return {
+        ...state,
+        viewLog: action.payload
       }
     default: 
       return state;

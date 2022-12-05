@@ -11,7 +11,7 @@ import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { globalImagePaths } from "../../store/actions/globalAction";
-import { jobRowsSelected } from '../../store/actions/jobAction';
+import { jobJobSelected, jobRowsSelected } from '../../store/actions/jobAction';
 
 import TaskTableRow from "./TaskTableRow";
 
@@ -56,14 +56,11 @@ export default function ArrayTableRow({
   searchArrayData,
   searchTaskData,
   did,
-  columnOrder,
-  jobSelected,
-  setJobSelected,
-  setViewLog,
-  updateLogPane
+  columnOrder
 }) {
   const dispatch = useDispatch();
   const imagePaths = useSelector((state) => state.global.imagePaths);
+  const jobSelected = useSelector((state) => state.job.jobSelected);
 
   return (
     searchArrayData.map((arrayRow)=> {
@@ -95,19 +92,13 @@ export default function ArrayTableRow({
               arrayRow={arrayRow}
               childArrayText={childArrayText}
               columnOrder={columnOrder}
-              jobSelected={jobSelected}
-              setJobSelected={setJobSelected}
-              setViewLog={setViewLog}
-              updateLogPane={updateLogPane}
             />
           }
           sx={{ cursor: 'pointer' }}
           onClick={() => {
-            /**
-             * Remove select of graph data when array is selected
-             */
+            // Remove select of graph data when array is selected
             dispatch(jobRowsSelected([]));
-            setJobSelected(childArrayText);
+            dispatch(jobJobSelected(childArrayText));
             let jobID = childArrayText.toString().split('.');
             imagePaths[jobID[0]+'.'+jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
             dispatch(globalImagePaths(imagePaths));

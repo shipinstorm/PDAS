@@ -1,59 +1,40 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import ElasticSearchService from "../services/ElasticSearch.service";
+
+import ElasticSearchService from "../../services/ElasticSearch.service";
 
 function LogPane({
-  jobSelected, viewDetails
 }) {
-  let className = "log-pane";
-  className += viewDetails ? "" : " full-width";
+  const selectedTaskData = useSelector((state) => state.job.taskSelected);
 
   const [count, setCount] = useState(0);
   const [logJSON, setLogJSON] = useState();
-  const [selectedTaskData, setSelectedTaskData] = useState({});
   const [hasError, setHasError] = useState(false);
   const [errorStepOffset, setErrorStepOffset] = useState('');
   const shared_error_step_offset = useSelector((state) => state.global.shared_error_step_offset);
-  const taskData = useSelector((state) => state.global.taskData);
+
 
   useEffect(() => {
-    let jobID = null;
-    let graphID = null, arrayID = null, taskID = null;
-    if (jobSelected) {
-      jobID = jobSelected.toString().split('.');
+    if (Object.keys(selectedTaskData).length !== 0) {
+      setErrorStepOffset(shared_error_step_offset);
+      getLogHtml(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid);
     }
-    if (jobID) {
-      graphID = jobID.length >= 1 ? jobID[0] : null;
-      arrayID = jobID.length >= 2 ? jobID[1] : null;
-      taskID = jobID.length >= 3 ? jobID[2] : null;
-    }
-
-    let tmp = null;
-    if (taskID) {
-      tmp = (taskData[Number(graphID)] && taskData[Number(graphID)][Number(arrayID)]) ? taskData[Number(graphID)][Number(arrayID)].filter((data) => data.tid === Number(taskID)) : [{}];
-      setSelectedTaskData(tmp[0]);
-    } else {
-      setSelectedTaskData({});
-    }
-  }, [taskData, jobSelected]);
-
-  useEffect(() => {
-    setErrorStepOffset(shared_error_step_offset);
-    getLogHtml(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid);
   }, [selectedTaskData]);
 
   const getLogHtml = (dgraphId, arrayId, taskId) => {
     ElasticSearchService.getLogHtml(dgraphId, arrayId, taskId)
       .then((logJSON) => {
+        console.log(logJSON);
         // If anything is selected, stop automatic reload
         if (!window.getSelection().toString()) {
           this.logJSON = this.sanitizer.bypassSecurityTrustHtml(logJSON.replace(/<style.*?>[\S\s]*<\/style>/g, ''));
         }
         setHasError(false);
       })
-      .catch(() => {
-        setLogJSON("The log file has not been created yet.  Please check back later.");
-        setHasError(true);
+      .catch((logJSON) => {
+        // setLogJSON("The log file has not been created yet.  Please check back later.");
+        // setHasError(true);
+        console.log(logJSON);
       }
       );
   }
@@ -90,12 +71,12 @@ function LogPane({
 
   return (
     <div id="error-log-wrapper">
-      <div className={className}>
+      {Object.keys(selectedTaskData).length === 0 && <div className="log-pane">
         Select a task to view log file
-      </div>
+      </div>}
 
-      <div className="error-log">
-        {logJSON && <div className="loading-div"> Loading error log for {selectedTaskData.did}.{selectedTaskData.aid}.{selectedTaskData.tid}...
+      {Object.keys(selectedTaskData).length !== 0 && <div className="error-log">
+        {!logJSON && <div className="loading-div"> Loading error log for {selectedTaskData.did}.{selectedTaskData.aid}.{selectedTaskData.tid}...
           <br />
           <br />
           <img src="images/spinner_dark.gif" />
@@ -117,7 +98,7 @@ function LogPane({
           </div>
           <div>{logJSON}</div>
         </div>}
-      </div>
+      </div>}
     </div>
   )
 }

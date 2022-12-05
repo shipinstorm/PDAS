@@ -17,11 +17,11 @@ import { CacheProvider } from "@emotion/react";
 import ElasticSearchService from '../../services/ElasticSearch.service';
 
 import { globalImagePaths } from '../../store/actions/globalAction';
-import { jobRowsSelected } from '../../store/actions/jobAction';
+import { jobJobSelected, jobRowsSelected } from '../../store/actions/jobAction';
 
 import { submittedTime } from '../../utils/utils';
 
-import GraphStatus from '../GraphStatus/GraphStatus';
+import GraphStatus from './GraphStatus/GraphStatus';
 import ArrayTableRow from './ArrayTableRow';
 
 const ExpandableTableRow = ({ children, expandComponent, updateRowsExpanded, isSelected, ...otherProps }) => {
@@ -64,7 +64,11 @@ const ExpandableTableRow = ({ children, expandComponent, updateRowsExpanded, isS
 
 function GraphTable(props) {
   const dispatch = useDispatch();
-  const [columnOrder, setColumnOrder] = useState(localStorage.columnOrder ? JSON.parse("[" + localStorage.columnOrder + "]") : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
+  const [columnOrder, setColumnOrder] = useState(
+    localStorage.columnOrder ?
+    JSON.parse("[" + localStorage.columnOrder + "]") :
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+  );
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
   const taskData = useSelector((state) => state.global.taskData);
@@ -72,10 +76,6 @@ function GraphTable(props) {
   const rowsSelected = useSelector((state) => state.job.rowsSelected);
   const [currentRowsExpanded, setCurrentRowsExpanded] = useState([]);
   const [allRowsExpanded, setAllRowsExpanded] = useState([]);
-
-  let className = "job-list";
-  className += props.viewDetails ? "" : " full-width";
-  className += props.viewLog ? "" : " full-height";
 
   const muiCache = createCache({
     "key": "mui",
@@ -260,9 +260,7 @@ function GraphTable(props) {
     pagination: false,
     rowsExpanded: props.rowsExpanded,
     columnOrder: columnOrder,
-    /**
-     * Row select for DetailsPane
-     */
+    // Row select for DetailsPane
     selectableRows: 'single',
     selectableRowsOnClick: true,
     rowsSelected: rowsSelected,
@@ -343,10 +341,6 @@ function GraphTable(props) {
               searchTaskData={searchTaskData}
               did={did}
               columnOrder={columnOrder}
-              jobSelected={props.jobSelected}
-              setJobSelected={props.setJobSelected}
-              setViewLog={props.setViewLog}
-              updateLogPane={props.updateLogPane}
             />
           }
           sx={{ cursor: 'pointer' }}
@@ -357,7 +351,7 @@ function GraphTable(props) {
                * Select current row
                * jobSelected: current row's id
                */
-              props.setJobSelected(did);
+              dispatch(jobJobSelected(did));
               imagePaths[did] = ElasticSearchService.playImages(did);
               dispatch(globalImagePaths(imagePaths));
             } else {
@@ -365,7 +359,7 @@ function GraphTable(props) {
                * Deselect current row
                * jobSelected: none
                */
-              props.setJobSelected('');
+               dispatch(jobJobSelected(''));
             }
           }}
           updateRowsExpanded={updateRowsExpanded}
@@ -408,7 +402,7 @@ function GraphTable(props) {
   if (props.loading) {
     //TODO: make Loading div a loading spinner instead
     return (
-      <div className={className}>
+      <div className="job-list">
         <CacheProvider value={muiCache}>
           <ThemeProvider theme={getMuiTheme()}>
             <MUIDataTable
@@ -425,7 +419,7 @@ function GraphTable(props) {
     )
   } else {
     return (
-      <div className={className}>
+      <div className="job-list">
         <CacheProvider value={muiCache}>
           <ThemeProvider theme={getMuiTheme()}>
             <MUIDataTable

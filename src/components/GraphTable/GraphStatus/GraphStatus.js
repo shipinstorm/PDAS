@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import StatusBar from "./StatusBar";
 import { DGRAPH_STATUS_CODES } from "./StatusCodes";
 
-import IconKilled from '../../assets/images/icon-killed.svg';
-import IconExited from '../../assets/images/icon-exited.svg';
-import IconRun from '../../assets/images/icon-run.svg';
-import IconDependent from '../../assets/images/icon-dependent.svg';
-import IconQueued from '../../assets/images/icon-queued.svg';
-import IconDone from '../../assets/images/icon-done.svg';
+import IconKilled from '../../../assets/images/icon-killed.svg';
+import IconExited from '../../../assets/images/icon-exited.svg';
+import IconRun from '../../../assets/images/icon-run.svg';
+import IconDependent from '../../../assets/images/icon-dependent.svg';
+import IconQueued from '../../../assets/images/icon-queued.svg';
+import IconDone from '../../../assets/images/icon-done.svg';
 
 export default function GraphStatus({
   selectedGraphData
