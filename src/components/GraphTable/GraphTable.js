@@ -7,6 +7,7 @@ import MUIDataTable from 'mui-datatables';
 import IconButton from '@material-ui/core/IconButton';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
+
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -21,7 +22,6 @@ import { jobJobSelected, jobRowsSelected } from '../../store/actions/jobAction';
 
 import { submittedTime } from '../../utils/utils';
 
-import GraphStatus from './GraphStatus/GraphStatus';
 import ArrayTableRow from './ArrayTableRow';
 
 const ExpandableTableRow = ({ children, expandComponent, updateRowsExpanded, isSelected, ...otherProps }) => {
@@ -64,16 +64,19 @@ const ExpandableTableRow = ({ children, expandComponent, updateRowsExpanded, isS
 
 function GraphTable(props) {
   const dispatch = useDispatch();
-  const [columnOrder, setColumnOrder] = useState(
-    localStorage.columnOrder ?
-    JSON.parse("[" + localStorage.columnOrder + "]") :
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
-  );
+  
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
   const taskData = useSelector((state) => state.global.taskData);
   const imagePaths = useSelector((state) => state.global.imagePaths);
   const rowsSelected = useSelector((state) => state.job.rowsSelected);
+  const jobSelected = useSelector((state) => state.job.jobSelected);
+
+  const [columnOrder, setColumnOrder] = useState(
+    localStorage.columnOrder ?
+      JSON.parse("[" + localStorage.columnOrder + "]") :
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+  );
   const [currentRowsExpanded, setCurrentRowsExpanded] = useState([]);
   const [allRowsExpanded, setAllRowsExpanded] = useState([]);
 
@@ -266,8 +269,8 @@ function GraphTable(props) {
     rowsSelected: rowsSelected,
 
     customRowRender: (data, dataIndex, rowIndex) => {
-      const isSelected = false;
       const did = data[1];
+      const isSelected = (jobSelected === did);
       const [searchArrayData, searchTaskData] = [arrayData[did], taskData[did]];
       let tmp = graphData.filter((data) => data.did === did);
       let tmpGraphData = tmp[0] ? tmp[0] : {};
@@ -346,21 +349,13 @@ function GraphTable(props) {
           sx={{ cursor: 'pointer' }}
           onClick={() => {
             dispatch(jobRowsSelected([rowIndex]));
-            if (rowsSelected.length) {
-              /**
-               * Select current row
-               * jobSelected: current row's id
-               */
-              dispatch(jobJobSelected(did));
-              imagePaths[did] = ElasticSearchService.playImages(did);
-              dispatch(globalImagePaths(imagePaths));
-            } else {
-              /**
-               * Deselect current row
-               * jobSelected: none
-               */
-               dispatch(jobJobSelected(''));
-            }
+            /**
+             * Select current row
+             * jobSelected: current row's id
+             */
+            dispatch(jobJobSelected(did));
+            imagePaths[did] = ElasticSearchService.playImages(did);
+            dispatch(globalImagePaths(imagePaths));
           }}
           updateRowsExpanded={updateRowsExpanded}
           isSelected={isSelected}
