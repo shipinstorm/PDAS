@@ -23,10 +23,9 @@ import { jobJobSelected, jobRowsSelected } from '../../store/actions/jobAction';
 import { submittedTime } from '../../utils/utils';
 
 import ArrayTableRow from './ArrayTableRow';
+import { useEffect } from 'react';
 
-const ExpandableTableRow = ({ children, expandComponent, updateRowsExpanded, isSelected, ...otherProps }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
+const ExpandableTableRow = ({ children, expandComponent, updateRowsExpanded, isSelected, isExpanded, ...otherProps }) => {
   return (
     <>
       <TableRow {...otherProps}>
@@ -48,7 +47,6 @@ const ExpandableTableRow = ({ children, expandComponent, updateRowsExpanded, isS
           <IconButton
             onClick={(event) => {
               event.preventDefault();
-              setIsExpanded(!isExpanded);
               updateRowsExpanded(!isExpanded);
             }}
           >
@@ -79,6 +77,21 @@ function GraphTable(props) {
   );
   const [currentRowsExpanded, setCurrentRowsExpanded] = useState([]);
   const [allRowsExpanded, setAllRowsExpanded] = useState([]);
+
+  useEffect(() => {
+    let tmpAllRowsExpanded = [];
+		props.rowsExpanded.map((exp) => {
+			graphData.map((graph, index) => {
+				if (graph.did === exp) {
+					tmpAllRowsExpanded = [...tmpAllRowsExpanded, {
+            index: index,
+            dataIndex: index
+          }];
+				}
+			})
+		})
+    setAllRowsExpanded(tmpAllRowsExpanded);
+  }, [graphData]);
 
   const muiCache = createCache({
     "key": "mui",
@@ -261,7 +274,6 @@ function GraphTable(props) {
     expandableRowsHeader: false,
     expandableRowsOnClick: false,
     pagination: false,
-    rowsExpanded: props.rowsExpanded,
     columnOrder: columnOrder,
     // Row select for DetailsPane
     selectableRows: 'single',
@@ -270,7 +282,8 @@ function GraphTable(props) {
 
     customRowRender: (data, dataIndex, rowIndex) => {
       const did = data[1];
-      const isSelected = (jobSelected === did);
+      const isSelected = (jobSelected == did);
+      const isExpanded = props.rowsExpanded.includes(did);
       const [searchArrayData, searchTaskData] = [arrayData[did], taskData[did]];
       let tmp = graphData.filter((data) => data.did === did);
       let tmpGraphData = tmp[0] ? tmp[0] : {};
@@ -327,9 +340,10 @@ function GraphTable(props) {
             return row.index !== rowIndex || row.dataIndex !== dataIndex;
           });
         }
+        console.log(allRowsExpanded);
         setCurrentRowsExpanded(tmpCurrentRowsExpanded);
         setAllRowsExpanded(tmpAllRowsExpanded);
-        await props.onToggleClick(graphData[tmpCurrentRowsExpanded[0].index].did)
+        await props.onToggleClick(graphData[rowIndex].did)
         props.setRowsExpanded(tmpAllRowsExpanded)
       }
 
@@ -359,6 +373,7 @@ function GraphTable(props) {
           }}
           updateRowsExpanded={updateRowsExpanded}
           isSelected={isSelected}
+          isExpanded={isExpanded}
         >
           {[...Array(15)].map((value, index) => {
             return (

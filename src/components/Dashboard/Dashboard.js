@@ -80,15 +80,15 @@ export default function Dashboard() {
 	// For LogPane Resize
 	const [isLogPaneResizing, setIsLogPaneResizing] = useState(false);
 	const [logPaneHeight, setLogPaneHeight] = useState(searchParamsObject.log === 'true' ? 268 : 6);
+	const viewLog = useSelector((state) => state.global.viewLog);
 
 	const graphData = useSelector((state) => state.global.graphData);
 	const arrayData = useSelector((state) => state.global.arrayData);
 	const taskData = useSelector((state) => state.global.taskData);
-	const viewLog = useSelector((state) => state.global.viewLog);
+	
 	const jobSelected = useSelector((state) => state.job.jobSelected);
 	const [jobListLoading, setJobListLoading] = useState(true);
 	const [rowsExpandedJobID, setRowsExpandedJobID] = useState(searchParamsObject.expanded ? JSON.parse("[" + searchParamsObject.expanded + "]") : []);
-	const [rowsExpandedIndex, setRowsExpandedIndex] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [initSearchQuery,] = useState(getInitSearchQuery());
 	const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
@@ -96,6 +96,7 @@ export default function Dashboard() {
 
 	useEffect(() => {
 		dispatch(jobJobSelected(searchParamsObject.selected ? searchParamsObject.selected : ''));
+		console.log(searchParamsObject.log === 'true' ? true : false);
 		dispatch(globalViewLog(searchParamsObject.log === 'true' ? true : false));
 	}, []);
 
@@ -115,10 +116,8 @@ export default function Dashboard() {
 					mouseMoveEvent.clientY
 				);
 				if (logPaneRef.current.getBoundingClientRect().bottom - mouseMoveEvent.clientY > 8 && !viewLog) {
-					navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + true);
 					dispatch(globalViewLog(true));
 				} else if (logPaneRef.current.getBoundingClientRect().bottom - mouseMoveEvent.clientY <= 8 && viewLog) {
-					navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + false);
 					dispatch(globalViewLog(false));
 				}
 			}
@@ -127,12 +126,15 @@ export default function Dashboard() {
 	);
 		
 	useEffect(() => {
+		console.log(viewLog, logPaneHeight);
 		if (viewLog && logPaneHeight <= 8) {
+			console.log(111);
 			setLogPaneHeight(200);
 		} else if (!viewLog && logPaneHeight > 8) {
+			console.log(222);
 			setLogPaneHeight(0);
 		;}
-	}, [viewLog]);
+	}, [viewLog, logPaneHeight]);
 
 	React.useEffect(() => {
 		window.addEventListener("mousemove", resize);
@@ -172,13 +174,6 @@ export default function Dashboard() {
 		// 			tmpGraphData = graphData;
 		// 		}
 		// 		result.hits.hits.map(doc => tmpGraphData.push(doc._source));
-		// 		let tmpRowsExpanded = [];
-		// 		rowsExpandedJobID.map((exp) => {
-		// 			result.hits.hits.map((doc, index) => {
-		// 				if (doc._source.did == exp)
-		// 					tmpRowsExpanded.push(index);
-		// 			})
-		// 		})
 		// 		if (firstRun && searchParamsObject.selected) {
 		// 			tmpGraphData.map((data, index) => {
 		// 				if(data.did.toString() == searchParamsObject.selected.toString()) {
@@ -186,7 +181,6 @@ export default function Dashboard() {
 		// 				}
 		// 			})
 		// 		}
-		// 		setRowsExpandedIndex(tmpRowsExpanded);
 		// 		dispatch(globalGraphData(tmpGraphData));
 		// 		setJobListLoading(false);
 		// 	}
@@ -228,15 +222,11 @@ export default function Dashboard() {
 		}
 		dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
 		setJobListLoading(false);
-
-
-
-		navigate('/search?q=' + urlSearchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + viewLog);
 	}
 
 	useEffect(() => {
 		navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + viewLog);
-	}, [jobSelected])
+	}, [navigate, searchQuery, jobSelected, rowsExpandedJobID, viewDetails, viewLog]);
 
 	useEffect(() => {
 		let jobID = null;
@@ -267,7 +257,7 @@ export default function Dashboard() {
 			dispatch(jobArraySelected({}));
 			dispatch(jobTaskSelected({}));
 		}
-	}, [graphData, arrayData, taskData, jobSelected]);
+	}, [dispatch, graphData, arrayData, taskData, jobSelected]);
 
 	useEffect(() => {
 		async function foo() {
@@ -315,12 +305,10 @@ export default function Dashboard() {
 	}, []);
 
 	const toggleDetails = () => {
-		navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + !viewDetails + '&log=' + viewLog);
 		setViewDetails(!viewDetails);
 	}
 
 	const toggleLog = () => {
-		navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + !viewLog);
 		dispatch(globalViewLog(!viewLog));
 	}
 
@@ -348,15 +336,6 @@ export default function Dashboard() {
 		const newExpanded = expanded.map((exp) => {
 			return graphData[exp.dataIndex].did;
 		})
-		let tmpRowsExpanded = [];
-		newExpanded.map((exp) => {
-			graphData.map((graph, index) => {
-				if (graph.did === exp) {
-					tmpRowsExpanded.push(index);
-				}
-			})
-		})
-		setRowsExpandedIndex(tmpRowsExpanded);
 		setRowsExpandedJobID(newExpanded);
 	}
 	
@@ -381,7 +360,7 @@ export default function Dashboard() {
 							viewDetails={viewDetails}
 							loading={jobListLoading}
 							onToggleClick={async (jobId) => { await toggleJob(jobId); }}
-							rowsExpanded={rowsExpandedIndex}
+							rowsExpanded={rowsExpandedJobID}
 							setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
 							autoCompleteValue={autoCompleteValue}
 							setSearchQuery={searchQueryHandle}

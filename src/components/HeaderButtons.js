@@ -18,6 +18,7 @@ function LinkButton(props) {
 function Button(props) {
   return (
     <button
+      id={props.id}
       onClick={props.onClick}
       style={{
         display: 'flex',
@@ -38,7 +39,7 @@ function HeaderButtons(props) {
       <LinkButton href="https://coda.disneyanimation.com/api/noauth/status" icon="stacked_bar_chart" />
       <LinkButton href="https://techweb.disneyanimation.com/docs/DOC-33061" icon="question_mark" />
       <Button icon="vertical_split" text="Details" onClick={props.toggleDetails} />
-      <Button icon="horizontal_split" text="Log" onClick={props.toggleLog} />
+      <Button icon="horizontal_split" text="Log" id="logPaneButton" onClick={props.toggleLog} />
     </div>
   )
 }
