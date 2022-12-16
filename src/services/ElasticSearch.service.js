@@ -1,7 +1,7 @@
 import { logPaneData } from "./logPaneData";
 
 export const baseUrl = 'http://coda-rest.dyn.fa.disney.com/';
-export const nfsBaseURL = 'http://coda-rest-nfs.dyn.fa.disney.com/';
+export const nfsBaseURL = 'http://coda-rest-nfs-dev.dyn.fa.disney.com/';
 export const elasticsearchURL = 'https://wdas-elastic.fas.fa.disney.com:9200/coda_6';
 
 class ElasticSearchService {

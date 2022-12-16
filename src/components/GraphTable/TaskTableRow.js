@@ -31,9 +31,6 @@ export default function TaskTableRow({
         { name: '' },
         { name: '' },
         { name: '' },
-        { name: '' },
-        { name: '' },
-        { name: '' },
         { name: taskRow._exechost ? taskRow._exechost : '(' + taskRow._granted?.cpus + ')' },
         { name: '' },
         { name: '' + taskRow._memused + '/' + taskRow._granted?.memory },
@@ -58,7 +55,7 @@ export default function TaskTableRow({
               { background: '#383838 !important' } :
               { background: '#282828 !important' }}
           />
-          {[...Array(15)].map((value, index) => {
+          {[...Array(12)].map((value, index) => {
             return (
               <TableCell
                 key={index}

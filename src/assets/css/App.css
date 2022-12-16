@@ -20,7 +20,21 @@ body {
   min-width: 675px;
   display: flex;
 }
-
+.text-done {
+  color: #B4B4B4;
+}
+.text-running {
+  color: #9ACA75;
+}
+.text-queued {
+  color: #78C6AC; 
+}
+.text-dependent {
+  color: #367587;
+}
+.text-exit {
+  color: #EC5750;
+}
 .job-list {
   position: absolute;
   top: 0;

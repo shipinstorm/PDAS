@@ -142,3 +142,26 @@ export const generateSearchQueries = (newSearchQuery, filterQueryFlag) => {
 
   return [urlSearchQuery, elasticSearchQuery, tmpFilterQueryFlag];
 }
+
+export const setStatusPercents = (tmpStatuses, tmpData, flag) => {
+  let statuses = tmpStatuses;
+
+  let total = 0;
+  for (var status of statuses) {
+    total += parseInt(tmpData[status.mapping]);
+  }
+
+  if (total > 0) {
+    for (var status of statuses) {
+      status.percent = (parseInt(tmpData[status.mapping]) / total) * 100;
+      status.value = parseInt(tmpData[status.mapping]);
+      if (status.percent > 0 && status.percent < 1) {
+        status.percent = 1;
+      } else {
+        status.percent = Math.round(status.percent);
+      }
+    }
+  }
+
+  return statuses;
+};
