@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
+import parse from "html-react-parser";
+import DOMPurify from "dompurify";
+
+import SpinnerDark from "../../assets/images/spinner_dark.gif";
+
 import ElasticSearchService from "../../services/ElasticSearch.service";
 
 function LogPane({
@@ -24,19 +29,13 @@ function LogPane({
   const getLogHtml = (dgraphId, arrayId, taskId) => {
     ElasticSearchService.getLogHtml(dgraphId, arrayId, taskId)
       .then((logJSON) => {
-        console.log(logJSON);
-        // If anything is selected, stop automatic reload
-        if (!window.getSelection().toString()) {
-          this.logJSON = this.sanitizer.bypassSecurityTrustHtml(logJSON.replace(/<style.*?>[\S\s]*<\/style>/g, ''));
-        }
+        setLogJSON(logJSON.body);
         setHasError(false);
       })
       .catch((logJSON) => {
-        // setLogJSON("The log file has not been created yet.  Please check back later.");
-        // setHasError(true);
-        console.log(logJSON);
-      }
-      );
+        setLogJSON("The log file has not been created yet.  Please check back later.");
+        setHasError(true);
+      });
   }
 
   const onClickNext = () => {
@@ -79,7 +78,7 @@ function LogPane({
         {!logJSON && <div className="loading-div"> Loading error log for {selectedTaskData.did}.{selectedTaskData.aid}.{selectedTaskData.tid}...
           <br />
           <br />
-          <img src="images/spinner_dark.gif" />
+          <img src={SpinnerDark} />
         </div>}
         {logJSON && <div>
           <div id="error-step" className="btn-group pull-right" role="group" aria-label="...">
@@ -96,7 +95,7 @@ function LogPane({
               <span className="glyphicon glyphicon-triangle-right" aria-hidden="true"></span>
             </button>}
           </div>
-          <div>{logJSON}</div>
+          <div>{logJSON && parse(DOMPurify.sanitize(logJSON))}</div>
         </div>}
       </div>}
     </div>

@@ -64,7 +64,7 @@ class ElasticSearchService {
 
   static getLogHtml(dgraphId, arrayId, taskId) {
     let searchUrl = nfsBaseURL + 'logJSON/' + dgraphId + '/' + arrayId + '/' + taskId + '/' + 1024000;
-    return fetch(searchUrl).then(res => res.json()).catch(() => logPaneData);
+    return fetch(searchUrl).then(res => res.json());
   }
 
   static networkCheck() {

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import './DetailsPane.scss';
 
 import SelectImage from '../../assets/images/select.png';
+import SpinnerDark from "../../assets/images/spinner_dark.gif";
 
 import ElasticSearchService from "../../services/ElasticSearch.service";
 import { baseUrl, nfsBaseURL } from "../../services/ElasticSearch.service";
@@ -610,7 +611,7 @@ export default function DetailsPane({
                     </button>
                   </p>}
                 {savedEdit['_topItems.title'] && <span className="edit-saved-span"><br /><small><span className="glyphicon glyphicon-ok"></span>saved</small></span>}
-                {savingEdit['_topItems.title'] && <p className="col-xs-8 form-control-static edit-spinner"><img src="images/spinner_dark.gif" alt='' /></p>}
+                {savingEdit['_topItems.title'] && <p className="col-xs-8 form-control-static edit-spinner"><img src={SpinnerDark} alt='' /></p>}
               </div>
               <div className="row">
                 <div className="col-xs-9 pull-left">{selectedGraphData?.icoda_username}{selectedArrayData?.icoda_username}{selectedTaskData?.icoda_username}</div>
@@ -737,7 +738,7 @@ export default function DetailsPane({
                           <small>Cancel</small>
                         </button>
                       </p>}
-                    {savingEdit['_topItems.mem'] && <p className="col-xs-8 form-control-static edit-spinner"><img src="images/spinner_dark.gif" alt='' /></p>}
+                    {savingEdit['_topItems.mem'] && <p className="col-xs-8 form-control-static edit-spinner"><img src={SpinnerDark} alt='' /></p>}
                   </div>
 
                   <div className="row">
@@ -936,7 +937,7 @@ export default function DetailsPane({
                           </button>
                         </p>}
                       {savingEdit['_topItems.pool'] &&
-                        <p className="col-xs-8 form-control-static edit-spinner"><img src="images/spinner_dark.gif" alt="" /></p>}
+                        <p className="col-xs-8 form-control-static edit-spinner"><img src={SpinnerDark} alt="" /></p>}
                     </div>}
 
                   {/* Pool summary boxes */}
@@ -1084,7 +1085,7 @@ export default function DetailsPane({
                         </button>
                       </p>}
                     {savingEdit['_topItems.prio'] &&
-                      <p className="col-xs-8 form-control-static edit-spinner"><img src="images/spinner_dark.gif" alt="" /></p>}
+                      <p className="col-xs-8 form-control-static edit-spinner"><img src={SpinnerDark} alt="" /></p>}
                   </div>
 
                   {array() && task() &&
@@ -1137,7 +1138,7 @@ export default function DetailsPane({
                           </button>
                         </p>}
                       {savingEdit['_topItems.notes'] &&
-                        <p className="col-xs-8 form-control-static edit-spinner"><img src="images/spinner_dark.gif" alt="" /></p>}
+                        <p className="col-xs-8 form-control-static edit-spinner"><img src={SpinnerDark} alt="" /></p>}
                     </div>}
 
                   {(selectedGraphData?._exechost || selectedArrayData?._exechost || selectedTaskData?._exechost) &&
@@ -1413,7 +1414,7 @@ export default function DetailsPane({
                                       </button>
                                     </p>}
                                   {savingEdit[item] &&
-                                    <p className="col-xs-8 form-control-static edit-spinner"><img src="images/spinner_dark.gif" alt="" /></p>}
+                                    <p className="col-xs-8 form-control-static edit-spinner"><img src={SpinnerDark} alt="" /></p>}
                                 </>}
                             </div>
                           )

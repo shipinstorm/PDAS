@@ -9,6 +9,7 @@ import IconRun from "../../../assets/images/icon-run.svg";
 import IconDependent from "../../../assets/images/icon-dependent.svg";
 import IconQueued from "../../../assets/images/icon-queued.svg";
 import IconDone from "../../../assets/images/icon-done.svg";
+import SpinnerDark from "../../../assets/images/spinner_dark.gif";
 
 export default function ArrayStatus({ selectedArrayData }) {
   const [selected, setSelected] = useState();
@@ -256,7 +257,7 @@ export default function ArrayStatus({ selectedArrayData }) {
         <div className="row">
           <div className="status-text"> </div>
           <div className="status-bar-div">
-            <img src="images/spinner_dark.gif" alt="" />
+            <img src={SpinnerDark} alt="" />
           </div>
         </div>
       )}
