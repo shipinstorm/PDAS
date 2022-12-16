@@ -15,6 +15,12 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 
+import IconKilled from "../../assets/images/icon-killed.svg";
+import IconExited from "../../assets/images/icon-exited.svg";
+import IconRun from "../../assets/images/icon-run.svg";
+import IconDependent from "../../assets/images/icon-dependent.svg";
+import IconQueued from "../../assets/images/icon-queued.svg";
+import IconDone from "../../assets/images/icon-done.svg";
 import originStatuses from "../../assets/data/statuses.json";
 
 import ElasticSearchService from "../../services/ElasticSearch.service";
@@ -91,7 +97,7 @@ function GraphTable(props) {
   const [columnOrder, setColumnOrder] = useState(
     localStorage.columnOrder
       ? JSON.parse("[" + localStorage.columnOrder + "]")
-      : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+      : [0, 1, 2, 3, 4, 5, 6, 7]
   );
   const [currentRowsExpanded, setCurrentRowsExpanded] = useState([]);
   const [allRowsExpanded, setAllRowsExpanded] = useState([]);
@@ -215,24 +221,8 @@ function GraphTable(props) {
       label: "Title",
     },
     {
-      name: "done",
-      label: "Done",
-    },
-    {
-      name: "running",
-      label: "Running",
-    },
-    {
-      name: "queued",
-      label: "Queued",
-    },
-    {
-      name: "dependent",
-      label: "Dependent",
-    },
-    {
-      name: "exitKilled",
-      label: "Exit, killed",
+      name: "status",
+      label: "Status",
     },
     {
       name: "host",
@@ -299,12 +289,7 @@ function GraphTable(props) {
       let tmp = graphData.filter((data) => data.did === did);
       let tmpGraphData = tmp[0] ? tmp[0] : {};
 
-      let statuses = setStatusPercents(originStatuses, tmpGraphData, 0);
-      data[3] = statuses[0].value;
-      data[4] = statuses[1].value;
-      data[5] = statuses[4].value;
-      data[6] = statuses[5].value;
-      data[7] = statuses[2].value + statuses[3].value + statuses[7].value;
+      let [statuses, status] = setStatusPercents(originStatuses, tmpGraphData, 0);
 
       const updateRowsExpanded = async (isExpanded) => {
         let tmpCurrentRowsExpanded = [],
@@ -370,7 +355,7 @@ function GraphTable(props) {
           isSelected={isSelected}
           isExpanded={isExpanded}
         >
-          {[...Array(12)].map((value, index) => {
+          {[...Array(8)].map((value, index) => {
             return (
               <TableCell
                 key={index}
@@ -391,25 +376,38 @@ function GraphTable(props) {
                 }
               >
                 {columnOrder[index] === 3 && (
-                  <span className="text-done">{data[columnOrder[index]]}</span>
-                )}
-                {columnOrder[index] === 4 && (
-                  <span className="text-running">
-                    {data[columnOrder[index]]}
-                  </span>
-                )}
-                {columnOrder[index] === 5 && (
-                  <span className="text-queued">
-                    {data[columnOrder[index]]}
-                  </span>
-                )}
-                {columnOrder[index] === 6 && (
-                  <span className="text-dependent">
-                    {data[columnOrder[index]]}
-                  </span>
-                )}
-                {columnOrder[index] === 7 && (
-                  <span className="text-exit">{data[columnOrder[index]]}</span>
+                  <div className="statusContent">
+                    {status === "killed" && (
+                      <img alt="" src={IconKilled} className="status-icon" />
+                    )}
+                    {status === "exited" && (
+                      <img alt="" src={IconExited} className="status-icon" />
+                    )}
+                    {status === "running" && (
+                      <img alt="" src={IconRun} className="status-icon" />
+                    )}
+                    {status === "dependent" && (
+                      <img alt="" src={IconDependent} className="status-icon" />
+                    )}
+                    {status === "in queue" && (
+                      <img alt="" src={IconQueued} className="status-icon" />
+                    )}
+                    {status === "done" && (
+                      <img alt="" src={IconDone} className="status-icon" />
+                    )}
+                    {status === "" && (
+                      <div className="empty-div"></div>
+                    )}
+                    <p className="text-done">{statuses[0].value}</p>
+                    <p className="text-running">{statuses[1].value}</p>
+                    <p className="text-queued">{statuses[4].value}</p>
+                    <p className="text-dependent">{statuses[5].value}</p>
+                    <p className="text-exit">
+                      {statuses[2].value +
+                        statuses[3].value +
+                        statuses[7].value}
+                    </p>
+                  </div>
                 )}
                 {/* {isMemMaxed[did] && isMemMaxed[did][arrayRow.aid] && ( */}
                 {/* {columnOrder[index] === 10 && (
@@ -423,13 +421,7 @@ function GraphTable(props) {
                     </span>
                   </div>
                 )} */}
-                {columnOrder[index] !== 3 &&
-                  columnOrder[index] !== 4 &&
-                  columnOrder[index] !== 5 &&
-                  columnOrder[index] !== 6 &&
-                  columnOrder[index] !== 7 &&
-                  columnOrder[index] !== 10 &&
-                  data[columnOrder[index]]}
+                {columnOrder[index] !== 3 && data[columnOrder[index]]}
               </TableCell>
             );
           })}

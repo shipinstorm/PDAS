@@ -8,6 +8,12 @@ import IconButton from "@material-ui/core/IconButton";
 import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
 
+import IconKilled from "../../assets/images/icon-killed.svg";
+import IconExited from "../../assets/images/icon-exited.svg";
+import IconRun from "../../assets/images/icon-run.svg";
+import IconDependent from "../../assets/images/icon-dependent.svg";
+import IconQueued from "../../assets/images/icon-queued.svg";
+import IconDone from "../../assets/images/icon-done.svg";
 import originStatuses from "../../assets/data/statuses.json";
 
 import ElasticSearchService from "../../services/ElasticSearch.service";
@@ -98,10 +104,6 @@ export default function ArrayTableRow({
       { name: "" },
       { name: "" },
       { name: "" },
-      { name: "" },
-      { name: "" },
-      { name: "" },
-      { name: "" },
       {
         name: elapsedTime(
           selectedGraphData,
@@ -113,13 +115,7 @@ export default function ArrayTableRow({
       { name: "" },
     ];
 
-    let statuses = setStatusPercents(originStatuses, arrayData, 1);
-    tmpArray1[3].name = statuses[0].value;
-    tmpArray1[4].name = statuses[1].value;
-    tmpArray1[5].name = statuses[4].value;
-    tmpArray1[6].name = statuses[5].value;
-    tmpArray1[7].name =
-      statuses[2].value + statuses[3].value + statuses[7].value;
+    let [statuses, status] = setStatusPercents(originStatuses, arrayData, 1);
 
     return (
       <ExpandableTableRow
@@ -144,7 +140,7 @@ export default function ArrayTableRow({
         }}
         isSelected={isSelected}
       >
-        {[...Array(12)].map((value, index) => {
+        {[...Array(8)].map((value, index) => {
           return (
             <TableCell
               key={index}
@@ -155,29 +151,36 @@ export default function ArrayTableRow({
               }
             >
               {columnOrder[index] === 3 && (
-                <span className="text-done">
-                  {tmpArray1[columnOrder[index]].name}
-                </span>
-              )}
-              {columnOrder[index] === 4 && (
-                <span className="text-running">
-                  {tmpArray1[columnOrder[index]].name}
-                </span>
-              )}
-              {columnOrder[index] === 5 && (
-                <span className="text-queued">
-                  {tmpArray1[columnOrder[index]].name}
-                </span>
-              )}
-              {columnOrder[index] === 6 && (
-                <span className="text-dependent">
-                  {tmpArray1[columnOrder[index]].name}
-                </span>
-              )}
-              {columnOrder[index] === 7 && (
-                <span className="text-exit">
-                  {tmpArray1[columnOrder[index]].name}
-                </span>
+                <div className="statusContent">
+                  {status === "killed" && (
+                    <img alt="" src={IconKilled} className="status-icon" />
+                  )}
+                  {status === "exited" && (
+                    <img alt="" src={IconExited} className="status-icon" />
+                  )}
+                  {status === "running" && (
+                    <img alt="" src={IconRun} className="status-icon" />
+                  )}
+                  {status === "dependent" && (
+                    <img alt="" src={IconDependent} className="status-icon" />
+                  )}
+                  {status === "in queue" && (
+                    <img alt="" src={IconQueued} className="status-icon" />
+                  )}
+                  {status === "done" && (
+                    <img alt="" src={IconDone} className="status-icon" />
+                  )}
+                  {status === "" && (
+                    <div className="empty-div"></div>
+                  )}
+                  <p className="text-done">{statuses[0].value}</p>
+                  <p className="text-running">{statuses[1].value}</p>
+                  <p className="text-queued">{statuses[4].value}</p>
+                  <p className="text-dependent">{statuses[5].value}</p>
+                  <p className="text-exit">
+                    {statuses[2].value + statuses[3].value + statuses[7].value}
+                  </p>
+                </div>
               )}
               {/* {isMemMaxed[did] && isMemMaxed[did][arrayRow.aid] && ( */}
               {/* {columnOrder[index] === 10 && (
@@ -191,13 +194,7 @@ export default function ArrayTableRow({
                   </span>
                 </div>
               )} */}
-              {columnOrder[index] !== 3 &&
-                columnOrder[index] !== 4 &&
-                columnOrder[index] !== 5 &&
-                columnOrder[index] !== 6 &&
-                columnOrder[index] !== 7 &&
-                columnOrder[index] !== 10 &&
-                tmpArray1[columnOrder[index]].name}
+              {columnOrder[index] !== 3 && tmpArray1[columnOrder[index]].name}
             </TableCell>
           );
         })}

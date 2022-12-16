@@ -1,3 +1,5 @@
+import { DGRAPH_STATUS_CODES, ARRAY_STATUS_CODES } from "../components/GraphTable/GraphStatus/StatusCodes";
+
 export const submittedTime = (dateString) => {
   if (!dateString) return "";
 
@@ -163,5 +165,13 @@ export const setStatusPercents = (tmpStatuses, tmpData, flag) => {
     }
   }
 
-  return statuses;
+  status = "";
+  if (flag === 0 && DGRAPH_STATUS_CODES[tmpData._statusname]) {
+    status = DGRAPH_STATUS_CODES[tmpData._statusname].name;
+  }
+  if (flag === 1 && ARRAY_STATUS_CODES[tmpData._statusname]) {
+    status = ARRAY_STATUS_CODES[tmpData._statusname].name;
+  }
+
+  return [statuses, status];
 };
