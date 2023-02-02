@@ -16,6 +16,8 @@ import { elapsedTime, submittedTime } from '../../utils/utils';
 
 import './DetailsPane.scss';
 
+
+
 export default function DetailsPane() {
   const dispatch = useDispatch();
   
@@ -53,7 +55,6 @@ export default function DetailsPane() {
   const [savingEdit, setSavingEdit] = useState({});
   const [savedEdit, setSavedEdit] = useState({});
   const [expandedObj, setExpandedObj] = useState({});
-  
 
   useEffect(() => {
     refreshPools();
@@ -445,8 +446,7 @@ export default function DetailsPane() {
   }
 
   const selectedObj = () => {
-    console.log(selectedGraphData || selectedArrayData || selectedTaskData);
-    return selectedGraphData || selectedArrayData || selectedTaskData;
+    return {...selectedGraphData, ...selectedArrayData, ...selectedTaskData};
   }
 
   const toggleObj = (field) => {
