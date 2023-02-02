@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import './DetailsPane.scss';
+import GraphStatus from "../GraphTable/GraphStatus/GraphStatus";
+import ArrayStatus from "../GraphTable/GraphStatus/ArrayStatus";
 
 import SelectImage from '../../assets/images/select.png';
 import SpinnerDark from "../../assets/images/spinner_dark.gif";
@@ -13,13 +14,11 @@ import { globalExternalIP } from "../../store/actions/globalAction";
 
 import { elapsedTime, submittedTime } from '../../utils/utils';
 
-import GraphStatus from "../GraphTable/GraphStatus/GraphStatus";
-import ArrayStatus from "../GraphTable/GraphStatus/ArrayStatus";
+import './DetailsPane.scss';
 
-
-export default function DetailsPane({
-}) {
+export default function DetailsPane() {
   const dispatch = useDispatch();
+  
   const editVal1 = useRef(null);
   const editVal2 = useRef(null);
   const editVal3 = useRef(null);
@@ -27,6 +26,9 @@ export default function DetailsPane({
   const editVal5 = useRef(null);
   const editVal6 = useRef(null);
 
+  const externalIP = useSelector((state) => state.global.externalIP);
+  const codaHealth = useSelector((state) => state.global.codaHealth);
+  const imagePaths = useSelector((state) => state.global.imagePaths);
   const selectedGraphData = useSelector((state) => state.job.graphSelected);
   const selectedArrayData = useSelector((state) => state.job.arraySelected);
   const selectedTaskData = useSelector((state) => state.job.taskSelected);
@@ -43,7 +45,7 @@ export default function DetailsPane({
   const [noFrames, setNoFrames] = useState(false);
   const [showPoolDetail, setShowPoolDetail] = useState(false);
   const [showMore, setShowMore] = useState(false);
-  const [subpools, setSubpools] = useState([]);
+  const [subPools, setSubPools] = useState([]);
   const [statusHistoryExpanded, setStatusHistoryExpanded] = useState();
   const [statusHover, setStatusHover] = useState([]);
   const [showEditIcon, setShowEditIcon] = useState({});
@@ -51,9 +53,7 @@ export default function DetailsPane({
   const [savingEdit, setSavingEdit] = useState({});
   const [savedEdit, setSavedEdit] = useState({});
   const [expandedObj, setExpandedObj] = useState({});
-  const externalIP = useSelector((state) => state.global.externalIP);
-  const codaHealth = useSelector((state) => state.global.codaHealth);
-  const imagePaths = useSelector((state) => state.global.imagePaths);
+  
 
   useEffect(() => {
     refreshPools();
@@ -261,24 +261,24 @@ export default function DetailsPane({
   const togglePoolDetail = () => {
     setShowPoolDetail(!showPoolDetail);
     if (showPoolDetail) {
-      // Build array of subpools to show for the More pool details
-      var subpoolWords = [];
-      let tmpSubpools = [];
+      // Build array of subPools to show for the More pool details
+      var subPoolWords = [];
+      let tmpSubPools = [];
       if (graph() && selectedGraphData._poolname) {
-        subpoolWords = selectedGraphData._poolname.split(".");
+        subPoolWords = selectedGraphData._poolname.split(".");
       } else if (graph() && selectedGraphData.cpupool) {
-        subpoolWords = selectedGraphData.cpupool.split(".");
+        subPoolWords = selectedGraphData.cpupool.split(".");
       } else if (array() && selectedArrayData._poolname) {
-        subpoolWords = selectedArrayData._poolname.split(".");
+        subPoolWords = selectedArrayData._poolname.split(".");
       } else if (array() && selectedArrayData.cpupool) {
-        subpoolWords = selectedArrayData.cpupool.split(".");
+        subPoolWords = selectedArrayData.cpupool.split(".");
       } else if (task() && selectedTaskData._poolname) {
-        subpoolWords = selectedTaskData._poolname.split(".");
+        subPoolWords = selectedTaskData._poolname.split(".");
       }
-      for (var i = subpoolWords.length; i > 0; i--) {
-        tmpSubpools.push(subpoolWords.slice(0, i).join("."));
+      for (var i = subPoolWords.length; i > 0; i--) {
+        tmpSubPools.push(subPoolWords.slice(0, i).join("."));
       }
-      setSubpools(tmpSubpools);
+      setSubPools(tmpSubPools);
 
       let me = this;
       document.body.onclick = function (event) {
@@ -445,6 +445,7 @@ export default function DetailsPane({
   }
 
   const selectedObj = () => {
+    console.log(selectedGraphData || selectedArrayData || selectedTaskData);
     return selectedGraphData || selectedArrayData || selectedTaskData;
   }
 
@@ -514,19 +515,19 @@ export default function DetailsPane({
         var totalSpec = 0;
         var totalNonspec = 0;
         var totalAvailable = 0;
-        var tempSubpools = [];
+        var tempSubPools = [];
         for (let item in tmpPoolData) {
           totalSpec += tmpPoolData[item]['speccount'];
           totalNonspec += tmpPoolData[item]['realcount'];
           totalAvailable += tmpPoolData[item]['entitled'];
           if ('splits' in tmpPoolData[item]) {
             var mytemp = makePoolTopLevel(item, tmpPoolData[item]['splits']);
-            tempSubpools.push(mytemp);
+            tempSubPools.push(mytemp);
           }
         }
-        for (let i = 0; i < tempSubpools.length; i++) {
-          for (var key in tempSubpools[i]) {
-            tmpPoolData[key] = tempSubpools[i][key];
+        for (let i = 0; i < tempSubPools.length; i++) {
+          for (var key in tempSubPools[i]) {
+            tmpPoolData[key] = tempSubPools[i][key];
           }
         }
         tmpPoolData['Total'] = { 'speccount': totalSpec, 'realcount': totalNonspec, 'entitled': totalAvailable };
@@ -534,23 +535,23 @@ export default function DetailsPane({
       });
   }
 
-  // This recursive function copies all the subpools into top-level items
+  // This recursive function copies all the subPools into top-level items
   // in tempDict to match the pool keys that exist on specific tasks
   const makePoolTopLevel = (name, splits) => {
     var tempDict = {};
-    var tempSubpools = [];
-    for (let subpool in splits) {
-      if ('splits' in splits[subpool]) {
-        tempDict[name + '.' + subpool] = splits[subpool];
-        tempSubpools.push(makePoolTopLevel(name + '.' + subpool, splits[subpool]['splits']));
+    var tempSubPools = [];
+    for (let subPool in splits) {
+      if ('splits' in splits[subPool]) {
+        tempDict[name + '.' + subPool] = splits[subPool];
+        tempSubPools.push(makePoolTopLevel(name + '.' + subPool, splits[subPool]['splits']));
       }
-      for (var i = 0; i < tempSubpools.length; i++) {
-        for (let key in tempSubpools[i]) {
-          tempDict[key] = tempSubpools[i][key]
+      for (var i = 0; i < tempSubPools.length; i++) {
+        for (let key in tempSubPools[i]) {
+          tempDict[key] = tempSubPools[i][key]
         }
       }
-      tempSubpools = [];
-      tempDict[name + '.' + subpool] = splits[subpool];
+      tempSubPools = [];
+      tempDict[name + '.' + subPool] = splits[subPool];
     }
     return tempDict;
   }
@@ -870,21 +871,21 @@ export default function DetailsPane({
                                 </div>}
 
                               {
-                                subpools.map((subpool) => {
+                                subPools.map((subPool) => {
                                   return (
                                     <div>
-                                      {poolData[subpool] && <div className="text-left slot-name pool-hint">{subpool}</div>}
+                                      {poolData[subPool] && <div className="text-left slot-name pool-hint">{subPool}</div>}
                                       <div className="row pool-hint pool-pad slot-grid pull-right">
-                                        {poolData[subpool] &&
+                                        {poolData[subPool] &&
                                           <div
-                                            className={poolData[subpool]['realcount'] >= poolData[subpool]['entitled'] ?
+                                            className={poolData[subPool]['realcount'] >= poolData[subPool]['entitled'] ?
                                               "col-xs-4 text-right pool-separator pool-maxed" :
                                               "col-xs-4 text-right pool-separator"}
                                           >
-                                            {poolData[subpool]['realcount']}
+                                            {poolData[subPool]['realcount']}
                                           </div>}
-                                        {poolData[subpool] && <div className="col-xs-4 text-right pool-separator">{poolData[subpool]['speccount']}</div>}
-                                        {poolData[subpool] && <div className="col-xs-4 text-right">{poolData[subpool]['entitled']}</div>}
+                                        {poolData[subPool] && <div className="col-xs-4 text-right pool-separator">{poolData[subPool]['speccount']}</div>}
+                                        {poolData[subPool] && <div className="col-xs-4 text-right">{poolData[subPool]['entitled']}</div>}
                                       </div>
                                     </div>
                                   )

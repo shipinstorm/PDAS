@@ -1668,7 +1668,8 @@ typeahead-container a strong {
   color: rgba(255, 255, 255, 0.65);
   height: 100%;
   width: 100%;
-  display: table;
+  display: flex;
+  flex-direction: column;
   word-break: break-word;
 }
 .object-details-content .control-label.text-left {
@@ -2014,12 +2015,10 @@ div.panel.panel-default {
 }
 .detail-form-scrollbox {
   height: 100%;
-  overflow-y: scroll;
   overflow-x: hidden;
 }
 .detail-form {
-  display: table-row;
-  height: 100%;
+  overflow: hidden;
 }
 #jobId-target {
   display: inline;
@@ -2027,7 +2026,7 @@ div.panel.panel-default {
 }
 #error-step {
   right: 20px;
-  position: fixed;
+  position: absolute;
   display: block;
   padding: 6px 9px;
   background-color: #212121;
