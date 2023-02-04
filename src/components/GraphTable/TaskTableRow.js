@@ -6,7 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import ElasticSearchService from '../../services/ElasticSearch.service';
 
 import { globalImagePaths, globalViewLog } from '../../store/actions/globalAction';
-import { jobJobSelected, jobRowsSelected } from '../../store/actions/jobAction';
+import { jobJobSelected } from '../../store/actions/jobAction';
 
 export default function TaskTableRow({
   searchTaskData,
@@ -18,10 +18,33 @@ export default function TaskTableRow({
   const imagePaths = useSelector((state) => state.global.imagePaths);
   const jobSelected = useSelector((state) => state.job.jobSelected);
 
+  const selectTaskRow = (childTaskText) => {
+    let jobID = childTaskText.toString().split('.');
+    imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
+    dispatch(globalImagePaths(imagePaths));
+
+    /**
+     * Update jobSelected Array
+     * Remove childTaskText if it exists
+     * Remove related elements with same jobID[0](same graphData)
+     * Add childTaskText if it doesn't exist
+     */
+    const index = jobSelected.indexOf(childTaskText);
+    if (index > -1) {
+      jobSelected.splice(index, 1);
+    };
+    let tmp = jobSelected.filter((job) => !job.includes(jobID[0]));
+    if (index > -1) {
+      dispatch(jobJobSelected(tmp));
+    } else {
+      dispatch(jobJobSelected([...tmp, childTaskText.toString()]));
+    }
+  }
+
   return (
     searchTaskData[arrayRow.aid].map((taskRow) => {
       const childTaskText = `${childArrayText}.${taskRow.aid}`;
-      const isSelected = (jobSelected === childTaskText);
+      const isSelected = (jobSelected.includes(childTaskText));
       const tmpArray2 = [
         { name: '' },
         { name: childTaskText },
@@ -36,14 +59,7 @@ export default function TaskTableRow({
         <TableRow
           key={childTaskText}
           style={{ cursor: 'pointer' }}
-          onClick={() => {
-            // Remove select of graph data when task is selected
-            dispatch(jobRowsSelected([]));
-            dispatch(jobJobSelected(childTaskText));
-            let jobID = childTaskText.toString().split('.');
-            imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
-            dispatch(globalImagePaths(imagePaths));
-          }}
+          onClick={() => selectTaskRow(childTaskText)}
         >
           <TableCell
             padding="checkbox"

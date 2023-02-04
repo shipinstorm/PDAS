@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import { Waypoint } from "react-waypoint";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -26,7 +26,7 @@ import originStatuses from "../../assets/data/statuses.json";
 import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { globalImagePaths } from "../../store/actions/globalAction";
-import { jobJobSelected, jobRowsSelected } from "../../store/actions/jobAction";
+import { jobJobSelected, jobJobExpanded } from "../../store/actions/jobAction";
 
 import {
   elapsedTime,
@@ -36,10 +36,14 @@ import {
 
 import ArrayTableRow from "./ArrayTableRow";
 
+import './GraphTable.scss';
+
+
+
 const ExpandableTableRow = ({
   children,
   expandComponent,
-  updateRowsExpanded,
+  expandGraphRow,
   isSelected,
   isExpanded,
   ...otherProps
@@ -52,22 +56,22 @@ const ExpandableTableRow = ({
           sx={
             isSelected
               ? {
-                  background: "#383838 !important",
-                  "& .MuiButtonBase-root": {
-                    color: "#848285 !important",
-                  },
-                }
+                background: "#383838 !important",
+                "& .MuiButtonBase-root": {
+                  color: "#848285 !important",
+                },
+              }
               : {
-                  "& .MuiButtonBase-root": {
-                    color: "#848285 !important",
-                  },
-                }
+                "& .MuiButtonBase-root": {
+                  color: "#848285 !important",
+                },
+              }
           }
         >
           <IconButton
             onClick={(event) => {
               event.preventDefault();
-              updateRowsExpanded(!isExpanded);
+              expandGraphRow();
             }}
           >
             {isExpanded ? (
@@ -91,34 +95,19 @@ function GraphTable(props) {
   const arrayData = useSelector((state) => state.global.arrayData);
   const taskData = useSelector((state) => state.global.taskData);
   const imagePaths = useSelector((state) => state.global.imagePaths);
-  const rowsSelected = useSelector((state) => state.job.rowsSelected);
   const jobSelected = useSelector((state) => state.job.jobSelected);
+  const jobExpanded = useSelector((state) => state.job.jobExpanded);
 
   const [columnOrder, setColumnOrder] = useState(
     localStorage.columnOrder
       ? JSON.parse("[" + localStorage.columnOrder + "]")
       : [0, 1, 2, 3, 4, 5, 6, 7]
   );
-  const [currentRowsExpanded, setCurrentRowsExpanded] = useState([]);
-  const [allRowsExpanded, setAllRowsExpanded] = useState([]);
 
-  useEffect(() => {
-    let tmpAllRowsExpanded = [];
-    props.rowsExpanded.map((exp) => {
-      graphData.map((graph, index) => {
-        if (graph.did === exp) {
-          tmpAllRowsExpanded = [
-            ...tmpAllRowsExpanded,
-            {
-              index: index,
-              dataIndex: index,
-            },
-          ];
-        }
-      });
-    });
-    setAllRowsExpanded(tmpAllRowsExpanded);
-  }, [graphData]);
+  const collapseAll = () => {
+    dispatch(jobJobSelected([]));
+    dispatch(jobJobExpanded([]));
+  }
 
   const muiCache = createCache({
     key: "mui",
@@ -273,61 +262,65 @@ function GraphTable(props) {
     viewColumns: true,
     expandableRows: true,
     expandableRowsHeader: false,
-    expandableRowsOnClick: false,
+    expandableRowsOnClick: true,
     pagination: false,
     columnOrder: columnOrder,
     // Row select for DetailsPane
     selectableRows: "single",
     selectableRowsOnClick: true,
-    rowsSelected: rowsSelected,
 
     customRowRender: (data, dataIndex, rowIndex) => {
       const did = data[1];
-      const isSelected = jobSelected == did;
-      const isExpanded = props.rowsExpanded.includes(did);
+      const isSelected = (jobSelected.includes(did.toString()));
+      const isExpanded = (jobExpanded.length > 0 && jobExpanded.findIndex(expanded => expanded.includes(did.toString())) >= 0) ? true : false;
       const [searchArrayData, searchTaskData] = [arrayData[did], taskData[did]];
       let tmp = graphData.filter((data) => data.did === did);
       let tmpGraphData = tmp[0] ? tmp[0] : {};
 
       let [statuses, status] = setStatusPercents(originStatuses, tmpGraphData, 0);
 
-      const updateRowsExpanded = async (isExpanded) => {
-        let tmpCurrentRowsExpanded = [],
-          tmpAllRowsExpanded = [];
-
-        if (isExpanded) {
-          tmpCurrentRowsExpanded = [
-            {
-              index: rowIndex,
-              dataIndex: dataIndex,
-            },
-          ];
-          tmpAllRowsExpanded = [
-            ...allRowsExpanded,
-            {
-              index: rowIndex,
-              dataIndex: dataIndex,
-            },
-          ];
+      const expandGraphRow = async () => {
+        /**
+         * Update jobExpanded Array
+         * Find related elements with same jobID[0](same graphData)
+         * Remove related elements with same jobID[0](same graphData)
+         * Add childArrayText if none exist
+         */
+        if (jobExpanded.filter(job => job.includes(did.toString())).length > 0) {
+          dispatch(jobJobExpanded(jobExpanded.filter(job => !job.includes(did.toString()))));
         } else {
-          tmpCurrentRowsExpanded = [];
-          tmpAllRowsExpanded = allRowsExpanded.filter((row) => {
-            return row.index !== rowIndex || row.dataIndex !== dataIndex;
-          });
+          dispatch(jobJobExpanded([...jobExpanded.filter(job => !job.includes(did.toString())), did.toString()]));
         }
-        setCurrentRowsExpanded(tmpCurrentRowsExpanded);
-        setAllRowsExpanded(tmpAllRowsExpanded);
-        await props.onToggleClick(graphData[rowIndex].did);
-        props.setRowsExpanded(tmpAllRowsExpanded);
+
+        await props.onToggleClick(did.toString());
       };
+
+      const selectGraphRow = (childGraphText) => {
+        imagePaths[childGraphText] = ElasticSearchService.playImages(childGraphText);
+        dispatch(globalImagePaths(imagePaths));
+
+        /**
+         * Update jobSelected Array
+         * Remove childGraphText if it exists
+         * Remove related elements with same jobID[0](same graphData)
+         * Add childGraphText if it doesn't exist
+         */
+        const index = jobSelected.indexOf(childGraphText);
+        if (index > -1) {
+          jobSelected.splice(index, 1);
+          dispatch(jobJobSelected(jobSelected.filter((job) => !job.includes(childGraphText))));
+        } else {
+          dispatch(jobJobSelected([...jobSelected.filter((job) => !job.includes(childGraphText)), childGraphText]));
+        }
+      }
 
       return (
         <ExpandableTableRow
           expandComponent={
             !searchArrayData ||
-            !searchArrayData.length ||
-            !searchTaskData ||
-            !searchTaskData.length ? (
+              !searchArrayData.length ||
+              !searchTaskData ||
+              !searchTaskData.length ? (
               <TableRow>
                 <TableCell colSpan={columns.length + 1}></TableCell>
               </TableRow>
@@ -341,17 +334,8 @@ function GraphTable(props) {
             )
           }
           sx={{ cursor: "pointer" }}
-          onClick={() => {
-            dispatch(jobRowsSelected([rowIndex]));
-            /**
-             * Select current row
-             * jobSelected: current row's id
-             */
-            dispatch(jobJobSelected(did));
-            imagePaths[did] = ElasticSearchService.playImages(did);
-            dispatch(globalImagePaths(imagePaths));
-          }}
-          updateRowsExpanded={updateRowsExpanded}
+          onClick={() => selectGraphRow(did.toString())}
+          expandGraphRow={expandGraphRow}
           isSelected={isSelected}
           isExpanded={isExpanded}
         >
@@ -362,17 +346,17 @@ function GraphTable(props) {
                 sx={
                   isSelected
                     ? {
-                        background: "#383838 !important",
-                        // overflow: 'hidden',
-                        // textOverflow: 'ellipsis',
-                        // whiteSpace: 'nowrap'
-                      }
+                      background: "#383838 !important",
+                      // overflow: 'hidden',
+                      // textOverflow: 'ellipsis',
+                      // whiteSpace: 'nowrap'
+                    }
                     : {
-                        background: "#282828 !important",
-                        // overflow: 'hidden',
-                        // textOverflow: 'ellipsis',
-                        // whiteSpace: 'nowrap'
-                      }
+                      background: "#282828 !important",
+                      // overflow: 'hidden',
+                      // textOverflow: 'ellipsis',
+                      // whiteSpace: 'nowrap'
+                    }
                 }
               >
                 {columnOrder[index] === 3 && (
@@ -457,7 +441,12 @@ function GraphTable(props) {
         <CacheProvider value={muiCache}>
           <ThemeProvider theme={getMuiTheme()}>
             <MUIDataTable
-              title={"coda-ui-react"}
+              title={
+                <div className="graphTableTitle">
+                  <p>coda-ui-react</p>
+                  {jobExpanded.length > 0 ? <KeyboardArrowDownIcon onClick={() => collapseAll()} /> : <KeyboardArrowRightIcon />}
+                </div>
+              }
               data={data}
               columns={columns}
               options={options2}
