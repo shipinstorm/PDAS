@@ -168,7 +168,7 @@ export default function DetailsPane() {
       // observer.next(imgUrl);◘
       return imgUrl;
     } else if (array()) {
-      imagePaths[selectedArrayData.did + '.' + selectedArrayData.aid].then(imagePaths => {
+      imagePaths[selectedArrayData.did + '.' + selectedArrayData.aid] && imagePaths[selectedArrayData.did + '.' + selectedArrayData.aid].then(imagePaths => {
         if (imagePaths && imagePaths.length > 0) {
           let firstImg = imagePaths[0];
           // observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
@@ -179,7 +179,7 @@ export default function DetailsPane() {
         }
       });
     } else if (graph()) {
-      imagePaths[selectedGraphData.did].then(imagePaths => {
+      imagePaths[selectedGraphData.did] && imagePaths[selectedGraphData.did].then(imagePaths => {
         if (imagePaths && imagePaths.length > 0) {
           let firstImg = imagePaths[0];
           // observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
@@ -1322,7 +1322,7 @@ export default function DetailsPane() {
                   {showMore && codaHealth && codaHealth['rqinfod'].status !== 'red' && !showErrorMsg &&
                     <div className="show-more">
                       {
-                        metadataKeys.map((item) => {
+                        metadataKeys && metadataKeys.length > 0 && metadataKeys.map((item) => {
                           return (
                             <div className="row">
                               {item !== 'arrays' && item !== 'tasks' &&

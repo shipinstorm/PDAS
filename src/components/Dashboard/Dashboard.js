@@ -11,8 +11,8 @@ import {
 	globalViewLog
 } from '../../store/actions/globalAction';
 import {
-	jobRowsSelected,
 	jobJobSelected,
+	jobJobExpanded,
 	jobGraphSelected,
 	jobArraySelected,
 	jobTaskSelected
@@ -87,17 +87,12 @@ export default function Dashboard() {
 	const taskData = useSelector((state) => state.global.taskData);
 	
 	const jobSelected = useSelector((state) => state.job.jobSelected);
+	const jobExpanded = useSelector((state) => state.job.jobExpanded);
 	const [jobListLoading, setJobListLoading] = useState(true);
-	const [rowsExpandedJobID, setRowsExpandedJobID] = useState(searchParamsObject.expanded ? JSON.parse("[" + searchParamsObject.expanded + "]") : []);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [initSearchQuery,] = useState(getInitSearchQuery());
 	const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
 	const [filterQueryFlag, setFilterQueryFlag] = useState([]);
-
-	useEffect(() => {
-		dispatch(jobJobSelected(searchParamsObject.selected ? searchParamsObject.selected : ''));
-		dispatch(globalViewLog(searchParamsObject.log === 'true' ? true : false));
-	}, []);
 
 	const startResizing = React.useCallback((mouseDownEvent) => {
 		setIsLogPaneResizing(true);
@@ -221,14 +216,14 @@ export default function Dashboard() {
 	}
 
 	useEffect(() => {
-		navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + rowsExpandedJobID.toString() + '&details=' + viewDetails + '&log=' + viewLog);
-	}, [navigate, searchQuery, jobSelected, rowsExpandedJobID, viewDetails, viewLog]);
+		navigate('/search?q=' + searchQuery + '&sel=' + jobSelected + '&exp=' + jobExpanded + '&details=' + viewDetails + '&log=' + viewLog);
+	}, [navigate, searchQuery, jobSelected, jobExpanded, viewDetails, viewLog]);
 
 	useEffect(() => {
 		let jobID = null;
 		let graphID = null, arrayID = null, taskID = null;
-		if (jobSelected) {
-			jobID = jobSelected.toString().split('.');
+		if (jobSelected.length) {
+			jobID = jobSelected[jobSelected.length - 1].split('.');
 		}
 		if (jobID) {
 			graphID = jobID.length >= 1 ? jobID[0] : null;
@@ -277,11 +272,19 @@ export default function Dashboard() {
 				});
 			}
 
-			await Promise.all(rowsExpandedJobID.map(async (row) => { await toggleJob(row); }));
+			let tmpJobSelected = searchParamsObject.selected ? searchParamsObject.selected.split(",") : [];
+			let tmpJobExpanded = searchParamsObject.expanded ? searchParamsObject.expanded.split(",") : [];
+
 			setAutoCompleteValue(initSearchQuery);
 			searchQueryHandle(initSearchQuery, false, true);
+			await Promise.all(
+				tmpJobExpanded.map(async (row) => {
+					let jobID = row.split(".");
+					await toggleJob(jobID[0]);
+				})
+			);
 
-			let jobID = searchParamsObject.selected ? searchParamsObject.selected.split('.') : [];
+			let jobID = tmpJobSelected.length ? tmpJobSelected[tmpJobSelected.length - 1] : [];
 			if (jobID[2]) {
 				imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
 				dispatch(globalImagePaths(imagePaths));
@@ -293,9 +296,10 @@ export default function Dashboard() {
 				dispatch(globalImagePaths(imagePaths));
 			}
 
-			if (jobID[0]) {
-				await toggleJob(jobID[0]);
-			}
+			// Update global variables from url
+			dispatch(jobJobSelected(tmpJobSelected));
+			dispatch(jobJobExpanded(tmpJobExpanded));
+			dispatch(globalViewLog(searchParamsObject.log === 'true' ? true : false));
 		}
 		foo();
 	}, []);
@@ -327,13 +331,6 @@ export default function Dashboard() {
 		setJobListLoading(false);
 		// });
 	}
-
-	const rowsExpandedHandle = (expanded) => {
-		const newExpanded = expanded.map((exp) => {
-			return graphData[exp.dataIndex].did;
-		})
-		setRowsExpandedJobID(newExpanded);
-	}
 	
 	return (
 		<div className="app">
@@ -356,8 +353,6 @@ export default function Dashboard() {
 							viewDetails={viewDetails}
 							loading={jobListLoading}
 							onToggleClick={async (jobId) => { await toggleJob(jobId); }}
-							rowsExpanded={rowsExpandedJobID}
-							setRowsExpanded={(expanded) => rowsExpandedHandle(expanded)}
 							autoCompleteValue={autoCompleteValue}
 							setSearchQuery={searchQueryHandle}
 						/>

@@ -1,0 +1,16 @@
+.graphTableTitle {
+  display: flex;
+  align-items: center;
+  p {
+    font-size: 28px;
+    padding: 0px;
+    margin: 0px;
+  }
+  svg {
+    position: absolute;
+    cursor: pointer;
+    top: 85px;
+    left: 18px;
+    z-index: 10001;
+  }
+}

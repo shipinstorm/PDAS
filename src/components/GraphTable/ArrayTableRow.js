@@ -19,20 +19,22 @@ import originStatuses from "../../assets/data/statuses.json";
 import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { globalImagePaths } from "../../store/actions/globalAction";
-import { jobJobSelected, jobRowsSelected } from "../../store/actions/jobAction";
+import { jobJobSelected, jobJobExpanded } from "../../store/actions/jobAction";
 
 import { elapsedTime, setStatusPercents } from "../../utils/utils";
 
 import TaskTableRow from "./TaskTableRow";
 
 const ExpandableTableRow = ({
+  key,
   children,
   expandComponent,
   isSelected,
+  isExpanded,
+  childArrayText,
+  expandArrayRow,
   ...otherProps
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
   return (
     <>
       <TableRow {...otherProps}>
@@ -56,7 +58,7 @@ const ExpandableTableRow = ({
           <IconButton
             onClick={(event) => {
               event.preventDefault();
-              setIsExpanded(!isExpanded);
+              expandArrayRow(childArrayText);
             }}
           >
             {isExpanded ? (
@@ -84,11 +86,52 @@ export default function ArrayTableRow({
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
   const jobSelected = useSelector((state) => state.job.jobSelected);
+  const jobExpanded = useSelector((state) => state.job.jobExpanded);
+
+  const expandArrayRow = async (childArrayText) => {
+    let jobID = childArrayText.toString().split(".");
+
+    /**
+     * Update jobExpanded Array
+     * Case 1: Remove childArrayText if it exists
+     * Case 1: Add related elements with same jobID[0](same graphData)
+     * Case 2: Add childArrayText if it doesn't exist
+     * Case 2: Remove related elements with same jobID[0](same graphData)
+     */
+    const index = jobExpanded.indexOf(childArrayText);
+    if (index > -1) {
+      jobExpanded.splice(index, 1);
+      dispatch(jobJobExpanded([...jobExpanded, jobID[0]]));
+    } else {
+      dispatch(jobJobExpanded([...jobExpanded.filter((job) => !job.includes(jobID[0])), childArrayText.toString()]))
+    }
+  };
+
+  const selectArrayRow = (childArrayText) => {
+    let jobID = childArrayText.toString().split(".");
+    imagePaths[jobID[0] + "." + jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
+    dispatch(globalImagePaths(imagePaths));
+
+    /**
+     * Update jobSelected Array
+     * Remove childArrayText if it exists
+     * Remove related elements with same jobID[0](same graphData)
+     * Add childArrayText if it doesn't exist
+     */
+    const index = jobSelected.indexOf(childArrayText);
+    if (index > -1) {
+      jobSelected.splice(index, 1);
+      dispatch(jobJobSelected(jobSelected.filter((job) => !job.includes(jobID[0]))));
+    } else {
+      dispatch(jobJobSelected([...jobSelected.filter((job) => !job.includes(jobID[0])), childArrayText.toString()]));
+    }
+  }
 
   return searchArrayData.map((arrayRow) => {
     let tmp;
     const childArrayText = `${did}.${arrayRow.aid}`;
-    const isSelected = jobSelected === childArrayText;
+    const isSelected = jobSelected.includes(childArrayText);
+    const isExpanded = jobExpanded.includes(childArrayText);
     tmp = graphData.filter((data) => data.did === Number(did));
     const selectedGraphData = tmp[0] ? tmp[0] : {};
     tmp = arrayData[Number(did)]
@@ -129,16 +172,11 @@ export default function ArrayTableRow({
           />
         }
         sx={{ cursor: "pointer" }}
-        onClick={() => {
-          // Remove select of graph data when array is selected
-          dispatch(jobRowsSelected([]));
-          dispatch(jobJobSelected(childArrayText));
-          let jobID = childArrayText.toString().split(".");
-          imagePaths[jobID[0] + "." + jobID[1]] =
-            ElasticSearchService.playImages(jobID[0], jobID[1]);
-          dispatch(globalImagePaths(imagePaths));
-        }}
+        onClick={() => selectArrayRow(childArrayText)}
         isSelected={isSelected}
+        isExpanded={isExpanded}
+        childArrayText={childArrayText}
+        expandArrayRow={expandArrayRow}
       >
         {[...Array(8)].map((value, index) => {
           return (
