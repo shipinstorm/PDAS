@@ -82,6 +82,7 @@ export default function Dashboard() {
 	const [logPaneHeight, setLogPaneHeight] = useState(searchParamsObject.log === 'true' ? 268 : 6);
 	const viewLog = useSelector((state) => state.global.viewLog);
 
+	const showDevBanner = useSelector((state) => state.global.showDevBanner);
 	const graphData = useSelector((state) => state.global.graphData);
 	const arrayData = useSelector((state) => state.global.arrayData);
 	const taskData = useSelector((state) => state.global.taskData);
@@ -165,13 +166,6 @@ export default function Dashboard() {
 		// 			tmpGraphData = graphData;
 		// 		}
 		// 		result.hits.hits.map(doc => tmpGraphData.push(doc._source));
-		// 		if (firstRun && searchParamsObject.selected) {
-		// 			tmpGraphData.map((data, index) => {
-		// 				if(data.did.toString() == searchParamsObject.selected.toString()) {
-		// 					dispatch(jobRowsSelected([index]));
-		// 				}
-		// 			})
-		// 		}
 		// 		dispatch(globalGraphData(tmpGraphData));
 		// 		setJobListLoading(false);
 		// 	}
@@ -334,6 +328,12 @@ export default function Dashboard() {
 	
 	return (
 		<div className="app">
+			<div class="banner-wrapper">
+				{showDevBanner && <div className="top-devenv-banner">
+					<span className="glyphicon glyphicon-exclamation-sign"></span>
+					<small>This is a <b>development</b> instance.</small>
+				</div>}
+			</div>
 			<div className="app-header">
 				<div className="app-searchbar">
 					<div className="coda-logo">CODA</div>

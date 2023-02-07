@@ -5,7 +5,7 @@ import {
   GLOBAL_EXTERNAL_IP,
   GLOBAL_CODA_HEALTH,
   GLOBAL_IMAGE_PATHS,
-  GLOBAL_VIEW_LOG
+  GLOBAL_VIEW_LOG,
 } from '../actionTypes';
 
 const initialState = {
@@ -31,7 +31,8 @@ const initialState = {
     }
   },
   imagePaths: {},
-  viewLog: false
+  viewLog: false,
+  showDevBanner: true,
 };
 
 export default function foo(state = initialState, action) {
