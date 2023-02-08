@@ -43,7 +43,7 @@ export default function TaskTableRow({
 
   return (
     searchTaskData[arrayRow.aid].map((taskRow) => {
-      const childTaskText = `${childArrayText}.${taskRow.aid}`;
+      const childTaskText = `${childArrayText}.${taskRow.tid}`;
       const isSelected = (jobSelected.includes(childTaskText));
       const tmpArray2 = [
         { name: '' },
