@@ -11,15 +11,30 @@ class ElasticSearchService {
     return fetch(searchUrl).then(res => res.json());
   }
 
+  static getDgraph(dgraphId) {
+    let searchUrl = baseUrl + 'noauth/' + dgraphId + '?metadataValue=true';
+    return fetch(searchUrl).then(res => res.json());
+  }
+
   static getArrays(did) {
     let searchQuery = '_exists_:aid !_exists_:tid did:' + did;
     let searchUrl = elasticsearchURL + '/_search?default_operator=AND&sort=aid:asc&q=' + encodeURIComponent(searchQuery);
     return fetch(searchUrl).then(res => res.json());
   }
 
+  static getArray(dgraphId, arrayId) {
+    let searchUrl = baseUrl + 'noauth/' + dgraphId + '/' + arrayId + '?metadataValue=true';
+    return fetch(searchUrl).then(res => res.json());
+  }
+
   static getTasks(did, aid) {
     let searchQuery = '_exists_:tid did:' + did + ' aid: ' + aid;
     let searchUrl = elasticsearchURL + '/_search?default_operator=AND&sort=tid:asc&q=' + encodeURIComponent(searchQuery);
+    return fetch(searchUrl).then(res => res.json());
+  }
+
+  static getTask(dgraphId, arrayId, taskId) {
+    let searchUrl = baseUrl + 'noauth/' + dgraphId + '/' + arrayId + '/' + taskId + '?metadataValue=true';
     return fetch(searchUrl).then(res => res.json());
   }
 

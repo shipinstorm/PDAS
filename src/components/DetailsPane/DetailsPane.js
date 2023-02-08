@@ -35,6 +35,10 @@ export default function DetailsPane() {
   const selectedArrayData = useSelector((state) => state.job.arraySelected);
   const selectedTaskData = useSelector((state) => state.job.taskSelected);
 
+  const [graphData, setGraphData] = useState({});
+  const [arrayData, setArrayData] = useState({});
+  const [taskData, setTaskData] = useState({});
+
   const [poolData, setPoolData] = useState({});
   const [showErrorMsg, setShowErrorMsg] = useState(false);
   const [displayIdStr, setDisplayIdStr] = useState();
@@ -57,6 +61,23 @@ export default function DetailsPane() {
   const [expandedObj, setExpandedObj] = useState({});
 
   useEffect(() => {
+    if (selectedGraphData && !(Object.keys(selectedGraphData).length === 0)) {
+      ElasticSearchService.getDgraph(selectedGraphData.did)
+      .then((resultArray) => {
+        setGraphData(resultArray.dgraph[0]);
+      });
+    } else if (selectedArrayData && !(Object.keys(selectedArrayData).length === 0)) {
+      ElasticSearchService.getArray(selectedArrayData.did, selectedArrayData.aid)
+      .then((resultArray) => {
+        setArrayData(resultArray.array[0]);
+      });
+    } else if (selectedTaskData && !(Object.keys(selectedTaskData).length === 0)) {
+      ElasticSearchService.getTask(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid)
+      .then((resultArray) => {
+        setTaskData(resultArray);
+      });
+    }
+
     refreshPools();
     checkNetwork();
     if (displayIdStr !== getDisplayId()) {
@@ -306,20 +327,23 @@ export default function DetailsPane() {
     let prevDate;
     let hoverMsgs = [];
     for (let status of statusHistList.slice().reverse()) {
+      let tmp = new Date(status.ts * 1000);
+
       if (primaryStatuses.indexOf(status.msg) > -1 || primaryPrefixes.filter((prefix) => { return status.msg.startsWith(prefix) }).length > 0) {
         if (statusHistData.length > 0) {
           statusHistData[statusHistData.length - 1]['hover'] = hoverMsgs;
         }
         hoverMsgs = [];
-        let currDate = new Date(status.ts * 1000).format('M/D/YY');
+        
+        let currDate = tmp.toLocaleDateString();
         let date = currDate !== prevDate ? currDate : undefined;
-        let time = new Date(status.ts * 1000).format('h:mma').replace("m", "");
+        let time = tmp.getHours() + ":" + tmp.getMinutes();
         statusHistData.push({ 'date': date, 'time': time, 'msg': status.msg });
         if (date) {
           prevDate = date;
         }
       } else {
-        let time = new Date(status.ts * 1000).format('h:mma').replace("m", "");
+        let time = tmp.getHours() + ":" + tmp.getMinutes();
         hoverMsgs.unshift({ 'time': time, 'msg': status.msg });
       }
     }
@@ -1207,17 +1231,17 @@ export default function DetailsPane() {
                   {task() &&
                     <div className="row">
                       <label htmlFor="statusHistory" className="col-xs-4 control-label text-left">History</label>
-                      {selectedTaskData?._statushist &&
+                      {taskData?._statushist &&
                         <div className="col-xs-8 form-control-static status-history">
                           {!statusHistoryExpanded &&
                             <ul>
-                              {getStatusHistData(selectedTaskData?._statushist).length > 5 &&
+                              {getStatusHistData(taskData?._statushist).length > 5 &&
                                 <span
                                   className="glyphicon glyphicon-triangle-right"
                                   onClick={() => toggleStatusHistory()}
                                 />}
                               {
-                                getStatusHistData(selectedTaskData?._statushist).slice(0, 5).map((status, index) => {
+                                getStatusHistData(taskData?._statushist).slice(0, 5).map((status, index) => {
                                   return (
                                     <>
                                       {status.date &&
@@ -1250,7 +1274,7 @@ export default function DetailsPane() {
                                   )
                                 })
                               }
-                              {getStatusHistData(selectedTaskData?._statushist).length > 5 &&
+                              {getStatusHistData(taskData?._statushist).length > 5 &&
                                 <li
                                   className="show-more"
                                   onClick={() => toggleStatusHistory()}
@@ -1265,7 +1289,7 @@ export default function DetailsPane() {
                                 onClick={() => toggleStatusHistory()}
                               />
                               {
-                                getStatusHistData(selectedTaskData?._statushist).map((status, index) => {
+                                getStatusHistData(taskData?._statushist).map((status, index) => {
                                   <>
                                     {status.date &&
                                       <div><small>{status.date}</small></div>}
