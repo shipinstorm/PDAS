@@ -561,7 +561,7 @@ export default function DetailsPane() {
       {!(graph() || array() || task()) &&
         <div className="loading-div object-details-content">
           <br /><br />
-          <img src={SelectImage} alt='' />
+          <div style={{ textAlign: 'center' }}><img src={SelectImage} alt='' /></div>
           <br />
           Select job to view details
         </div>}
@@ -1207,17 +1207,17 @@ export default function DetailsPane() {
                   {task() &&
                     <div className="row">
                       <label htmlFor="statusHistory" className="col-xs-4 control-label text-left">History</label>
-                      {task._statushist &&
+                      {selectedTaskData?._statushist &&
                         <div className="col-xs-8 form-control-static status-history">
                           {!statusHistoryExpanded &&
                             <ul>
-                              {getStatusHistData(task._statushist).length > 5 &&
+                              {getStatusHistData(selectedTaskData?._statushist).length > 5 &&
                                 <span
                                   className="glyphicon glyphicon-triangle-right"
                                   onClick={() => toggleStatusHistory()}
                                 />}
                               {
-                                getStatusHistData(task._statushist).slice(0, 5).map((status, index) => {
+                                getStatusHistData(selectedTaskData?._statushist).slice(0, 5).map((status, index) => {
                                   return (
                                     <>
                                       {status.date &&
@@ -1250,7 +1250,7 @@ export default function DetailsPane() {
                                   )
                                 })
                               }
-                              {getStatusHistData(task._statushist).length > 5 &&
+                              {getStatusHistData(selectedTaskData?._statushist).length > 5 &&
                                 <li
                                   className="show-more"
                                   onClick={() => toggleStatusHistory()}
@@ -1265,7 +1265,7 @@ export default function DetailsPane() {
                                 onClick={() => toggleStatusHistory()}
                               />
                               {
-                                getStatusHistData(task._statushist).map((status, index) => {
+                                getStatusHistData(selectedTaskData?._statushist).map((status, index) => {
                                   <>
                                     {status.date &&
                                       <div><small>{status.date}</small></div>}
