@@ -41,7 +41,7 @@ describe('<DetailsPane>', () => {
        */
 
       // Arrange
-      cy.visit('http://localhost:' + localPort + '/search?q=&sel=' + jobID + '&exp=&details=true&log=false')
+      cy.visit('http://localhost:' + localPort + '/search?q=' + jobID + '&sel=' + jobID + '&exp=&details=true&log=false')
       // Assert
       cy.contains('.object-details-content', 'Select job to view').should('not.exist');
       cy.get('.object-details-content a').should('have.attr', 'href').and('include', jobID);
@@ -58,7 +58,7 @@ describe('<DetailsPane>', () => {
        */
 
       // Arrange
-      cy.visit('http://localhost:' + localPort + '/search?q=&sel=' + jobID + '&exp=&details=true&log=false')
+      cy.visit('http://localhost:' + localPort + '/search?q=' + jobID + '&sel=' + jobID + '&exp=&details=true&log=false')
       // Assert
       cy.get('.show-more').should('not.exist');
       cy.get('.row:contains("' + jobID + '")').should('have.length', 1);
@@ -79,7 +79,7 @@ describe('<DetailsPane>', () => {
        */
 
       // Arrange
-      cy.visit('http://localhost:' + localPort + '/search?q=&sel=' + jobID + '&exp=&details=true&log=false')
+      cy.visit('http://localhost:' + localPort + '/search?q=' + jobID + '&sel=' + jobID + '&exp=&details=true&log=false')
       // Assert
       cy.get(editTextAreaSelector).should('not.exist');
       cy.get(saveButtonSelector).should('not.exist');

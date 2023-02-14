@@ -1336,6 +1336,7 @@ export default function DetailsPane() {
                         <br />
                         <div
                           className="btn btn-default btn-sm btn-block"
+                          id="show-all-metadata"
                           onClick={() => toggleShowMore()}
                         >
                           Show All Metadata

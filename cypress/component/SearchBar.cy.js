@@ -1,4 +1,6 @@
 import SearchBar from '../../src/components/SearchBar/SearchBar.js';
+import { Provider } from 'react-redux'
+import store from '../../src/store/store.js'
 
 describe('<SearchBar>', () => {
   it('mounts', () => {
@@ -8,19 +10,21 @@ describe('<SearchBar>', () => {
 
     // Arrange
     cy.mount(
-      <SearchBar
-        filterQueryFlag={
-          {
-            status: {},
-            dept: {},
-            type: {},
-            display: {},
-            show: "All Shows",
-            after: "2022-09-08T16:02"
+      <Provider store={store}>
+        <SearchBar
+          filterQueryFlag={
+            {
+              status: {},
+              dept: {},
+              type: {},
+              display: {},
+              show: "All Shows",
+              after: "2022-09-08T16:02"
+            }
           }
-        }
-        autoCompleteValue={[]}
-      />
+          autoCompleteValue={[]}
+        />
+      </Provider>
     )
     // Assert
     cy.get(tagsStandardSelector).should('have.length', 1)
