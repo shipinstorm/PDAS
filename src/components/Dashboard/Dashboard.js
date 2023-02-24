@@ -348,8 +348,8 @@ export default function Dashboard() {
 				<HeaderButtons toggleDetails={toggleDetails} toggleLog={toggleLog} />
 			</div>
 			<div className="main-content">
-				<div className="app-container">
-					<div className="app-frame" style={{ bottom: logPaneHeight }}>
+				<div className="app-container" style={viewDetails ? { width: 'calc(100vw - 400px)'} : {}}>
+					<div className="app-frame" style={{ height: 'calc(100% - ' + logPaneHeight + 'px)' }}>
 						<GraphTable
 							viewDetails={viewDetails}
 							loading={jobListLoading}
@@ -361,7 +361,7 @@ export default function Dashboard() {
 					<div
 						ref={logPaneRef}
 						className="app-sidebar"
-						style={{ height: logPaneHeight }}
+						style={{ height: logPaneHeight, width: 'calc(100% - ' + (viewDetails ? 400 : 0) + 'px)' }}
 						onMouseDown={(e) => e.preventDefault()}
 					>
 						<div className="app-sidebar-resizer" onMouseDown={startResizing} />
