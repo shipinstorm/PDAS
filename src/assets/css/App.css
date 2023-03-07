@@ -382,3 +382,6 @@ td.host span.thread-count {
 .MuiToolbar-root > div:nth-child(2) > span {
   display: none;
 }
+.MuiTableHead-root th {
+  background-color: #505050 !important;
+}
