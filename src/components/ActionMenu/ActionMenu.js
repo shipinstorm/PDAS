@@ -1,665 +1,806 @@
-import {Component, Input, NgModule, EventEmitter, Output, SimpleChanges, Renderer} from '@angular/core';
-import {Subject, Observable} from 'rxjs/Rx';
-import {Dgraph, Array, Task, DgraphService, ImagePath, ImageDir} from './dgraph.service';
-import {DgraphListComponent} from './dgraph-list.component';
-import {ActionMenuHolderComponent} from '../action-menu/action-menu-holder.component';
-import {CodaModalComponent} from '../modals/coda-modal.component';
-import CodaGlobals = require('../codaGlobals');
-declare var moment: any;
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useSelector } from "react-redux";
 
-@Component({
-    selector:'dgraph-action-menu',
-    template:``
-})
+import classNames from 'classnames';
 
-@NgModule({
-})
+// import { CodaModalComponent } from '../modals/coda-modal.component';
 
-export default function DgraphActionMenuComponent() {
-    @Input() items: any[];    // items is selectedItems
-    @Input() codaModal: CodaModalComponent;
-    @Input() selectedItem: any;
-    @Output() openDetails = new EventEmitter();
-    @Output() openError = new EventEmitter();
-    @Output() toggleDetails = new EventEmitter();
-    @Output() actionSuccess = new EventEmitter();
-    @Output() hideActionSuccess = new EventEmitter();
-    @Output() unhideActionSuccess = new EventEmitter();
-    rightClickAction: string;
-    links: any;
-    title: any;
-    errorMessage: any;
-    requeueAction;
-    requeueAllAction;
-    requeueRunAction;
-    requeueExitAction;
-    requeueLocallyAction;
-    killAction;
-    killToDoneAction;
-    breakDependenciesAction;
-    viewDetails;
-    viewLog;
-    playImagesAction;
-    copyInfoAction;
-    imagePath: string;
-    excludeConfirmLists: string[];
-    setJobVisibility;
-    hosts: {};
-    rvLinkURL: string;
+import ElasticSearchService from "../../services/ElasticSearch.service";
 
-    constructor(private _dgraphService: DgraphService, renderer: Renderer){
-        renderer.listenGlobal('document', 'keydown', (event) => {
-            if(event.ctrlKey && event.shiftKey && event.keyCode === 72 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
-                event.preventDefault();
-                this.setVisibility(this.selectedItem);
-            }
+import './ActionMenu.scss';
 
-            if(event.ctrlKey && event.shiftKey && event.keyCode === 75 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
-                event.preventDefault();
-                this.killShortcut();
-            }
+export default function DgraphActionMenuComponent({ codaModal, targetId, options, classes }) {
+  const selectedGraphData = useSelector((state) => state.job.graphSelected);
+  const selectedArrayData = useSelector((state) => state.job.arraySelected);
+  const selectedTaskData = useSelector((state) => state.job.taskSelected);
+  const selectedItem = {...selectedGraphData, ...selectedArrayData, ...selectedTaskData};
+  const items = useSelector((state) => state.job.jobSelected);
 
-            if(event.ctrlKey && event.shiftKey && event.keyCode === 76 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
-                event.preventDefault();
-                this.openError.emit();
-            }
+  const externalIP = useSelector((state) => state.global.externalIP);
 
-            if(event.ctrlKey && event.shiftKey && event.keyCode === 86 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
-                event.preventDefault();
-                this.toggleDetails.emit();
-            }
+  const [contextData, setContextData] = useState({ visible: false, posX: 0, posY: 0 });
+  const contextRef = useRef(null);
 
-
-        });
-        this.killAction = {name:'Kill', horizontalBefore: false, subject:new Subject(), icon: 'ban-circle', altText: 'Ctrl+Shift+K'};
-        this.killToDoneAction = {name:'Kill & Mark as Done', horizontalBefore: false, subject:new Subject()};
-        this.copyInfoAction = {name:'Copy Job ID to Clipboard', title: 'Copy Job ID to Clipboard', horizontalBefore: true, subject:new Subject(), icon: 'copy'};
-        this.requeueAllAction = {name: 'Requeue All', horizontalBefore: false, subject:new Subject()}
-        this.requeueRunAction = {name:'Requeue Running', horizontalBefore: false, subject:new Subject()};
-        this.requeueExitAction = {name:'Requeue Exited', horizontalBefore: false, subject:new Subject()};
-        this.requeueAction = {name:'Requeue', horizontalBefore: true, icon: 'retweet', subject: new Subject(), sublinks:[this.requeueAllAction, this.requeueRunAction, this.requeueExitAction]};
-        this.requeueLocallyAction = {name:'Requeue Locally', horizontalBefore: false, subject:new Subject()};
-        this.breakDependenciesAction = {name:'Break Dependencies', title: 'Break Dependencies', horizontalBefore: true, icon: 'scissors', subject: new Subject()};
-        this.playImagesAction = {name:'Play Image Sequence', title: 'Play Image Sequence', horizontalBefore: true, subject:new Subject(), icon: 'play', altText: 'Space'};
-        this.viewDetails = {name:'View Job Details', title: 'View Job Details', horizontalBefore: true, subject:new Subject(), icon: 'info-sign', altText:'Ctrl+Shift+V'};
-        this.viewLog = {name:'View Log', title: 'View Log', horizontalBefore: false, subject:new Subject(), icon: 'file', altText:'Ctrl+Shift+L'};
-        this.setJobVisibility = {name:'Set Job Visibility', horizontalBefore: true, subject:new Subject(), altText: 'Ctrl+Shift+H'};
-        this.links = [this.killAction, this.killToDoneAction, this.copyInfoAction, this.requeueAction, this.requeueLocallyAction, this.breakDependenciesAction, this.playImagesAction, this.viewDetails, this.viewLog, this.setJobVisibility];
-        this.excludeConfirmLists = [this.copyInfoAction, this.playImagesAction, this.viewDetails, this.viewLog, this.setJobVisibility, this.requeueLocallyAction];
+  useEffect(() => {
+    const contextMenuEventHandler = (event) => {
+      const targetElement = document.getElementById(targetId)
+      if (targetElement && targetElement.contains(event.target)) {
+        event.preventDefault();
+        setContextData({ visible: true, posX: event.clientX, posY: event.clientY - 91 })
+      } else if (contextRef.current && !contextRef.current.contains(event.target)) {
+        setContextData({ ...contextData, visible: false })
+      }
     }
 
-    ngOnInit(){
-        this.links.forEach(link => {
-            if (link.subject){
-                link.subject.subscribe(val => this.rightClickCallback(val))
-            }
-          if (link.sublinks){
-            link.sublinks.forEach(sublink => {
-                if (sublink.subject){
-                    sublink.subject.subscribe(val => this.rightClickCallback(val))
-                }
-            });
-          }
-      });
-
-        if (this._dgraphService.user['username']){
-            this._dgraphService.populateHostList();
-        }
-
+    const offClickHandler = (event) => {
+      if (contextRef.current && !contextRef.current.contains(event.target)) {
+        setContextData({ ...contextData, visible: false })
+      }
     }
 
-    ngOnChanges(changes){
-        if ((changes.items && this.items) || (changes.selectedItem && this.selectedItem)) {
-            // If we're accessing externally, diable the playImagesAction
-            // If we're accesssing internally, re-enable the playImagesAction
-            this.playImagesAction.disabled = CodaGlobals.external_ip;
-            if (this.items.length == 1 && this.selectedItem){
-                this.killAction.title = 'Kill '+this.getItemId(this.items[0]);
-
-                this.killToDoneAction.title = 'Kill '+this.getItemId(this.items[0])+' & Mark as Done';
-
-                if (this.items[0].tid){
-                    this.requeueAction.title = 'Requeue '+this.getItemId(this.items[0]);
-                    this.requeueAction.sublinks = null;
-                } else {
-                    this.requeueAllAction.title = 'All';
-
-                    this.requeueRunAction.title = 'Running';
-
-                    this.requeueExitAction.title = 'Exited';
-
-                    this.requeueAction.title = 'Requeue';
-                    this.requeueAction.sublinks = [this.requeueAllAction, this.requeueRunAction, this.requeueExitAction];
-
-                    this.requeueLocallyAction.title = 'Requeue Locally';
-
-                }
-                this.copyInfoAction.disabled = false;
-                this.viewDetails.disabled = false;
-                // Only show the log item for tasks
-                if (this.items[0].tid){
-                    this.viewLog.disabled = false;
-                } else {
-                    this.viewLog.disabled = true;
-                }
-
-                this.requeueLocallyAction.title = 'Requeue '+this.getItemId(this.items[0])+' Locally';
-
-                //only show Hide menu item if selected item is a dgraph
-                if (!this.items[0].aid){
-                    if (this.links.indexOf(this.setJobVisibility) < 0) {
-                        this.links.push(this.setJobVisibility);
-                    }
-                    if(this.selectedItem.clienthide == 1) {
-                        this.setJobVisibility.title = 'Unhide '+this.getItemId(this.items[0]);
-                        this.setJobVisibility.icon = 'eye-open';
-                    }
-                    else {
-                        this.setJobVisibility.title = 'Hide '+this.getItemId(this.items[0]);
-                        this.setJobVisibility.icon = 'eye-close';
-                    }
-                } else {
-                    let i  = this.links.indexOf(this.setJobVisibility)
-                    if (i > -1) {
-                        this.links.splice(i, 1)
-                    }
-                }
-
-
-            } else {
-                this.killAction.title = 'Kill';
-
-                this.killToDoneAction.title = 'Kill & Mark as Done';
-
-                this.requeueAllAction.title = 'All';
-
-                this.requeueRunAction.title = 'Running';
-
-                this.requeueExitAction.title = 'Exited';
-
-                this.requeueAction.title = 'Requeue';
-                this.requeueAction.sublinks = [this.requeueAllAction, this.requeueRunAction, this.requeueExitAction];
-
-                this.requeueLocallyAction.title = 'Requeue Locally';
-
-                this.copyInfoAction.disabled = true;
-                this.viewDetails.disabled = true;
-                this.viewLog.disabled = true;
-
-                //only show Hide menu item if there is a dgraph selected
-                if (this.items.filter(item => {return !item.aid}).length > 0) {
-                    if (this.links.indexOf(this.setJobVisibility) < 0) {
-                        this.links.push(this.setJobVisibility);
-                    }
-
-                    if(this.selectedItem && this.selectedItem.clienthide == 1) {
-                        this.setJobVisibility.title = 'Unhide selected dgraphs';
-                        this.setJobVisibility.icon = 'eye-open';
-                    }
-                    else {
-                        this.setJobVisibility.title = 'Hide selected dgraphs';
-                        this.setJobVisibility.icon = 'eye-close';
-                    }
-                } else {
-                    let i  = this.links.indexOf(this.setJobVisibility)
-                    if (i > -1) {
-                        this.links.splice(i, 1)
-                    }
-                }
-
-            }
-
-        }
+    document.addEventListener('contextmenu', contextMenuEventHandler)
+    document.addEventListener('click', offClickHandler)
+    return () => {
+      document.removeEventListener('contextmenu', contextMenuEventHandler)
+      document.removeEventListener('click', offClickHandler)
     }
+  }, [contextData, targetId])
 
-    const getItemId = (item) => {
-      let itemId = item.did;
-      itemId += item.aid ? '.'+item.aid : "";
-      itemId += item.tid ? '.'+item.tid : "";
-      return itemId;
+  useLayoutEffect(() => {
+    if (contextData.posX + contextRef.current?.offsetWidth > window.innerWidth) {
+      setContextData({ ...contextData, posX: contextData.posX - contextRef.current?.offsetWidth })
     }
+    if (contextData.posY + contextRef.current?.offsetHeight > window.innerHeight) {
+      setContextData({ ...contextData, posY: contextData.posY - contextRef.current?.offsetHeight })
+    }
+  }, [contextData])
 
-    rightClickCallback(val){
-      if(this.excludeConfirmLists.indexOf(val) > -1 || (this.items.length == 1 && this.items[0].tid)) {
-          //call it without the confirm if it's in the exclude list
-          this.rightClickCallbackMain(val);
+  const [rightClickAction, setRightClickAction] = useState();
+  const [links, setLinks] = useState();
+  const [title, setTitle] = useState();
+  const [errorMessage, setErrorMessage] = useState();
+  const [requeueAction, setRequeueAction] = useState();
+  const [requeueAllAction, setRequeueAllAction] = useState();
+  const [requeueRunAction, setRequeueRunAction] = useState();
+  const [requeueExitAction, setRequeueExitAction] = useState();
+  const [requeueLocallyAction, setRequeueLocallyAction] = useState();
+  const [killAction, setKillAction] = useState();
+  const [killToDoneAction, setKillToDoneAction] = useState();
+  const [breakDependenciesAction, setBreakDependenciesAction] = useState();
+  const [viewDetails, setViewDetails] = useState();
+  const [viewLog, setViewLog] = useState();
+  const [playImagesAction, setPlayImagesAction] = useState();
+  const [copyInfoAction, setCopyInfoAction] = useState();
+  const [imagePath, setImagePath] = useState();
+  const [excludeConfirmLists, setExcludeConfirmLists] = useState();
+  const [jobVisibility, setJobVisibility] = useState();
+  const [hosts, setHosts] = useState({});
+  const [rvLinkURL, setRVLinkURL] = useState();
+
+  useEffect(() => {
+    // renderer.listenGlobal('document', 'keydown', (event) => {
+    //   if (event.ctrlKey && event.shiftKey && event.keyCode === 72 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
+    //     event.preventDefault();
+    //     setVisibility(selectedItem);
+    //   }
+
+    //   if (event.ctrlKey && event.shiftKey && event.keyCode === 75 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
+    //     event.preventDefault();
+    //     killShortcut();
+    //   }
+
+    //   if (event.ctrlKey && event.shiftKey && event.keyCode === 76 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
+    //     event.preventDefault();
+    //     openError.emit();
+    //   }
+
+    //   if (event.ctrlKey && event.shiftKey && event.keyCode === 86 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
+    //     event.preventDefault();
+    //     toggleDetails.emit();
+    //   }
+    // });
+
+    let tmpKillAction = { name: 'Kill', horizontalBefore: false, icon: 'ban-circle', altText: 'Ctrl+Shift+K' };
+    let tmpKillToDoneAction = { name: 'Kill & Mark as Done', horizontalBefore: false };
+    let tmpCopyInfoAction = { name: 'Copy Job ID to Clipboard', title: 'Copy Job ID to Clipboard', horizontalBefore: true, icon: 'copy' };
+    let tmpRequeueAllAction = { name: 'Requeue All', horizontalBefore: false }
+    let tmpRequeueRunAction = { name: 'Requeue Running', horizontalBefore: false };
+    let tmpRequeueExitAction = { name: 'Requeue Exited', horizontalBefore: false };
+    let tmpRequeueAction = { name: 'Requeue', horizontalBefore: true, icon: 'retweet', sublinks: [tmpRequeueAllAction, tmpRequeueRunAction, tmpRequeueExitAction] };
+    let tmpRequeueLocallyAction = { name: 'Requeue Locally', horizontalBefore: false };
+    let tmpBreakDependenciesAction = { name: 'Break Dependencies', title: 'Break Dependencies', horizontalBefore: true, icon: 'scissors' };
+    let tmpPlayImagesAction = { name: 'Play Image Sequence', title: 'Play Image Sequence', horizontalBefore: true, icon: 'play', altText: 'Space' };
+    let tmpViewDetails = { name: 'View Job Details', title: 'View Job Details', horizontalBefore: true, icon: 'info-sign', altText: 'Ctrl+Shift+V' };
+    let tmpViewLog = { name: 'View Log', title: 'View Log', horizontalBefore: false, icon: 'file', altText: 'Ctrl+Shift+L' };
+    let tmpJobVisibility = { name: 'Set Job Visibility', horizontalBefore: true, altText: 'Ctrl+Shift+H' };
+    let tmpLinks = [tmpKillAction, tmpKillToDoneAction, tmpCopyInfoAction, tmpRequeueAction, tmpRequeueLocallyAction, tmpBreakDependenciesAction, tmpPlayImagesAction, tmpViewDetails, tmpViewLog, tmpJobVisibility];
+    let tmpExcludeConfirmLists = [tmpCopyInfoAction, tmpPlayImagesAction, tmpViewDetails, tmpViewLog, tmpJobVisibility, tmpRequeueLocallyAction];
+
+    // links.forEach(link => {
+    //   if (link.subject) {
+    //     link.subject.subscribe(val => rightClickCallback(val))
+    //   }
+
+    //   if (link.sublinks) {
+    //     link.sublinks.forEach(sublink => {
+    //       if (sublink.subject) {
+    //         sublink.subject.subscribe(val => rightClickCallback(val))
+    //       }
+    //     });
+    //   }
+    // });
+
+    // if (ElasticSearchService.user['username']) {
+    //   ElasticSearchService.populateHostList();
+    // }
+
+    if (items || selectedItem) {
+      // If we're accessing externally, disable the playImagesAction
+      // If we're accessing internally, re-enable the playImagesAction
+      tmpPlayImagesAction.disabled = externalIP;
+      if (items.length === 1 && selectedItem) {
+        tmpKillAction.title = 'Kill ' + getItemId(items[0]);
+
+        tmpKillToDoneAction.title = 'Kill ' + getItemId(items[0]) + ' & Mark as Done';
+
+        if (items[0].tid) {
+          tmpRequeueAction.title = 'Requeue ' + getItemId(items[0]);
+          tmpRequeueAction.sublinks = null;
         } else {
-          let confirmModalObj: any = {}
-          if (this.items.length == 1 && this.selectedItem){
-              switch(val) {
-                  case this.killAction:
-                    confirmModalObj.modalTitle = 'Kill all jobs?';
-                    confirmModalObj.modalBody = 'Do you want to kill all jobs from: \n"'+this.selectedItem.title+'"\n(Job ID: '+this.getItemId(this.items[0])+')';
-                    confirmModalObj.confirmBtn = 'Kill All';
-                    break;
-                  case this.killToDoneAction:
-                    confirmModalObj.modalTitle = 'Kill all jobs & Mark as Done?';
-                    confirmModalObj.modalBody = 'Do you want to kill all jobs and mark them as done from: \n"'+this.selectedItem.title+'"\n(Job ID: '+this.getItemId(this.items[0])+')';
-                    confirmModalObj.confirmBtn = 'Kill All & Mark Done';
-                    break;
-                  case this.requeueAllAction:
-                    confirmModalObj.modalTitle = 'Requeue all jobs?';
-                    confirmModalObj.modalBody = 'Do you want to requeue all jobs from: \n"'+this.selectedItem.title+'"\n(Job ID: '+this.getItemId(this.items[0])+')';
-                    confirmModalObj.confirmBtn = 'Requeue All';
-                    break;
-                  case this.requeueRunAction:
-                    confirmModalObj.modalTitle = 'Requeue running jobs?';
-                    confirmModalObj.modalBody = 'Do you want to requeue all running jobs from: \n"'+this.selectedItem.title+'"\n(Job ID: '+this.getItemId(this.items[0])+')';
-                    confirmModalObj.confirmBtn = 'Requeue Running';
-                    break;
-                  case this.requeueExitAction:
-                    confirmModalObj.modalTitle = 'Requeue exited jobs?';
-                    confirmModalObj.modalBody = 'Do you want to requeue all exited jobs from: \n"'+this.selectedItem.title+'"\n(Job ID: '+this.getItemId(this.items[0])+')';
-                    confirmModalObj.confirmBtn = 'Requeue Exited';
-                    break;
-                  case this.breakDependenciesAction:
-                    confirmModalObj.modalTitle = "Break Dependencies?";
-                    confirmModalObj.modalBody = "Break dependencies for "+this.getItemId(this.items[0])+"?";
-                    confirmModalObj.confirmBtn = 'Break';
-                    break;
-                }
-          } else {
-              switch(val) {
-                  case this.killAction:
-                    confirmModalObj.modalTitle = 'Kill selected jobs?';
-                    confirmModalObj.modalBody = "Do you want to kill all jobs from "+this.items.length+" selected items?";
-                    confirmModalObj.confirmBtn = "Kill "+this.items.length+" item";
-                    break;
-                  case this.killToDoneAction:
-                    confirmModalObj.modalTitle = 'Kill selected jobs & Mark as Done?';
-                    confirmModalObj.modalBody = "Do you want to kill all jobs from "+this.items.length+" selected items and mark them as done?";
-                    confirmModalObj.confirmBtn = 'Kill All & Mark Done';
-                    break;
-                  case this.requeueAllAction:
-                    confirmModalObj.modalTitle = 'Requeue selected jobs?';
-                    confirmModalObj.modalBody = "Do you want to requeue all jobs from "+this.items.length+" selected items?";
-                    confirmModalObj.confirmBtn = "Requeue "+this.items.length+" items";
-                    break;
-                  case this.requeueRunAction:
-                    confirmModalObj.modalTitle = 'Requeue running from selected jobs?';
-                    confirmModalObj.modalBody = "Do you want to requeue all running jobs from "+this.items.length+" selected items?";
-                    confirmModalObj.confirmBtn = "Requeue Running from "+this.items.length+" items";
-                    break;
-                  case this.requeueExitAction:
-                    confirmModalObj.modalTitle = 'Requeue exited from selected jobs?';
-                    confirmModalObj.modalBody = "Do you want to requeue all exited jobs from "+this.items.length+" selected items?";
-                    confirmModalObj.confirmBtn = "Requeue Exited from "+this.items.length+" items";
-                    break;
-                  case this.breakDependenciesAction:
-                    confirmModalObj.modalTitle = "Break Dependencies?";
-                    confirmModalObj.modalBody = "Break dependencies for "+this.items.length+" selected items?"
-                    confirmModalObj.confirmBtn = 'Break';
-                }
+          tmpRequeueAllAction.title = 'All';
+
+          tmpRequeueRunAction.title = 'Running';
+
+          tmpRequeueExitAction.title = 'Exited';
+
+          tmpRequeueAction.title = 'Requeue';
+          tmpRequeueAction.sublinks = [tmpRequeueAllAction, tmpRequeueRunAction, tmpRequeueExitAction];
+
+          tmpRequeueLocallyAction.title = 'Requeue Locally';
+        }
+        tmpCopyInfoAction.disabled = false;
+        tmpViewDetails.disabled = false;
+        // Only show the log item for tasks
+        if (items[0].tid) {
+          tmpViewLog.disabled = false;
+        } else {
+          tmpViewLog.disabled = true;
+        }
+
+        tmpRequeueLocallyAction.title = 'Requeue ' + getItemId(items[0]) + ' Locally';
+
+        // only show Hide menu item if selected item is a dgraph
+        if (!items[0].aid) {
+          if (tmpLinks.indexOf(tmpJobVisibility) < 0) {
+            tmpLinks.push(tmpJobVisibility);
           }
-          this.codaModal.showConfirm(confirmModalObj, () => this.rightClickCallbackMain(val));
+          if (selectedItem.clienthide === 1) {
+            tmpJobVisibility.title = 'Unhide ' + getItemId(items[0]);
+            tmpJobVisibility.icon = 'eye-open';
+          }
+          else {
+            tmpJobVisibility.title = 'Hide ' + getItemId(items[0]);
+            tmpJobVisibility.icon = 'eye-close';
+          }
+        } else {
+          let i = tmpLinks.indexOf(tmpJobVisibility)
+          if (i > -1) {
+            tmpLinks.splice(i, 1)
+          }
         }
-    }
+      } else {
+        tmpKillAction.title = 'Kill';
 
-    rightClickCallbackMain(val: string){
-        this.rightClickAction = val;
+        tmpKillToDoneAction.title = 'Kill & Mark as Done';
 
-        switch (this.rightClickAction) {
-            case this.requeueAction:
-            case this.requeueAllAction:
-                for (let item of this.items){
-                    if (!item.aid){
-                        this._dgraphService.requeueAll(Number(item.did))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    } else if (!item.tid){
-                        this._dgraphService.requeueAll(Number(item.did), Number(item.aid))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    } else if (item.tid){
-                        this._dgraphService.requeueAll(Number(item.did), Number(item.aid), Number(item.tid))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    }
-                }
-                break;
-            case this.requeueRunAction:
-                for (let item of this.items){
-                    if (!item.aid){
-                        this._dgraphService.requeueRun(Number(item.did))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    } else if (!item.tid){
-                        this._dgraphService.requeueRun(Number(item.did), Number(item.aid))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    } else if (item.tid){
-                        this._dgraphService.requeueRun(Number(item.did), Number(item.aid), Number(item.tid))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    }
-                }
-                break;
-            case this.requeueExitAction:
-                for (let item of this.items){
-                    if (!item.aid){
-                        this._dgraphService.requeueExit(Number(item.did))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    } else if (!item.tid){
-                        this._dgraphService.requeueExit(Number(item.did), Number(item.aid))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    } else if (item.tid){
-                        this._dgraphService.requeueExit(Number(item.did), Number(item.aid), Number(item.tid))
-                            .subscribe(
-                                title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..."}); },
-                                error => this.errorMessage = <any>error
-                            );
-                    }
-                }
-                break;
-            case this.killAction:
-                this.doKillAction();
-                break;
-            case this.killToDoneAction:
-                this.doKillToDoneAction();
-                break;
-            case this.requeueLocallyAction:
-                this.requeueLocally();
-                break;
-            case this.breakDependenciesAction:
-                this.breakDependencies();
-                break;
-            case this.viewDetails:
-                this.openDetails.emit();
-                break;
-            case this.viewLog:
-                this.openError.emit();
-                break;
-            case this.setJobVisibility:
-                this.setVisibility(this.selectedItem);
-                break;
-            case this.playImagesAction:
-                this.playImages();
-                break;
-            case this.copyInfoAction:
-                let jobIdTextArea = <HTMLTextAreaElement>document.createElement("textarea");
-                jobIdTextArea.value = this.getItemId(this.items[0]);
-                document.body.appendChild(jobIdTextArea);
-                jobIdTextArea.select();
-                try {
-                    document.execCommand('copy');
-                } catch (err) {
-                    console.log('error copying job id: '+err);
-                }
-                document.body.removeChild(jobIdTextArea);
-        }
-    }
+        tmpRequeueAllAction.title = 'All';
 
-    const doKillAction = () => {
-      for (let item of items){
-        if (!item.aid){
-          this._dgraphService.kill(Number(item.did))
-              .subscribe(
-                  title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "killing...", time: new moment(), substatus: "killing..."}); },
-                  error => this.errorMessage = <any>error
-              );
-        } else if (!item.tid){
-          this._dgraphService.kill(Number(item.did), Number(item.aid))
-              .subscribe(
-                  title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "killing...", time: new moment(), substatus: "killing..."}); },
-                  error => this.errorMessage = <any>error
-              );
-        } else if (item.tid){
-          this._dgraphService.kill(Number(item.did), Number(item.aid), Number(item.tid))
-              .subscribe(
-                  title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "killing...", time: new moment(), substatus: "killing..."}); },
-                  error => this.errorMessage = <any>error
-              );
+        tmpRequeueRunAction.title = 'Running';
+
+        tmpRequeueExitAction.title = 'Exited';
+
+        tmpRequeueAction.title = 'Requeue';
+        tmpRequeueAction.sublinks = [tmpRequeueAllAction, tmpRequeueRunAction, tmpRequeueExitAction];
+
+        tmpRequeueLocallyAction.title = 'Requeue Locally';
+
+        tmpCopyInfoAction.disabled = true;
+        tmpViewDetails.disabled = true;
+        tmpViewLog.disabled = true;
+
+        // only show Hide menu item if there is a dgraph selected
+        if (items.filter(item => { return !item.aid }).length > 0) {
+          if (tmpLinks.indexOf(tmpJobVisibility) < 0) {
+            tmpLinks.push(tmpJobVisibility);
+          }
+
+          if (selectedItem && selectedItem.clienthide === 1) {
+            tmpJobVisibility.title = 'Unhide selected dgraphs';
+            tmpJobVisibility.icon = 'eye-open';
+          }
+          else {
+            tmpJobVisibility.title = 'Hide selected dgraphs';
+            tmpJobVisibility.icon = 'eye-close';
+          }
+        } else {
+          let i = tmpLinks.indexOf(tmpJobVisibility)
+          if (i > -1) {
+            tmpLinks.splice(i, 1)
+          }
         }
       }
+    }
+
+    setKillAction(tmpKillAction);
+    setKillToDoneAction(tmpKillToDoneAction);
+    setCopyInfoAction(tmpCopyInfoAction);
+    setRequeueAllAction(tmpRequeueAction);
+    setRequeueRunAction(tmpRequeueRunAction);
+    setRequeueExitAction(tmpRequeueExitAction);
+    setRequeueAction(tmpRequeueAction);
+    setRequeueLocallyAction(tmpRequeueLocallyAction);
+    setBreakDependenciesAction(tmpBreakDependenciesAction);
+    setPlayImagesAction(tmpPlayImagesAction);
+    setViewDetails(tmpViewDetails);
+    setViewLog(tmpViewLog);
+    setJobVisibility(tmpJobVisibility);
+    setLinks(tmpLinks);
+    setExcludeConfirmLists(tmpExcludeConfirmLists);
+
+    console.log(tmpLinks);
+  }, []);
+
+  const getItemId = (item) => {
+    let itemId = item.did;
+    itemId += item.aid ? '.' + item.aid : "";
+    itemId += item.tid ? '.' + item.tid : "";
+    return itemId;
+  }
+
+  const rightClickCallback = (val) => {
+    if (excludeConfirmLists.indexOf(val) > -1 || (items.length === 1 && items[0].tid)) {
+      // call it without the confirm if it's in the exclude list
+      rightClickCallbackMain(val);
+    } else {
+      let confirmModalObj = {}
+      if (items.length === 1 && selectedItem) {
+        switch (val) {
+          case killAction:
+            confirmModalObj.modalTitle = 'Kill all jobs?';
+            confirmModalObj.modalBody = 'Do you want to kill all jobs from: \n"' + selectedItem.title + '"\n(Job ID: ' + getItemId(items[0]) + ')';
+            confirmModalObj.confirmBtn = 'Kill All';
+            break;
+          case killToDoneAction:
+            confirmModalObj.modalTitle = 'Kill all jobs & Mark as Done?';
+            confirmModalObj.modalBody = 'Do you want to kill all jobs and mark them as done from: \n"' + selectedItem.title + '"\n(Job ID: ' + getItemId(items[0]) + ')';
+            confirmModalObj.confirmBtn = 'Kill All & Mark Done';
+            break;
+          case requeueAllAction:
+            confirmModalObj.modalTitle = 'Requeue all jobs?';
+            confirmModalObj.modalBody = 'Do you want to requeue all jobs from: \n"' + selectedItem.title + '"\n(Job ID: ' + getItemId(items[0]) + ')';
+            confirmModalObj.confirmBtn = 'Requeue All';
+            break;
+          case requeueRunAction:
+            confirmModalObj.modalTitle = 'Requeue running jobs?';
+            confirmModalObj.modalBody = 'Do you want to requeue all running jobs from: \n"' + selectedItem.title + '"\n(Job ID: ' + getItemId(items[0]) + ')';
+            confirmModalObj.confirmBtn = 'Requeue Running';
+            break;
+          case requeueExitAction:
+            confirmModalObj.modalTitle = 'Requeue exited jobs?';
+            confirmModalObj.modalBody = 'Do you want to requeue all exited jobs from: \n"' + selectedItem.title + '"\n(Job ID: ' + getItemId(items[0]) + ')';
+            confirmModalObj.confirmBtn = 'Requeue Exited';
+            break;
+          case breakDependenciesAction:
+            confirmModalObj.modalTitle = "Break Dependencies?";
+            confirmModalObj.modalBody = "Break dependencies for " + getItemId(items[0]) + "?";
+            confirmModalObj.confirmBtn = 'Break';
+            break;
+          default:
+            break;
+        }
+      } else {
+        switch (val) {
+          case killAction:
+            confirmModalObj.modalTitle = 'Kill selected jobs?';
+            confirmModalObj.modalBody = "Do you want to kill all jobs from " + items.length + " selected items?";
+            confirmModalObj.confirmBtn = "Kill " + items.length + " item";
+            break;
+          case killToDoneAction:
+            confirmModalObj.modalTitle = 'Kill selected jobs & Mark as Done?';
+            confirmModalObj.modalBody = "Do you want to kill all jobs from " + items.length + " selected items and mark them as done?";
+            confirmModalObj.confirmBtn = 'Kill All & Mark Done';
+            break;
+          case requeueAllAction:
+            confirmModalObj.modalTitle = 'Requeue selected jobs?';
+            confirmModalObj.modalBody = "Do you want to requeue all jobs from " + items.length + " selected items?";
+            confirmModalObj.confirmBtn = "Requeue " + items.length + " items";
+            break;
+          case requeueRunAction:
+            confirmModalObj.modalTitle = 'Requeue running from selected jobs?';
+            confirmModalObj.modalBody = "Do you want to requeue all running jobs from " + items.length + " selected items?";
+            confirmModalObj.confirmBtn = "Requeue Running from " + items.length + " items";
+            break;
+          case requeueExitAction:
+            confirmModalObj.modalTitle = 'Requeue exited from selected jobs?';
+            confirmModalObj.modalBody = "Do you want to requeue all exited jobs from " + items.length + " selected items?";
+            confirmModalObj.confirmBtn = "Requeue Exited from " + items.length + " items";
+            break;
+          case breakDependenciesAction:
+            confirmModalObj.modalTitle = "Break Dependencies?";
+            confirmModalObj.modalBody = "Break dependencies for " + items.length + " selected items?"
+            confirmModalObj.confirmBtn = 'Break';
+            break;
+          default:
+            break;
+        }
+      }
+      codaModal.showConfirm(confirmModalObj, () => rightClickCallbackMain(val));
+    }
+  }
+
+  const rightClickCallbackMain = (val) => {
+    setRightClickAction(val);
+
+    switch (rightClickAction) {
+      case requeueAction:
+      case requeueAllAction:
+        for (let item of items) {
+          if (!item.aid) {
+            ElasticSearchService.requeueAll(Number(item.did))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          } else if (!item.tid) {
+            ElasticSearchService.requeueAll(Number(item.did), Number(item.aid))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          } else if (item.tid) {
+            ElasticSearchService.requeueAll(Number(item.did), Number(item.aid), Number(item.tid))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          }
+        }
+        break;
+      case requeueRunAction:
+        for (let item of items) {
+          if (!item.aid) {
+            ElasticSearchService.requeueRun(Number(item.did))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          } else if (!item.tid) {
+            ElasticSearchService.requeueRun(Number(item.did), Number(item.aid))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          } else if (item.tid) {
+            ElasticSearchService.requeueRun(Number(item.did), Number(item.aid), Number(item.tid))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          }
+        }
+        break;
+      case requeueExitAction:
+        for (let item of items) {
+          if (!item.aid) {
+            ElasticSearchService.requeueExit(Number(item.did))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          } else if (!item.tid) {
+            ElasticSearchService.requeueExit(Number(item.did), Number(item.aid))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          } else if (item.tid) {
+            ElasticSearchService.requeueExit(Number(item.did), Number(item.aid), Number(item.tid))
+              .subscribe(
+                title => {
+                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
+                },
+                error => setErrorMessage(error)
+              );
+          }
+        }
+        break;
+      case killAction:
+        doKillAction();
+        break;
+      case killToDoneAction:
+        doKillToDoneAction();
+        break;
+      case requeueLocallyAction:
+        requeueLocally();
+        break;
+      case breakDependenciesAction:
+        breakDependencies();
+        break;
+      case viewDetails:
+        break;
+      case viewLog:
+        break;
+      case setJobVisibility:
+        setVisibility(selectedItem);
+        break;
+      case playImagesAction:
+        playImages();
+        break;
+      case copyInfoAction:
+        // let jobIdTextArea = <HTMLTextAreaElement>document.createElement("textarea");
+        // jobIdTextArea.value = getItemId(items[0]);
+        // document.body.appendChild(jobIdTextArea);
+        // jobIdTextArea.select();
+        // try {
+        //     document.execCommand('copy');
+        // } catch (err) {
+        //     console.log('error copying job id: '+err);
+        // }
+        // document.body.removeChild(jobIdTextArea);
+        break;
+      default:
+        break;
+    }
+  }
+
+  const doKillAction = () => {
+    for (let item of items) {
+      if (!item.aid) {
+        ElasticSearchService.kill(Number(item.did))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      } else if (!item.tid) {
+        ElasticSearchService.kill(Number(item.did), Number(item.aid))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      } else if (item.tid) {
+        ElasticSearchService.kill(Number(item.did), Number(item.aid), Number(item.tid))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      }
+    }
+  };
+
+  const doKillToDoneAction = () => {
+    for (let item of items) {
+      if (!item.aid) {
+        ElasticSearchService.killToDone(Number(item.did))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      } else if (!item.tid) {
+        ElasticSearchService.killToDone(Number(item.did), Number(item.aid))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      } else if (item.tid) {
+        ElasticSearchService.killToDone(Number(item.did), Number(item.aid), Number(item.tid))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      }
+    }
+  }
+
+  const sendRequeueRequest = (listOfHosts, isexclusive) => {
+    for (let item of items) {
+      if (!item.aid) {
+        ElasticSearchService.requeueLocal(listOfHosts, isexclusive, Number(item.did))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      } else if (!item.tid) {
+        ElasticSearchService.requeueLocal(listOfHosts, isexclusive, Number(item.did), Number(item.aid))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      } else if (item.tid) {
+        ElasticSearchService.requeueLocal(listOfHosts, isexclusive, Number(item.did), Number(item.aid), Number(item.tid))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+            },
+            error => setErrorMessage(error)
+          );
+      }
+    }
+  }
+
+  const requeueLocally = () => {
+    let confirmModalObj = {}
+    let val = requeueLocallyAction
+    confirmModalObj.modalTitle = 'Requeue locally on which machine(s)?';
+    confirmModalObj.confirmBtn = 'Requeue';
+    confirmModalObj.exclusiveMsg = 'Run only on these hosts. Do not spill to the farm';
+
+    codaModal.showRequeueLocally(ElasticSearchService.hosts, confirmModalObj, () => sendRequeueRequest(codaModal.selectedHosts, codaModal.local_exclusive));
+  }
+
+  const killShortcut = () => {
+    let confirmModalObj = {}
+    confirmModalObj.modalTitle = "Kill all jobs?";
+    confirmModalObj.modalBody = 'Do you want to kill all jobs from: \n"' + selectedItem.title + '"\n(Job ID: ' + getItemId(items[0]) + ')';
+    if (items.length > 1) {
+      confirmModalObj.modalTitle = "Kill selected jobs?";
+      confirmModalObj.modalBody = "Do you want to kill all jobs from " + items.length + " selected items?";
+    }
+
+    codaModal.showKillOptions(confirmModalObj, () => doKillAction(), () => doKillToDoneAction());
+  }
+
+  const breakDependencies = () => {
+    for (let item of items) {
+      if (!item.aid) {
+        ElasticSearchService.breakDgraphDependencies(Number(item.did))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
+            },
+            error => setErrorMessage(error)
+          );
+      } else if (!item.tid) {
+        ElasticSearchService.breakArrayDependencies(Number(item.did), Number(item.aid))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
+            },
+            error => setErrorMessage(error)
+          );
+      } else if (item.tid) {
+        ElasticSearchService.breakTaskDependencies(Number(item.did), Number(item.aid), Number(item.tid))
+          .subscribe(
+            title => {
+              // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
+            },
+            error => setErrorMessage(error)
+          );
+      }
+    }
+  }
+
+  // Start the playback action.
+  const playImages = () => {
+    console.log("[DEBUG] In playImages()")
+
+    // Early out if there are no selected items.
+    if (items) {
+      codaModal.showLoad();
+    } else {
+      return;
+    }
+
+    let subscription;
+
+    // Build a string list of selected job ids, converting each data
+    // structure into a string of "did.aid.tid", "did.aid" or "did".
+    let idList = items.map(item => {
+      if (item.tid) {
+        return item.did + "." + item.aid + "." + item.tid
+      } else if (item.aid) {
+        return item.did + "." + item.aid
+      } else {
+        return item.did
+      }
+    });
+    console.log("[DEBUG] - items=" + idList.join(","))
+
+    // Create an Observable for the service call to fetch the rvspec for the
+    let rvSpec;
+    // subscription = new Observable < string > (observer => {
+    //   ElasticSearchService.getRVSpec(idList)
+    //     .then(
+    //       rvSpec => { observer.next(rvSpec.rvSpec); observer.complete(); },
+    //       error => {
+    //         console.log("[ERROR] (1) Problem getting rvspec: " + error)
+    //         observer.complete();
+    //       }
+    //     );
+    // }).subscribe(
+    //   data => rvSpec = data,
+    //   error => console.log("[ERROR] (2) Problem getting rvspec: " + error.toString()),
+    //   () => playImagesCallBack(rvSpec)
+    // );
+
+    // Cancel the playback if requested.
+    codaModal.cancelCallback = function () {
+      if (subscription) {
+        console.log("Canceling loading imagePaths and RV callback.");
+        subscription.unsubscribe();
+      }
     };
+  }
 
-    doKillToDoneAction() {
-        for (let item of this.items){
-            if (!item.aid){
-                this._dgraphService.killToDone(Number(item.did))
-                    .subscribe(
-                        title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "killing...", time: new moment(), substatus: "killing..."}); },
-                        error => this.errorMessage = <any>error
-                    );
-            } else if (!item.tid){
-                this._dgraphService.killToDone(Number(item.did), Number(item.aid))
-                    .subscribe(
-                        title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "killing...", time: new moment(), substatus: "killing..."}); },
-                        error => this.errorMessage = <any>error
-                    );
-            } else if (item.tid){
-                this._dgraphService.killToDone(Number(item.did), Number(item.aid), Number(item.tid))
-                    .subscribe(
-                        title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "killing...", time: new moment(), substatus: "killing..."}); },
-                        error => this.errorMessage = <any>error
-                    );
+
+  const setVisibility = (job) => {
+    if (job) {
+      let code = "1";
+
+      //sets visibility based on first job selected
+      if (job.clienthide && job.clienthide === 1) {
+        code = "0";
+      }
+
+      if (code === "1") {
+        //check that all items are finished - we don't allow hiding of unfinished jobs
+        let unfinishedJobs = [];
+        for (let item of items) {
+          if (!item.aid) {
+            let statuses = item._dgraphstatus;
+            // 0=queued 1=run 7=depend 5=suspend 6=nostatus
+            if (statuses.includes(0) || statuses.includes(1) || statuses.includes(7) || statuses.includes(5) || statuses.includes(6)) {
+              unfinishedJobs.push(item);
             }
+          }
         }
-    }
-
-    sendRequeueRequest(listOfHosts: any, isexclusive: boolean) {
-        for(let item of this.items) {
-            if (!item.aid){
-                this._dgraphService.requeueLocal(listOfHosts, isexclusive, Number(item.did))
-                .subscribe(
-                    title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..."}); },
-                    error => this.errorMessage = <any>error
-                );
-            } else if (!item.tid){
-                this._dgraphService.requeueLocal(listOfHosts, isexclusive, Number(item.did), Number(item.aid))
-                .subscribe(
-                    title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..."}); },
-                    error => this.errorMessage = <any>error
-                );
-            } else if (item.tid){
-                this._dgraphService.requeueLocal(listOfHosts, isexclusive, Number(item.did), Number(item.aid), Number(item.tid))
-                .subscribe(
-                    title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..."}); },
-                    error => this.errorMessage = <any>error
-                );
-            }
-        }
-    }
-
-    requeueLocally(id?: string) {
-        let confirmModalObj: any = {}
-        let val = this.requeueLocallyAction
-        confirmModalObj.modalTitle = 'Requeue locally on which machine(s)?';
-        confirmModalObj.confirmBtn = 'Requeue';
-        confirmModalObj.exclusiveMsg = 'Run only on these hosts. Do not spill to the farm';
-
-        this.codaModal.showRequeueLocally(this._dgraphService.hosts, confirmModalObj, () => this.sendRequeueRequest(this.codaModal.selectedHosts, this.codaModal.local_exclusive));
-    }
-
-    killShortcut() {
-        let confirmModalObj: any = {}
-        confirmModalObj.modalTitle = "Kill all jobs?";
-        confirmModalObj.modalBody = 'Do you want to kill all jobs from: \n"'+this.selectedItem.title+'"\n(Job ID: '+this.getItemId(this.items[0])+')';
-        if(this.items.length > 1) {
-            confirmModalObj.modalTitle = "Kill selected jobs?";
-            confirmModalObj.modalBody = "Do you want to kill all jobs from "+this.items.length+" selected items?";
-        }
-
-        this.codaModal.showKillOptions(confirmModalObj, () => this.doKillAction(), () => this.doKillToDoneAction());
-    }
-
-    breakDependencies() {
-        for (let item of this.items) {
-            if (!item.aid){
-                this._dgraphService.breakDgraphDependencies(Number(item.did))
-                .subscribe(
-                    title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..."}); },
-                    error => this.errorMessage = <any>error
-                );
-            } else if (!item.tid) {
-                this._dgraphService.breakArrayDependencies(Number(item.did), Number(item.aid))
-                .subscribe(
-                    title => { this.actionSuccess.emit({itemId: this.getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..."}); },
-                    error => this.errorMessage = <any>error
-                );
-            } else if (item.tid) {
-                this._dgraphService.breakTaskDependencies(Number(item.did), Number(item.aid), Number(item.tid))
-                .subscribe(
-                    title => {  this.actionSuccess.emit({itemId: this.getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..."}); },
-                    error => this.errorMessage = <any>error
-                );
-            }
-        }
-    }
-
-    // Start the playback action.
-    playImages() {
-        console.log("[DEBUG] In playImages()")
-
-        // Early out if there are no selected items.
-        if (this.items) {
-            this.codaModal.showLoad();
+        if (unfinishedJobs.length > 0) {
+          let errorModalObj = {}
+          errorModalObj.modalTitle = "Can't hide unfinished jobs"
+          errorModalObj.modalBody = "The following jobs you have selected are unfinished:\n" + unfinishedJobs.map((item) => { return getItemId(item) }).join(', ');
+          errorModalObj.modalBodyDetails = "Please kill job or wait for it to finish before hiding."
+          codaModal.showError(errorModalObj, null);
         } else {
-            return;
-        }
-
-        let subscription;
-
-        // Build a string list of selected job ids, converting each data
-        // structure into a string of "did.aid.tid", "did.aid" or "did".
-        let idList = this.items.map(item => {
-            if (item.tid) {
-                return item.did + "." + item.aid + "." + item.tid
-            } else if (item.aid) {
-                return item.did + "." + item.aid
-            } else {
-                return item.did
-            }
-        });
-        console.log("[DEBUG] - items=" + idList.join(","))
-
-        // Create an Observable for the service call to fetch the rvspec for the
-        let rvSpec;
-        subscription = new Observable<string>(observer => {
-            this._dgraphService.getRVSpec(idList)
-                .then(
-                    rvSpec => { observer.next(rvSpec.rvSpec); observer.complete(); },
-                    error => {
-                        console.log("[ERROR] (1) Problem getting rvspec: " + error)
-                        observer.complete();
-                    }
+          for (let item of items) {
+            if (!item.aid) {
+              ElasticSearchService.setDgraphMeta(Number(getItemId(item)), "clienthide", code)
+                .subscribe(
+                  title => {
+                    // actionSuccess.emit("Job successfully hidden.");
+                    // hideActionSuccess.emit({ itemId: getItemId(item), visibilityCode: code, time: new moment() });
+                  },
+                  error => setErrorMessage(error)
                 );
-        }).subscribe(
-            data => rvSpec = data,
-            error => console.log("[ERROR] (2) Problem getting rvspec: " + error.toString()),
-            () => this.playImagesCallBack(rvSpec)
-        );
-
-        // Cancel the playback if requested.
-        this.codaModal.cancelCallback = function() {
-            if (subscription) {
-                console.log("Canceling loading imagePaths and RV callback.");
-                subscription.unsubscribe();
             }
-        };
+          }
+        }
+      } else {
+        for (let item of items) {
+          if (!item.aid) {
+            ElasticSearchService.setDgraphMeta(Number(getItemId(item)), "clienthide", code)
+              .subscribe(
+                title => {
+                  // actionSuccess.emit("Job successfully unhidden.");
+                  // unhideActionSuccess.emit({ itemId: getItemId(item), visibilityCode: code, time: new moment() });
+                },
+                error => setErrorMessage(error)
+              );
+          }
+        }
+      }
     }
 
+  }
 
-    setVisibility(job: Dgraph) {
-        if(job) {
-            let code = "1";
 
-            //sets visibility based on first job selected
-            if(job.clienthide && job.clienthide == 1) {
-               code = "0";
-            }
+  const playImagesCallBack = (rvSpec) => {
+    console.log("[DEBUG] In playImagesCallBack()")
 
-            if (code == "1") {
-                //check that all items are finished - we don't allow hiding of unfinished jobs
-                let unfinishedJobs = [];
-                for (let item of this.items){
-                    if (!item.aid){
-                        let statuses = item._dgraphstatus;
-                        // 0=queued 1=run 7=depend 5=suspend 6=nostatus
-                        if (statuses.includes(0) || statuses.includes(1) || statuses.includes(7) || statuses.includes(5) || statuses.includes(6)){
-                            unfinishedJobs.push(item);
-                        }
-                    }
-                }
-                if (unfinishedJobs.length > 0){
-                    let errorModalObj: any = {}
-                    errorModalObj.modalTitle = "Can't hide unfinished jobs"
-                    errorModalObj.modalBody = "The following jobs you have selected are unfinished:\n"+unfinishedJobs.map((item) => { return this.getItemId(item)}).join(', ');
-                    errorModalObj.modalBodyDetails = "Please kill job or wait for it to finish before hiding."
-                    this.codaModal.showError(errorModalObj, null);
-                } else {
-                    for(let item of this.items) {
-                        if (!item.aid){
-                            this._dgraphService.setDgraphMeta(Number(this.getItemId(item)), "clienthide", code)
-                            .subscribe(
-                                title => { this.actionSuccess.emit("Job successfully hidden.");
-                                        this.hideActionSuccess.emit({itemId: this.getItemId(item), visibilityCode: code, time: new moment()});},
-                                error => this.errorMessage = <any>error
-                            );
-                        }
-                    }
-                }
-            } else {
-                for(let item of this.items) {
-                    if (!item.aid){
-                        this._dgraphService.setDgraphMeta(Number(this.getItemId(item)), "clienthide", code)
-                        .subscribe(
-                            title => { this.actionSuccess.emit("Job successfully unhidden.");
-                                    this.unhideActionSuccess.emit({itemId: this.getItemId(item), visibilityCode: code, time: new moment()});},
-                            error => this.errorMessage = <any>error
-                        );
-                    }
-                }
-            }
-        }
+    // No image paths (array is empty or length is 0 or
+    // only object in array is empty; last one happens when individual tasks
+    // are selected and have no imagePaths)
+    if (typeof rvSpec == "undefined") {
 
+      let dialogModalObj = {}
+      dialogModalObj.modalTitle = "Playback Error";
+      dialogModalObj.modalBody = "No images found.";
+      dialogModalObj.modalBodyDetails = "The selection does not contain any playable images.";
+
+      //codaModal.showDialog(dialogModalObj);
+      codaModal.showError(dialogModalObj, null);
+      console.log("[WARN  503.1] Error fetching rvspec: " + rvSpec);
+      return;
     }
 
+    // Finally, if we got here, start the playback by opening the rvlink
+    // url.
+    // rvLinkURL = ElasticSearchService.constructPlaybackUrl(rvSpec);
+    // if (rvLinkURL.length > 0) {
+    //   location.href = rvLinkURL;
+    // }
+    codaModal.hideLoad();
+  }
 
-    playImagesCallBack(rvSpec: string) {
-        console.log("[DEBUG] In playImagesCallBack()")
+  return (
+    <div ref={contextRef} className='contextMenu dgraph-menu-container' style={{ display: `${contextData.visible ? 'block' : 'none'}`, left: contextData.posX, top: contextData.posY }}>
+      <div className={`optionsList ${classes?.listWrapper}`}>
+        {
+          links && links.length > 0 && links.map((link) => {
+            return (
+              <div className="dgraph-menu">
+                {
+                  link?.horizontalBefore && <div><hr /></div>
+                }
+                {
+                  !link?.sublinks && (
+                    <div className={classNames("link", link?.disabled ? "disabled" : "")} onClick={!link?.disabled ? null : null}>
+                      {link?.icon &&
+                        <span className={"glyphicon glyphicon-" + link?.icon}></span>
+                      }
+                      {
+                        !link?.icon && <span className="no-icon"></span>
+                      }
+                      {link?.title}
+                      {
+                        link?.altText && <small className="pull-right">{link?.altText}</small>
+                      }
+                    </div>)
+                }
+                {
+                  link?.sublinks && <div className={classNames("link has-sublinks", link?.disabled ? "disabled" : "")}>
+                    {
+                      link?.icon && <span className={'glyphicon glyphicon-' + link?.icon}></span>
+                    }
+                    {
+                      !link?.icon && <span className="no-icon"></span>
+                    }
+                    {link?.title}
+                    <div className="menu-sublinks pull-right">
+                      {link?.sublinks.map((sublink) => {
+                        return (
+                          <span>{sublink?.title}</span>
+                        )
+                      })}
 
-        // No image paths (array is empty or length is 0 or
-        // only object in array is empty; last one happens when individual tasks
-        // are selected and have no imagePaths)
-        if (typeof rvSpec == "undefined") {
-
-            let dialogModalObj: any = {}
-            dialogModalObj.modalTitle = "Playback Error";
-            dialogModalObj.modalBody = "No images found.";
-            dialogModalObj.modalBodyDetails = "The selection does not contain any playable images.";
-
-            //this.codaModal.showDialog(dialogModalObj);
-            this.codaModal.showError(dialogModalObj, null);
-            console.log("[WARN  503.1] Error fetching rvspec: " + rvSpec);
-            return;
+                    </div>
+                  </div>
+                }
+              </div>
+            )
+          })
         }
-
-        // Finally, if we got here, start the playback by opening the rvlink
-        // url.
-        this.rvLinkURL = this._dgraphService.constructPlaybackUrl(rvSpec);
-        if (this.rvLinkURL.length > 0) {
-            location.href = this.rvLinkURL;
-        }
-        this.codaModal.hideLoad();
-    }
-
+      </div>
+    </div>
+  )
 }

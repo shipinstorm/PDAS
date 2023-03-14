@@ -19,7 +19,7 @@ import originStatuses from "../../assets/data/statuses.json";
 import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { globalImagePaths } from "../../store/actions/globalAction";
-import { jobJobSelected, jobJobExpanded } from "../../store/actions/jobAction";
+import { jobJobSelectedId, jobJobExpanded } from "../../store/actions/jobAction";
 
 import { elapsedTime, setStatusPercents } from "../../utils/utils";
 
@@ -85,7 +85,7 @@ export default function ArrayTableRow({
   const imagePaths = useSelector((state) => state.global.imagePaths);
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
-  const jobSelected = useSelector((state) => state.job.jobSelected);
+  const jobSelectedId = useSelector((state) => state.job.jobSelectedId);
   const jobExpanded = useSelector((state) => state.job.jobExpanded);
 
   const expandArrayRow = async (childArrayText) => {
@@ -113,24 +113,24 @@ export default function ArrayTableRow({
     dispatch(globalImagePaths(imagePaths));
 
     /**
-     * Update jobSelected Array
+     * Update jobSelectedId Array
      * Remove childArrayText if it exists
      * Remove related elements with same jobID[0](same graphData)
      * Add childArrayText if it doesn't exist
      */
-    const index = jobSelected.indexOf(childArrayText);
+    const index = jobSelectedId.indexOf(childArrayText);
     if (index > -1) {
-      jobSelected.splice(index, 1);
-      dispatch(jobJobSelected(jobSelected.filter((job) => !job.includes(jobID[0]))));
+      jobSelectedId.splice(index, 1);
+      dispatch(jobJobSelectedId(jobSelectedId.filter((job) => !job.includes(jobID[0]))));
     } else {
-      dispatch(jobJobSelected([...jobSelected.filter((job) => !job.includes(jobID[0])), childArrayText.toString()]));
+      dispatch(jobJobSelectedId([...jobSelectedId.filter((job) => !job.includes(jobID[0])), childArrayText.toString()]));
     }
   }
 
   return searchArrayData.map((arrayRow) => {
     let tmp;
     const childArrayText = `${did}.${arrayRow.aid}`;
-    const isSelected = jobSelected.includes(childArrayText);
+    const isSelected = jobSelectedId.includes(childArrayText);
     const isExpanded = jobExpanded.includes(childArrayText);
     tmp = graphData.filter((data) => data.did === Number(did));
     const selectedGraphData = tmp[0] ? tmp[0] : {};

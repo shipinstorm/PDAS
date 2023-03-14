@@ -1,5 +1,6 @@
 import {
   JOB_JOB_SELECTED,
+  JOB_JOB_SELECTED_ID,
   JOB_JOB_EXPANDED,
   JOB_GRAPH_SELECTED,
   JOB_ARRAY_SELECTED,
@@ -8,6 +9,7 @@ import {
 
 const initialState = {
   jobSelected: [],
+  jobSelectedId: [],
   jobExpanded: [],
   graphSelected: {},
   arraySelected: {},
@@ -20,6 +22,11 @@ export default function foo(state = initialState, action) {
       return {
         ...state,
         jobSelected: action.payload
+      }
+    case JOB_JOB_SELECTED_ID:
+      return {
+        ...state,
+        jobSelectedId: action.payload
       }
     case JOB_JOB_EXPANDED:
       return {

@@ -1,5 +1,6 @@
 import {
   JOB_JOB_SELECTED,
+  JOB_JOB_SELECTED_ID,
   JOB_JOB_EXPANDED,
   JOB_GRAPH_SELECTED,
   JOB_ARRAY_SELECTED,
@@ -10,6 +11,13 @@ export const jobJobSelected = (selected) => (dispatch) => {
   dispatch({
     type: JOB_JOB_SELECTED,
     payload: selected
+  })
+}
+
+export const jobJobSelectedId = (selectedId) => (dispatch) => {
+  dispatch({
+    type: JOB_JOB_SELECTED_ID,
+    payload: selectedId
   })
 }
 
