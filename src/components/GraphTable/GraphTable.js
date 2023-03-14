@@ -1,6 +1,6 @@
 import { useState, Fragment } from "react";
-import { Waypoint } from "react-waypoint";
 import { useDispatch, useSelector } from "react-redux";
+import { Waypoint } from "react-waypoint";
 
 import MUIDataTable from "mui-datatables";
 
@@ -26,7 +26,7 @@ import originStatuses from "../../assets/data/statuses.json";
 import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { globalImagePaths } from "../../store/actions/globalAction";
-import { jobJobSelected, jobJobExpanded } from "../../store/actions/jobAction";
+import { jobJobSelectedId, jobJobExpanded } from "../../store/actions/jobAction";
 
 import {
   elapsedTime,
@@ -35,6 +35,7 @@ import {
 } from "../../utils/utils";
 
 import ArrayTableRow from "./ArrayTableRow";
+import DgraphActionMenuComponent from "../ActionMenu/ActionMenu";
 
 import './GraphTable.scss';
 
@@ -95,7 +96,7 @@ function GraphTable(props) {
   const arrayData = useSelector((state) => state.global.arrayData);
   const taskData = useSelector((state) => state.global.taskData);
   const imagePaths = useSelector((state) => state.global.imagePaths);
-  const jobSelected = useSelector((state) => state.job.jobSelected);
+  const jobSelectedId = useSelector((state) => state.job.jobSelectedId);
   const jobExpanded = useSelector((state) => state.job.jobExpanded);
 
   const [columnOrder, setColumnOrder] = useState(
@@ -105,7 +106,7 @@ function GraphTable(props) {
   );
 
   const collapseAll = () => {
-    dispatch(jobJobSelected([]));
+    dispatch(jobJobSelectedId([]));
     dispatch(jobJobExpanded([]));
   }
 
@@ -271,7 +272,7 @@ function GraphTable(props) {
 
     customRowRender: (data, dataIndex, rowIndex) => {
       const did = data[1];
-      const isSelected = (jobSelected.includes(did.toString()));
+      const isSelected = (jobSelectedId.includes(did.toString()));
       const isExpanded = (jobExpanded.length > 0 && jobExpanded.findIndex(expanded => expanded.includes(did.toString())) >= 0) ? true : false;
       const [searchArrayData, searchTaskData] = [arrayData[did], taskData[did]];
       let tmp = graphData.filter((data) => data.did === did);
@@ -300,22 +301,23 @@ function GraphTable(props) {
         dispatch(globalImagePaths(imagePaths));
 
         /**
-         * Update jobSelected Array
+         * Update jobSelectedId Array
          * Remove childGraphText if it exists
          * Remove related elements with same jobID[0](same graphData)
          * Add childGraphText if it doesn't exist
          */
-        const index = jobSelected.indexOf(childGraphText);
+        const index = jobSelectedId.indexOf(childGraphText);
         if (index > -1) {
-          jobSelected.splice(index, 1);
-          dispatch(jobJobSelected(jobSelected.filter((job) => !job.includes(childGraphText))));
+          jobSelectedId.splice(index, 1);
+          dispatch(jobJobSelectedId(jobSelectedId.filter((job) => !job.includes(childGraphText))));
         } else {
-          dispatch(jobJobSelected([...jobSelected.filter((job) => !job.includes(childGraphText)), childGraphText]));
+          dispatch(jobJobSelectedId([...jobSelectedId.filter((job) => !job.includes(childGraphText)), childGraphText]));
         }
       }
 
       return (
         <ExpandableTableRow
+          id={"jobID:" + did.toString()}
           expandComponent={
             !searchArrayData ||
               !searchArrayData.length ||
@@ -409,6 +411,14 @@ function GraphTable(props) {
               </TableCell>
             );
           })}
+          <DgraphActionMenuComponent
+            targetId={"jobID:" + did.toString()}
+            options={['View', 'Update', 'Delete']}
+            classes={{
+              listWrapper: 'customContextmenuArea1ListWrapper',
+              listItem: 'customContextmenuArea1ListItem'
+            }}
+          />
         </ExpandableTableRow>
       );
     },

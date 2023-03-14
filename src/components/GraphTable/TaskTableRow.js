@@ -6,7 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import ElasticSearchService from '../../services/ElasticSearch.service';
 
 import { globalImagePaths, globalViewLog } from '../../store/actions/globalAction';
-import { jobJobSelected } from '../../store/actions/jobAction';
+import { jobJobSelectedId } from '../../store/actions/jobAction';
 
 export default function TaskTableRow({
   searchTaskData,
@@ -16,7 +16,7 @@ export default function TaskTableRow({
 }) {
   const dispatch = useDispatch();
   const imagePaths = useSelector((state) => state.global.imagePaths);
-  const jobSelected = useSelector((state) => state.job.jobSelected);
+  const jobSelectedId = useSelector((state) => state.job.jobSelectedId);
 
   const selectTaskRow = (childTaskText) => {
     let jobID = childTaskText.toString().split('.');
@@ -24,27 +24,27 @@ export default function TaskTableRow({
     dispatch(globalImagePaths(imagePaths));
 
     /**
-     * Update jobSelected Array
+     * Update jobSelectedId Array
      * Remove childTaskText if it exists
      * Remove related elements with same jobID[0](same graphData)
      * Add childTaskText if it doesn't exist
      */
-    const index = jobSelected.indexOf(childTaskText);
+    const index = jobSelectedId.indexOf(childTaskText);
     if (index > -1) {
-      jobSelected.splice(index, 1);
+      jobSelectedId.splice(index, 1);
     };
-    let tmp = jobSelected.filter((job) => !job.includes(jobID[0]));
+    let tmp = jobSelectedId.filter((job) => !job.includes(jobID[0]));
     if (index > -1) {
-      dispatch(jobJobSelected(tmp));
+      dispatch(jobJobSelectedId(tmp));
     } else {
-      dispatch(jobJobSelected([...tmp, childTaskText.toString()]));
+      dispatch(jobJobSelectedId([...tmp, childTaskText.toString()]));
     }
   }
 
   return (
     searchTaskData[arrayRow.aid].map((taskRow) => {
       const childTaskText = `${childArrayText}.${taskRow.tid}`;
-      const isSelected = (jobSelected.includes(childTaskText));
+      const isSelected = (jobSelectedId.includes(childTaskText));
       const tmpArray2 = [
         { name: '' },
         { name: childTaskText },
