@@ -29,6 +29,7 @@ import HeaderButtons from '../HeaderButtons';
 import DetailsPane from "../DetailsPane/DetailsPane";
 import GraphTable from '../GraphTable/GraphTable';
 import LogPane from '../LogPane/LogPane';
+import CodaModal from "../Modals/CodaModal";
 
 import '../../assets/css/MaterialIcons.css';
 import '../../assets/css/App.css';
@@ -162,54 +163,54 @@ export default function Dashboard() {
 		 * This is for ElasticSearch
 		 * Comment out below section when you work with Mock Data
 		 */
-		ElasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
-		 	(result) => {
-				let tmpGraphData = [];
-				if (expandFlag) {
-					tmpGraphData = graphData;
-				}
-				result.hits.hits.map(doc => tmpGraphData.push(doc._source));
-				dispatch(globalGraphData(tmpGraphData));
-				setJobListLoading(false);
-			}
-		)
+		// ElasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
+		//  	(result) => {
+		// 		let tmpGraphData = [];
+		// 		if (expandFlag) {
+		// 			tmpGraphData = graphData;
+		// 		}
+		// 		result.hits.hits.map(doc => tmpGraphData.push(doc._source));
+		// 		dispatch(globalGraphData(tmpGraphData));
+		// 		setJobListLoading(false);
+		// 	}
+		// )
 
 		/**
 		 * This is for Mock Data
 		 * Comment out below section when you work with ElasticSearch
 		 */
-		// let icoda_username = [], title = [], status = [], after = [], dept = [], type = [], show = [];
-		// newSearchQuery.map((query) => {
-		// 	if (query.header === 'user') {
-		// 		icoda_username.push(query.title)
-		// 	} else if (query.header === 'title') {
-		// 		title.push(query.title)
-		// 	} else if (query.header === 'status') {
-		// 		status.push(query.title)
-		// 	} else if (query.header === 'dept') {
-		// 		dept.push(query.title)
-		// 	} else if (query.header === 'type') {
-		// 		type.push(query.title)
-		// 	} else if (query.header === 'show') {
-		// 		show.push(query.title)
-		// 	} else if (query.header === 'after') {
-		// 		after.push(query.title)
-		// 	}
-		// })
+		let icoda_username = [], title = [], status = [], after = [], dept = [], type = [], show = [];
+		newSearchQuery.map((query) => {
+			if (query.header === 'user') {
+				icoda_username.push(query.title)
+			} else if (query.header === 'title') {
+				title.push(query.title)
+			} else if (query.header === 'status') {
+				status.push(query.title)
+			} else if (query.header === 'dept') {
+				dept.push(query.title)
+			} else if (query.header === 'type') {
+				type.push(query.title)
+			} else if (query.header === 'show') {
+				show.push(query.title)
+			} else if (query.header === 'after') {
+				after.push(query.title)
+			}
+		})
 
-		// let tmpGraphData = dGraphData.hits.hits.filter(doc => {
-		// 	return (!icoda_username.length || icoda_username.includes(doc._source.icoda_username)) &&
-		// 		(!title.length || title.includes(doc._source.title)) &&
-		// 		(!status.length || status.includes(doc._source._statusname));
-		// });
-		// // Query after
-		// if (after.length === 1) {
-		// 	tmpGraphData = tmpGraphData.filter(doc => {
-		// 		return doc._source._submittime >= after[0];
-		// 	})
-		// }
-		// dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
-		// setJobListLoading(false);
+		let tmpGraphData = dGraphData.hits.hits.filter(doc => {
+			return (!icoda_username.length || icoda_username.includes(doc._source.icoda_username)) &&
+				(!title.length || title.includes(doc._source.title)) &&
+				(!status.length || status.includes(doc._source._statusname));
+		});
+		// Query after
+		if (after.length === 1) {
+			tmpGraphData = tmpGraphData.filter(doc => {
+				return doc._source._submittime >= after[0];
+			})
+		}
+		dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
+		setJobListLoading(false);
 	}
 
 	useEffect(() => {
@@ -248,11 +249,12 @@ export default function Dashboard() {
 
 		let tmpJobSelected = jobSelected;
 		if (jobSelected.length === jobSelectedId.length - 1) {
-			dispatch(jobJobSelected([...tmpJobSelected, tmp]));
+			dispatch(jobJobSelected([...tmpJobSelected, tmp[0]]));
 		} else if (jobSelected.length === jobSelectedId.length + 1) {
 			tmpJobSelected.pop();
 			dispatch(jobJobSelected(tmpJobSelected));
 		} else {
+			tmpJobSelected = [];
 			for (let i = 0; i < jobSelectedId.length; i++) {
 				jobID = graphID = arrayID = taskID = null;
 				jobID = jobSelectedId[i].split('.');
@@ -270,7 +272,7 @@ export default function Dashboard() {
 				} else {
 					tmp = graphData.filter((data) => data.did === Number(graphID));
 				}
-				tmpJobSelected = [...tmpJobSelected, tmp];
+				tmpJobSelected = [...tmpJobSelected, tmp[0]];
 			}
 			dispatch(jobJobSelected(tmpJobSelected));
 		}
@@ -339,24 +341,24 @@ export default function Dashboard() {
 	}
 
 	const toggleJob = async (jobId) => {
-		await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
+		// await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
 		let newArrayData = {};
-		newArrayData = {...arrayData, [jobId]: resultArray.hits.hits.map(doc => doc._source)};
-		// newArrayData = { ...arrayData, [jobId]: dArrayData.hits.hits.map(doc => doc._source) };
+		// newArrayData = {...arrayData, [jobId]: resultArray.hits.hits.map(doc => doc._source)};
+		newArrayData = { ...arrayData, [jobId]: dArrayData.hits.hits.map(doc => doc._source) };
 
 		let newTaskData = {};
 		let tmp = [];
 		await Promise.all(newArrayData[jobId].map(async (array) => {
-			await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
-			tmp[array.aid] = resultTask.hits.hits.map(doc => doc._source);
-			// tmp[array.aid] = dTaskData.hits.hits.map(doc => doc._source);
-			});
+			// await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
+			// tmp[array.aid] = resultTask.hits.hits.map(doc => doc._source);
+			tmp[array.aid] = dTaskData.hits.hits.map(doc => doc._source);
+			// });
 		}))
 		newTaskData = { ...taskData, [jobId]: tmp };
 		dispatch(globalArrayData(newArrayData));
 		dispatch(globalTaskData(newTaskData));
 		setJobListLoading(false);
-		});
+		// });
 	}
 
 	return (
@@ -370,6 +372,7 @@ export default function Dashboard() {
 			<div className="app-header">
 				<div className="app-searchbar">
 					<div className="coda-logo">CODA</div>
+					<CodaModal />
 					<SearchBar
 						autoCompleteValue={autoCompleteValue}
 						setAutoCompleteValue={setAutoCompleteValue}

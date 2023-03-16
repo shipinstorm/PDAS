@@ -20,7 +20,7 @@ import './DetailsPane.scss';
 
 export default function DetailsPane() {
   const dispatch = useDispatch();
-  
+
   const editVal1 = useRef(null);
   const editVal2 = useRef(null);
   const editVal3 = useRef(null);
@@ -63,19 +63,19 @@ export default function DetailsPane() {
   useEffect(() => {
     if (selectedGraphData && !(Object.keys(selectedGraphData).length === 0)) {
       ElasticSearchService.getDgraph(selectedGraphData.did)
-      .then((resultArray) => {
-        setGraphData(resultArray.dgraph[0]);
-      });
+        .then((resultArray) => {
+          setGraphData(resultArray.dgraph[0]);
+        });
     } else if (selectedArrayData && !(Object.keys(selectedArrayData).length === 0)) {
       ElasticSearchService.getArray(selectedArrayData.did, selectedArrayData.aid)
-      .then((resultArray) => {
-        setArrayData(resultArray.array[0]);
-      });
+        .then((resultArray) => {
+          setArrayData(resultArray.array[0]);
+        });
     } else if (selectedTaskData && !(Object.keys(selectedTaskData).length === 0)) {
       ElasticSearchService.getTask(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid)
-      .then((resultArray) => {
-        setTaskData(resultArray);
-      });
+        .then((resultArray) => {
+          setTaskData(resultArray);
+        });
     }
 
     refreshPools();
@@ -334,7 +334,7 @@ export default function DetailsPane() {
           statusHistData[statusHistData.length - 1]['hover'] = hoverMsgs;
         }
         hoverMsgs = [];
-        
+
         let currDate = tmp.toLocaleDateString();
         let date = currDate !== prevDate ? currDate : undefined;
         let time = tmp.getHours() + ":" + tmp.getMinutes();
@@ -470,7 +470,7 @@ export default function DetailsPane() {
   }
 
   const selectedObj = () => {
-    return {...selectedGraphData, ...selectedArrayData, ...selectedTaskData};
+    return { ...selectedGraphData, ...selectedArrayData, ...selectedTaskData };
   }
 
   const toggleObj = (field) => {
