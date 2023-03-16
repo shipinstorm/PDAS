@@ -411,14 +411,6 @@ function GraphTable(props) {
               </TableCell>
             );
           })}
-          <DgraphActionMenuComponent
-            targetId={"jobID:" + did.toString()}
-            options={['View', 'Update', 'Delete']}
-            classes={{
-              listWrapper: 'customContextmenuArea1ListWrapper',
-              listItem: 'customContextmenuArea1ListItem'
-            }}
-          />
         </ExpandableTableRow>
       );
     },
@@ -460,6 +452,14 @@ function GraphTable(props) {
               data={data}
               columns={columns}
               options={options2}
+            />
+            <DgraphActionMenuComponent
+              targetId="MuiTableBody-root"
+              options={['View', 'Update', 'Delete']}
+              classes={{
+                listWrapper: 'customContextmenuArea1ListWrapper',
+                listItem: 'customContextmenuArea1ListItem'
+              }}
             />
           </ThemeProvider>
         </CacheProvider>

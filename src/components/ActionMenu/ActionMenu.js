@@ -1,32 +1,58 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { useSelector } from "react-redux";
-
+import { useSelector, useDispatch } from "react-redux";
 import classNames from 'classnames';
-
-// import { CodaModalComponent } from '../modals/coda-modal.component';
-
+import { Subject } from 'rxjs';
 import ElasticSearchService from "../../services/ElasticSearch.service";
-
+import { modalConfirmObj, modalUpdateType, modalUpdateFlag, modalHostsObj, modalUpdateValue } from '../../store/actions/modalAction';
+import { ModalType } from '../../types/ModalType';
 import './ActionMenu.scss';
 
-export default function DgraphActionMenuComponent({ codaModal, targetId, options, classes }) {
+export default function DgraphActionMenuComponent({ targetId, classes }) {
+  // Global Variables from Redux State
+  const externalIP = useSelector((state) => state.global.externalIP);
+
+  // Job Variables from Redux State
   const selectedGraphData = useSelector((state) => state.job.graphSelected);
   const selectedArrayData = useSelector((state) => state.job.arraySelected);
   const selectedTaskData = useSelector((state) => state.job.taskSelected);
-  const selectedItem = {...selectedGraphData, ...selectedArrayData, ...selectedTaskData};
   const items = useSelector((state) => state.job.jobSelected);
 
-  const externalIP = useSelector((state) => state.global.externalIP);
+  // Modal Variables from Redux State
+  const modalCallBack = useSelector((state) => state.modal.modalCallBack);
+  const modalType = useSelector((state) => state.modal.modalType);
+  const modalValue = useSelector((state) => state.modal.modalValue);
+  const local_exclusive = useSelector((state) => state.modal.localExclusive);
+  const selectedHosts = useSelector((state) => state.modal.selectedHosts);
+
+  const selectedItem = { ...selectedGraphData, ...selectedArrayData, ...selectedTaskData };
 
   const [contextData, setContextData] = useState({ visible: false, posX: 0, posY: 0 });
   const contextRef = useRef(null);
 
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (modalCallBack === 1) {
+      if (modalType === ModalType.Confirm) {
+        rightClickCallbackMain(modalValue);
+      } else if (modalType === ModalType.RequeueLocally) {
+        sendRequeueRequest(selectedHosts, local_exclusive)
+      }
+    } else if (modalCallBack === 2) {
+      doKillAction();
+    } else if (modalCallBack === 3) {
+      doKillToDoneAction();
+    } else if (modalCallBack === 4) {
+
+    }
+  }, [modalCallBack])
+
   useEffect(() => {
     const contextMenuEventHandler = (event) => {
-      const targetElement = document.getElementById(targetId)
+      const targetElement = document.getElementsByClassName(targetId)[0];
       if (targetElement && targetElement.contains(event.target)) {
         event.preventDefault();
-        setContextData({ visible: true, posX: event.clientX, posY: event.clientY - 91 })
+        setContextData({ visible: true, posX: event.clientX, posY: event.clientY })
       } else if (contextRef.current && !contextRef.current.contains(event.target)) {
         setContextData({ ...contextData, visible: false })
       }
@@ -56,83 +82,86 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
   }, [contextData])
 
   const [rightClickAction, setRightClickAction] = useState();
-  const [links, setLinks] = useState();
+
   const [title, setTitle] = useState();
   const [errorMessage, setErrorMessage] = useState();
-  const [requeueAction, setRequeueAction] = useState();
-  const [requeueAllAction, setRequeueAllAction] = useState();
-  const [requeueRunAction, setRequeueRunAction] = useState();
-  const [requeueExitAction, setRequeueExitAction] = useState();
-  const [requeueLocallyAction, setRequeueLocallyAction] = useState();
-  const [killAction, setKillAction] = useState();
-  const [killToDoneAction, setKillToDoneAction] = useState();
-  const [breakDependenciesAction, setBreakDependenciesAction] = useState();
-  const [viewDetails, setViewDetails] = useState();
-  const [viewLog, setViewLog] = useState();
-  const [playImagesAction, setPlayImagesAction] = useState();
-  const [copyInfoAction, setCopyInfoAction] = useState();
+  const [requeueAllAction, setRequeueAllAction] = useState({ name: 'Requeue All', horizontalBefore: false, subject: new Subject() });
+  const [requeueRunAction, setRequeueRunAction] = useState({ name: 'Requeue Running', horizontalBefore: false, subject: new Subject() });
+  const [requeueExitAction, setRequeueExitAction] = useState({ name: 'Requeue Exited', horizontalBefore: false, subject: new Subject() });
+  const [requeueLocallyAction, setRequeueLocallyAction] = useState({ name: 'Requeue Locally', horizontalBefore: false, subject: new Subject() });
+  const [requeueAction, setRequeueAction] = useState({ name: 'Requeue', horizontalBefore: true, icon: 'retweet', subject: new Subject(), sublinks: [requeueAllAction, requeueRunAction, requeueExitAction] });
+  const [killAction, setKillAction] = useState({ name: 'Kill', horizontalBefore: false, subject: new Subject(), icon: 'ban-circle', altText: 'Ctrl+Shift+K' });
+  const [killToDoneAction, setKillToDoneAction] = useState({ name: 'Kill & Mark as Done', horizontalBefore: false, subject: new Subject() });
+  const [breakDependenciesAction, setBreakDependenciesAction] = useState({ name: 'Break Dependencies', title: 'Break Dependencies', horizontalBefore: true, icon: 'scissors', subject: new Subject() });
+  const [viewDetails, setViewDetails] = useState({ name: 'View Job Details', title: 'View Job Details', horizontalBefore: true, subject: new Subject(), icon: 'info-sign', altText: 'Ctrl+Shift+V' });
+  const [viewLog, setViewLog] = useState({ name: 'View Log', title: 'View Log', horizontalBefore: false, subject: new Subject(), icon: 'file', altText: 'Ctrl+Shift+L' });
+  const [playImagesAction, setPlayImagesAction] = useState({ name: 'Play Image Sequence', title: 'Play Image Sequence', horizontalBefore: true, subject: new Subject(), icon: 'play', altText: 'Space' });
+  const [copyInfoAction, setCopyInfoAction] = useState({ name: 'Copy Job ID to Clipboard', title: 'Copy Job ID to Clipboard', horizontalBefore: true, subject: new Subject(), icon: 'copy' });
   const [imagePath, setImagePath] = useState();
-  const [excludeConfirmLists, setExcludeConfirmLists] = useState();
-  const [jobVisibility, setJobVisibility] = useState();
+  const [jobVisibility, setJobVisibility] = useState({ name: 'Set Job Visibility', horizontalBefore: true, subject: new Subject(), altText: 'Ctrl+Shift+H' });
+  const [links, setLinks] = useState([killAction, killToDoneAction, copyInfoAction, requeueAction, requeueLocallyAction, breakDependenciesAction, playImagesAction, viewDetails, viewLog, jobVisibility]);
+  const [excludeConfirmLists, setExcludeConfirmLists] = useState([copyInfoAction, playImagesAction, viewDetails, viewLog, jobVisibility, requeueLocallyAction]);
   const [hosts, setHosts] = useState({});
   const [rvLinkURL, setRVLinkURL] = useState();
 
   useEffect(() => {
-    // renderer.listenGlobal('document', 'keydown', (event) => {
-    //   if (event.ctrlKey && event.shiftKey && event.keyCode === 72 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
-    //     event.preventDefault();
-    //     setVisibility(selectedItem);
-    //   }
+    window.addEventListener('keydown', (event) => {
+      if (event.ctrlKey && event.shiftKey && event.keyCode === 72 && document.activeElement !== document.getElementById('search') && event.target.type !== "textarea") {
+        event.preventDefault();
+        setVisibility(selectedItem);
+      }
 
-    //   if (event.ctrlKey && event.shiftKey && event.keyCode === 75 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
-    //     event.preventDefault();
-    //     killShortcut();
-    //   }
+      if (event.ctrlKey && event.shiftKey && event.keyCode === 75 && document.activeElement !== document.getElementById('search') && event.target.type !== "textarea") {
+        event.preventDefault();
+        killShortcut();
+      }
 
-    //   if (event.ctrlKey && event.shiftKey && event.keyCode === 76 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
-    //     event.preventDefault();
-    //     openError.emit();
-    //   }
+      if (event.ctrlKey && event.shiftKey && event.keyCode === 76 && document.activeElement !== document.getElementById('search') && event.target.type !== "textarea") {
+        event.preventDefault();
+        // openError.emit();
+      }
 
-    //   if (event.ctrlKey && event.shiftKey && event.keyCode === 86 && document.activeElement != document.getElementById('search') && event.target.type != "textarea") {
-    //     event.preventDefault();
-    //     toggleDetails.emit();
-    //   }
-    // });
+      if (event.ctrlKey && event.shiftKey && event.keyCode === 86 && document.activeElement !== document.getElementById('search') && event.target.type !== "textarea") {
+        event.preventDefault();
+        // toggleDetails.emit();
+      }
+    })
 
-    let tmpKillAction = { name: 'Kill', horizontalBefore: false, icon: 'ban-circle', altText: 'Ctrl+Shift+K' };
-    let tmpKillToDoneAction = { name: 'Kill & Mark as Done', horizontalBefore: false };
-    let tmpCopyInfoAction = { name: 'Copy Job ID to Clipboard', title: 'Copy Job ID to Clipboard', horizontalBefore: true, icon: 'copy' };
-    let tmpRequeueAllAction = { name: 'Requeue All', horizontalBefore: false }
-    let tmpRequeueRunAction = { name: 'Requeue Running', horizontalBefore: false };
-    let tmpRequeueExitAction = { name: 'Requeue Exited', horizontalBefore: false };
-    let tmpRequeueAction = { name: 'Requeue', horizontalBefore: true, icon: 'retweet', sublinks: [tmpRequeueAllAction, tmpRequeueRunAction, tmpRequeueExitAction] };
-    let tmpRequeueLocallyAction = { name: 'Requeue Locally', horizontalBefore: false };
-    let tmpBreakDependenciesAction = { name: 'Break Dependencies', title: 'Break Dependencies', horizontalBefore: true, icon: 'scissors' };
-    let tmpPlayImagesAction = { name: 'Play Image Sequence', title: 'Play Image Sequence', horizontalBefore: true, icon: 'play', altText: 'Space' };
-    let tmpViewDetails = { name: 'View Job Details', title: 'View Job Details', horizontalBefore: true, icon: 'info-sign', altText: 'Ctrl+Shift+V' };
-    let tmpViewLog = { name: 'View Log', title: 'View Log', horizontalBefore: false, icon: 'file', altText: 'Ctrl+Shift+L' };
-    let tmpJobVisibility = { name: 'Set Job Visibility', horizontalBefore: true, altText: 'Ctrl+Shift+H' };
-    let tmpLinks = [tmpKillAction, tmpKillToDoneAction, tmpCopyInfoAction, tmpRequeueAction, tmpRequeueLocallyAction, tmpBreakDependenciesAction, tmpPlayImagesAction, tmpViewDetails, tmpViewLog, tmpJobVisibility];
-    let tmpExcludeConfirmLists = [tmpCopyInfoAction, tmpPlayImagesAction, tmpViewDetails, tmpViewLog, tmpJobVisibility, tmpRequeueLocallyAction];
+    links.forEach(link => {
+      if (link.subject) {
+        link.subject.subscribe(val => rightClickCallback(val))
+      }
 
-    // links.forEach(link => {
-    //   if (link.subject) {
-    //     link.subject.subscribe(val => rightClickCallback(val))
-    //   }
-
-    //   if (link.sublinks) {
-    //     link.sublinks.forEach(sublink => {
-    //       if (sublink.subject) {
-    //         sublink.subject.subscribe(val => rightClickCallback(val))
-    //       }
-    //     });
-    //   }
-    // });
+      if (link.sublinks) {
+        link.sublinks.forEach(sublink => {
+          if (sublink.subject) {
+            sublink.subject.subscribe(val => rightClickCallback(val))
+          }
+        });
+      }
+    });
 
     // if (ElasticSearchService.user['username']) {
     //   ElasticSearchService.populateHostList();
     // }
+  }, []);
+
+  useEffect(() => {
+    let tmpKillAction = killAction;
+    let tmpKillToDoneAction = killToDoneAction;
+    let tmpCopyInfoAction = copyInfoAction;
+    let tmpRequeueAllAction = requeueAllAction;
+    let tmpRequeueRunAction = requeueRunAction;
+    let tmpRequeueExitAction = requeueExitAction;
+    let tmpRequeueAction = requeueAction;
+    let tmpRequeueLocallyAction = requeueLocallyAction;
+    let tmpBreakDependenciesAction = breakDependenciesAction;
+    let tmpPlayImagesAction = playImagesAction;
+    let tmpViewDetails = viewDetails;
+    let tmpViewLog = viewLog;
+    let tmpJobVisibility = jobVisibility;
+    let tmpLinks = links;
+    let tmpExcludeConfirmLists = excludeConfirmLists;
 
     if (items || selectedItem) {
       // If we're accessing externally, disable the playImagesAction
@@ -246,9 +275,7 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
     setJobVisibility(tmpJobVisibility);
     setLinks(tmpLinks);
     setExcludeConfirmLists(tmpExcludeConfirmLists);
-
-    console.log(tmpLinks);
-  }, []);
+  }, [items, selectedItem]);
 
   const getItemId = (item) => {
     let itemId = item.did;
@@ -334,7 +361,10 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
             break;
         }
       }
-      codaModal.showConfirm(confirmModalObj, () => rightClickCallbackMain(val));
+      dispatch(modalConfirmObj(confirmModalObj));
+      dispatch(modalUpdateType(ModalType.Confirm));
+      dispatch(modalUpdateFlag(1));
+      dispatch(modalUpdateValue(val));
     }
   }
 
@@ -561,12 +591,14 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
 
   const requeueLocally = () => {
     let confirmModalObj = {}
-    let val = requeueLocallyAction
     confirmModalObj.modalTitle = 'Requeue locally on which machine(s)?';
     confirmModalObj.confirmBtn = 'Requeue';
     confirmModalObj.exclusiveMsg = 'Run only on these hosts. Do not spill to the farm';
 
-    codaModal.showRequeueLocally(ElasticSearchService.hosts, confirmModalObj, () => sendRequeueRequest(codaModal.selectedHosts, codaModal.local_exclusive));
+    dispatch(modalConfirmObj(confirmModalObj));
+    dispatch(modalType(ModalType.RequeueLocally));
+    dispatch(modalHostsObj(ElasticSearchService.hosts));
+    dispatch(modalUpdateFlag(1));
   }
 
   const killShortcut = () => {
@@ -578,7 +610,9 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
       confirmModalObj.modalBody = "Do you want to kill all jobs from " + items.length + " selected items?";
     }
 
-    codaModal.showKillOptions(confirmModalObj, () => doKillAction(), () => doKillToDoneAction());
+    dispatch(modalConfirmObj(confirmModalObj));
+    dispatch(modalType(ModalType.KillOptions));
+    dispatch(modalUpdateFlag(1));
   }
 
   const breakDependencies = () => {
@@ -617,7 +651,7 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
 
     // Early out if there are no selected items.
     if (items) {
-      codaModal.showLoad();
+      dispatch(modalUpdateFlag(4));
     } else {
       return;
     }
@@ -655,12 +689,12 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
     // );
 
     // Cancel the playback if requested.
-    codaModal.cancelCallback = function () {
-      if (subscription) {
-        console.log("Canceling loading imagePaths and RV callback.");
-        subscription.unsubscribe();
-      }
-    };
+    // codaModal.cancelCallback = function () {
+    //   if (subscription) {
+    //     console.log("Canceling loading imagePaths and RV callback.");
+    //     subscription.unsubscribe();
+    //   }
+    // };
   }
 
 
@@ -690,7 +724,9 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
           errorModalObj.modalTitle = "Can't hide unfinished jobs"
           errorModalObj.modalBody = "The following jobs you have selected are unfinished:\n" + unfinishedJobs.map((item) => { return getItemId(item) }).join(', ');
           errorModalObj.modalBodyDetails = "Please kill job or wait for it to finish before hiding."
-          codaModal.showError(errorModalObj, null);
+          dispatch(modalConfirmObj(errorModalObj));
+          dispatch(modalType(ModalType.Error));
+          dispatch(modalUpdateFlag(1));
         } else {
           for (let item of items) {
             if (!item.aid) {
@@ -723,7 +759,6 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
 
   }
 
-
   const playImagesCallBack = (rvSpec) => {
     console.log("[DEBUG] In playImagesCallBack()")
 
@@ -737,8 +772,10 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
       dialogModalObj.modalBody = "No images found.";
       dialogModalObj.modalBodyDetails = "The selection does not contain any playable images.";
 
-      //codaModal.showDialog(dialogModalObj);
-      codaModal.showError(dialogModalObj, null);
+      // dispatch(modalUpdateFlag(2));
+      dispatch(modalConfirmObj(dialogModalObj));
+      dispatch(modalType(ModalType.Error));
+      dispatch(modalUpdateFlag(1));
       console.log("[WARN  503.1] Error fetching rvspec: " + rvSpec);
       return;
     }
@@ -749,7 +786,7 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
     // if (rvLinkURL.length > 0) {
     //   location.href = rvLinkURL;
     // }
-    codaModal.hideLoad();
+    dispatch(modalUpdateFlag(3));
   }
 
   return (
@@ -764,7 +801,7 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
                 }
                 {
                   !link?.sublinks && (
-                    <div className={classNames("link", link?.disabled ? "disabled" : "")} onClick={!link?.disabled ? null : null}>
+                    <div className={classNames("link", link?.disabled ? "disabled" : "")} onClick={!link?.disabled ? () => link.subject.next(link) : null}>
                       {link?.icon &&
                         <span className={"glyphicon glyphicon-" + link?.icon}></span>
                       }
@@ -789,7 +826,7 @@ export default function DgraphActionMenuComponent({ codaModal, targetId, options
                     <div className="menu-sublinks pull-right">
                       {link?.sublinks.map((sublink) => {
                         return (
-                          <span>{sublink?.title}</span>
+                          <span onClick={() => sublink.subject.next(sublink)}>{sublink?.title}</span>
                         )
                       })}
 
