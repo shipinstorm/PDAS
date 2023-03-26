@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import Modal from 'react-bootstrap/Modal';
 import classNames from "classnames"
 import { ModalType } from "../../types/ModalType";
 import { modalUpdateCallBack, modalConfirmObj, modalLocalExclusive, modalSelectedHosts, modalUpdateFlag } from "../../store/actions/modalAction";
@@ -157,7 +156,7 @@ export default function CodaModal() {
   }
 
   return (
-    <Modal show={show} size="sm">
+    <div className={classNames("modal", show ? "show" : "fade")} tabindex="-1" role="dialog" aria-hidden="true">
       <div className={classNames("modal-dialog modal-sm", modal_type !== ModalType.Loading ? "confirm-dialog" : "")}>
         {/* Modal content */}
         {modal_type === ModalType.Loading && <div className="modal-content">
@@ -264,6 +263,6 @@ export default function CodaModal() {
           </div>}
         </div>}
       </div>
-    </Modal>
+    </div>
   )
 }
