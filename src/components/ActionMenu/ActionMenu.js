@@ -3,11 +3,11 @@ import { useSelector, useDispatch } from "react-redux";
 import classNames from 'classnames';
 import { Subject } from 'rxjs';
 import ElasticSearchService from "../../services/ElasticSearch.service";
-import { modalConfirmObj, modalUpdateType, modalUpdateFlag, modalHostsObj, modalUpdateValue } from '../../store/actions/modalAction';
+import { modalConfirmObj, modalUpdateType, modalUpdateFlag, modalHostsObj, modalUpdateValue, modalUpdateCallBack } from '../../store/actions/modalAction';
 import { ModalType } from '../../types/ModalType';
 import './ActionMenu.scss';
 
-export default function DgraphActionMenuComponent({ targetId, classes }) {
+export default function DgraphActionMenuComponent({ targetId, classes, toggleDetails, toggleLog }) {
   // Global Variables from Redux State
   const externalIP = useSelector((state) => state.global.externalIP);
 
@@ -45,6 +45,7 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
     } else if (modalCallBack === 4) {
 
     }
+    dispatch(modalUpdateCallBack(0));
   }, [modalCallBack])
 
   useEffect(() => {
@@ -118,28 +119,14 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
 
       if (event.ctrlKey && event.shiftKey && event.keyCode === 76 && document.activeElement !== document.getElementById('search') && event.target.type !== "textarea") {
         event.preventDefault();
-        // openError.emit();
+        toggleLog();
       }
 
       if (event.ctrlKey && event.shiftKey && event.keyCode === 86 && document.activeElement !== document.getElementById('search') && event.target.type !== "textarea") {
         event.preventDefault();
-        // toggleDetails.emit();
+        toggleDetails();
       }
     })
-
-    links.forEach(link => {
-      if (link.subject) {
-        link.subject.subscribe(val => rightClickCallback(val))
-      }
-
-      if (link.sublinks) {
-        link.sublinks.forEach(sublink => {
-          if (sublink.subject) {
-            sublink.subject.subscribe(val => rightClickCallback(val))
-          }
-        });
-      }
-    });
 
     // if (ElasticSearchService.user['username']) {
     //   ElasticSearchService.populateHostList();
@@ -147,6 +134,23 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
   }, []);
 
   useEffect(() => {
+    let tmpLinks = links;
+    tmpLinks.forEach(link => {
+      if (link.subject) {
+        link.subject = new Subject();
+        link.subject.subscribe(val => rightClickCallback(val, items, selectedItem))
+      }
+
+      if (link.sublinks) {
+        link.sublinks.forEach(sublink => {
+          if (sublink.subject) {
+            sublink.subject = new Subject();
+            sublink.subject.subscribe(val => rightClickCallback(val, items, selectedItem))
+          }
+        });
+      }
+    });
+
     let tmpKillAction = killAction;
     let tmpKillToDoneAction = killToDoneAction;
     let tmpCopyInfoAction = copyInfoAction;
@@ -160,7 +164,6 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
     let tmpViewDetails = viewDetails;
     let tmpViewLog = viewLog;
     let tmpJobVisibility = jobVisibility;
-    let tmpLinks = links;
     let tmpExcludeConfirmLists = excludeConfirmLists;
 
     if (items || selectedItem) {
@@ -203,16 +206,17 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
           if (tmpLinks.indexOf(tmpJobVisibility) < 0) {
             tmpLinks.push(tmpJobVisibility);
           }
+
           if (selectedItem.clienthide === 1) {
             tmpJobVisibility.title = 'Unhide ' + getItemId(items[0]);
             tmpJobVisibility.icon = 'eye-open';
-          }
-          else {
+          } else {
             tmpJobVisibility.title = 'Hide ' + getItemId(items[0]);
             tmpJobVisibility.icon = 'eye-close';
           }
         } else {
           let i = tmpLinks.indexOf(tmpJobVisibility)
+
           if (i > -1) {
             tmpLinks.splice(i, 1)
           }
@@ -246,13 +250,13 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
           if (selectedItem && selectedItem.clienthide === 1) {
             tmpJobVisibility.title = 'Unhide selected dgraphs';
             tmpJobVisibility.icon = 'eye-open';
-          }
-          else {
+          } else {
             tmpJobVisibility.title = 'Hide selected dgraphs';
             tmpJobVisibility.icon = 'eye-close';
           }
         } else {
           let i = tmpLinks.indexOf(tmpJobVisibility)
+
           if (i > -1) {
             tmpLinks.splice(i, 1)
           }
@@ -284,7 +288,7 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
     return itemId;
   }
 
-  const rightClickCallback = (val) => {
+  const rightClickCallback = (val, items, selectedItem) => {
     if (excludeConfirmLists.indexOf(val) > -1 || (items.length === 1 && items[0].tid)) {
       // call it without the confirm if it's in the exclude list
       rightClickCallbackMain(val);
@@ -371,34 +375,28 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
   const rightClickCallbackMain = (val) => {
     setRightClickAction(val);
 
-    switch (rightClickAction) {
+    switch (val) {
       case requeueAction:
       case requeueAllAction:
         for (let item of items) {
           if (!item.aid) {
             ElasticSearchService.requeueAll(Number(item.did))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           } else if (!item.tid) {
             ElasticSearchService.requeueAll(Number(item.did), Number(item.aid))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           } else if (item.tid) {
             ElasticSearchService.requeueAll(Number(item.did), Number(item.aid), Number(item.tid))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           }
         }
         break;
@@ -406,28 +404,22 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
         for (let item of items) {
           if (!item.aid) {
             ElasticSearchService.requeueRun(Number(item.did))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           } else if (!item.tid) {
             ElasticSearchService.requeueRun(Number(item.did), Number(item.aid))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           } else if (item.tid) {
             ElasticSearchService.requeueRun(Number(item.did), Number(item.aid), Number(item.tid))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           }
         }
         break;
@@ -435,28 +427,22 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
         for (let item of items) {
           if (!item.aid) {
             ElasticSearchService.requeueExit(Number(item.did))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           } else if (!item.tid) {
             ElasticSearchService.requeueExit(Number(item.did), Number(item.aid))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           } else if (item.tid) {
             ElasticSearchService.requeueExit(Number(item.did), Number(item.aid), Number(item.tid))
-              .subscribe(
-                title => {
-                  // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
+              })
+              .catch(error => setErrorMessage(error));
           }
         }
         break;
@@ -473,8 +459,10 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
         breakDependencies();
         break;
       case viewDetails:
+        toggleDetails();
         break;
       case viewLog:
+        toggleLog();
         break;
       case setJobVisibility:
         setVisibility(selectedItem);
@@ -503,28 +491,22 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
     for (let item of items) {
       if (!item.aid) {
         ElasticSearchService.kill(Number(item.did))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+          })
+          .catch(error => setErrorMessage(error));
       } else if (!item.tid) {
         ElasticSearchService.kill(Number(item.did), Number(item.aid))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+          })
+          .catch(error => setErrorMessage(error));
       } else if (item.tid) {
         ElasticSearchService.kill(Number(item.did), Number(item.aid), Number(item.tid))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+          })
+          .catch(error => setErrorMessage(error));
       }
     }
   };
@@ -533,28 +515,22 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
     for (let item of items) {
       if (!item.aid) {
         ElasticSearchService.killToDone(Number(item.did))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+          })
+          .catch(error => setErrorMessage(error));
       } else if (!item.tid) {
         ElasticSearchService.killToDone(Number(item.did), Number(item.aid))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+          })
+          .catch(error => setErrorMessage(error));
       } else if (item.tid) {
         ElasticSearchService.killToDone(Number(item.did), Number(item.aid), Number(item.tid))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
+          })
+          .catch(error => setErrorMessage(error));
       }
     }
   }
@@ -563,28 +539,22 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
     for (let item of items) {
       if (!item.aid) {
         ElasticSearchService.requeueLocal(listOfHosts, isexclusive, Number(item.did))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+          })
+          .catch(error => setErrorMessage(error));
       } else if (!item.tid) {
         ElasticSearchService.requeueLocal(listOfHosts, isexclusive, Number(item.did), Number(item.aid))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+          })
+          .catch(error => setErrorMessage(error));
       } else if (item.tid) {
         ElasticSearchService.requeueLocal(listOfHosts, isexclusive, Number(item.did), Number(item.aid), Number(item.tid))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
+          })
+          .catch(error => setErrorMessage(error));
       }
     }
   }
@@ -596,7 +566,7 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
     confirmModalObj.exclusiveMsg = 'Run only on these hosts. Do not spill to the farm';
 
     dispatch(modalConfirmObj(confirmModalObj));
-    dispatch(modalType(ModalType.RequeueLocally));
+    dispatch(modalUpdateType(ModalType.RequeueLocally));
     dispatch(modalHostsObj(ElasticSearchService.hosts));
     dispatch(modalUpdateFlag(1));
   }
@@ -619,28 +589,22 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
     for (let item of items) {
       if (!item.aid) {
         ElasticSearchService.breakDgraphDependencies(Number(item.did))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
+          })
+          .catch(error => setErrorMessage(error));
       } else if (!item.tid) {
         ElasticSearchService.breakArrayDependencies(Number(item.did), Number(item.aid))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
+          })
+          .catch(error => setErrorMessage(error));
       } else if (item.tid) {
         ElasticSearchService.breakTaskDependencies(Number(item.did), Number(item.aid), Number(item.tid))
-          .subscribe(
-            title => {
-              // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
-            },
-            error => setErrorMessage(error)
-          );
+          .then(title => {
+            // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
+          })
+          .catch(error => setErrorMessage(error));
       }
     }
   }
@@ -731,13 +695,11 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
           for (let item of items) {
             if (!item.aid) {
               ElasticSearchService.setDgraphMeta(Number(getItemId(item)), "clienthide", code)
-                .subscribe(
-                  title => {
-                    // actionSuccess.emit("Job successfully hidden.");
-                    // hideActionSuccess.emit({ itemId: getItemId(item), visibilityCode: code, time: new moment() });
-                  },
-                  error => setErrorMessage(error)
-                );
+                .then(title => {
+                  // actionSuccess.emit("Job successfully hidden.");
+                  // hideActionSuccess.emit({ itemId: getItemId(item), visibilityCode: code, time: new moment() });
+                })
+                .catch(error => setErrorMessage(error));
             }
           }
         }
@@ -745,13 +707,11 @@ export default function DgraphActionMenuComponent({ targetId, classes }) {
         for (let item of items) {
           if (!item.aid) {
             ElasticSearchService.setDgraphMeta(Number(getItemId(item)), "clienthide", code)
-              .subscribe(
-                title => {
-                  // actionSuccess.emit("Job successfully unhidden.");
-                  // unhideActionSuccess.emit({ itemId: getItemId(item), visibilityCode: code, time: new moment() });
-                },
-                error => setErrorMessage(error)
-              );
+              .then(title => {
+                // actionSuccess.emit("Job successfully unhidden.");
+                // unhideActionSuccess.emit({ itemId: getItemId(item), visibilityCode: code, time: new moment() });
+              })
+              .catch(error => setErrorMessage(error));
           }
         }
       }

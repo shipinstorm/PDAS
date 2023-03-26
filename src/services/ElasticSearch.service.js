@@ -1,5 +1,3 @@
-import { logPaneData } from "./logPaneData";
-
 export const baseUrl = 'http://coda-rest.dyn.fa.disney.com/';
 export const nfsBaseURL = 'http://coda-rest-nfs-dev.dyn.fa.disney.com/';
 export const elasticsearchURL = 'https://wdas-elastic.fas.fa.disney.com:9200/coda_6';
@@ -133,6 +131,145 @@ class ElasticSearchService {
     //   let body = res.json();
     //   return body.data || { };
     // })
+  }
+
+  static requeueAll(dgraphId, arrayId = null, taskId = null) {
+    let jobId = "" + dgraphId;
+    if (arrayId) {
+      jobId = jobId + "." + arrayId;
+    }
+    if (taskId) {
+      jobId = jobId + "." + taskId;
+    }
+    console.log("requeueAll(" + jobId + ")");
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    let searchUrl = baseUrl + 'noauth/actions/requeueAll/' + jobId;
+    return fetch(searchUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(""),
+    }).then(res => res);
+  }
+
+  static requeueRun(dgraphId, arrayId = null, taskId = null) {
+    let jobId = "" + dgraphId;
+    if (arrayId) {
+      jobId = jobId + "." + arrayId;
+    }
+    if (taskId) {
+      jobId = jobId + "." + taskId;
+    }
+    console.log("requeueRun(" + jobId + ")");
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    let searchUrl = baseUrl + 'noauth/actions/requeueRun/' + jobId;
+    return fetch(searchUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(""),
+    }).then(res => res);
+  }
+
+  static requeueExit(dgraphId, arrayId = null, taskId = null) {
+    let jobId = "" + dgraphId;
+    if (arrayId) {
+      jobId = jobId + "." + arrayId;
+    }
+    if (taskId) {
+      jobId = jobId + "." + taskId;
+    }
+    console.log("requeueExit(" + jobId + ")");
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    let searchUrl = baseUrl + 'noauth/actions/requeueExit/' + jobId;
+    return fetch(searchUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(""),
+    }).then(res => res);
+  }
+
+  static kill(dgraphId, arrayId = null, taskId = null) {
+    let jobId = "" + dgraphId;
+    if (arrayId) {
+      jobId = jobId + "." + arrayId;
+    }
+    if (taskId) {
+      jobId = jobId + "." + taskId;
+    }
+    console.log("kill(" + jobId + ")");
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    let searchUrl = baseUrl + 'noauth/actions/kill/' + jobId;
+    return fetch(searchUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(""),
+    }).then(res => res);
+  }
+
+  static killToDone(dgraphId, arrayId = null, taskId = null) {
+    let jobId = "" + dgraphId;
+    if (arrayId) {
+      jobId = jobId + "." + arrayId;
+    }
+    if (taskId) {
+      jobId = jobId + "." + taskId;
+    }
+    console.log("killToDone(" + jobId + ")");
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    let searchUrl = baseUrl + 'noauth/actions/killToDone/' + jobId;
+    return fetch(searchUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(""),
+    }).then(res => res);
+  }
+
+  static requeueLocal(hostname, isexclusive, dgraphId, arrayId = null, taskId = null) {
+    let token = { hostlist: hostname, exclusive: isexclusive };
+    let jobId = "" + dgraphId;
+    if (arrayId) {
+      jobId = jobId + "." + arrayId;
+    }
+    if (taskId) {
+      jobId = jobId + "." + taskId;
+    }
+    console.log("requeueLocal(" + jobId + ") on " + hostname + " exclusive: " + isexclusive);
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    let searchUrl = baseUrl + 'noauth/actions/requeueLocal/' + jobId;
+    return fetch(searchUrl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(token),
+    }).then(res => res);
+  }
+
+  static breakDgraphDependencies(dgraphId) {
+    let depExpRequest = this.setDgraphMeta(dgraphId, "depexp", "true");
+    let dgraphDepExpRequest = this.setDgraphMeta(dgraphId, "dgraphdepexp", "true");
+    let arrayDepExpRequest = this.setDgraphMeta(dgraphId, "arraydepexp", "true");
+    let taskDepExpRequest = this.setDgraphMeta(dgraphId, "taskdepexp", "true");
+    return Promise.all([depExpRequest, dgraphDepExpRequest, arrayDepExpRequest, taskDepExpRequest]);
+  }
+
+  static breakArrayDependencies(dgraphId, arrayId) {
+    let depExpRequest = this.setArrayMeta(dgraphId, arrayId, "depexp", "true");
+    let dgraphDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "dgraphdepexp", "true");
+    let arrayDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "arraydepexp", "true");
+    let taskDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "taskdepexp", "true");
+    return Promise.all([depExpRequest, dgraphDepExpRequest, arrayDepExpRequest, taskDepExpRequest]);
+  }
+
+  static breakTaskDependencies(dgraphId, arrayId, taskId) {
+    let depExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "depexp", "true");
+    let dgraphDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "dgraphdepexp", "true");
+    let arrayDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "arraydepexp", "true");
+    let taskDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "taskdepexp", "true");
+    return Promise.all([depExpRequest, dgraphDepExpRequest, arrayDepExpRequest, taskDepExpRequest]);
   }
 }
 

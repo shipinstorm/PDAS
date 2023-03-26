@@ -391,6 +391,8 @@ export default function Dashboard() {
 							onToggleClick={async (jobId) => { await toggleJob(jobId); }}
 							autoCompleteValue={autoCompleteValue}
 							setSearchQuery={searchQueryHandle}
+							toggleDetails={toggleDetails}
+							toggleLog={toggleLog}
 						/>
 					</div>
 					<div
