@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import Modal from 'react-bootstrap/Modal';
 import classNames from "classnames"
 import { ModalType } from "../../types/ModalType";
-import { modalCallBack, modalConfirmObj, modalLocalExclusive, modalSelectedHosts, modalUpdateFlag } from "../../store/actions/modalAction";
+import { modalUpdateCallBack, modalConfirmObj, modalLocalExclusive, modalSelectedHosts, modalUpdateFlag } from "../../store/actions/modalAction";
 
 // Wait this many milliseconds before allowing callback to close modal
 const thresholdShow_msec = 600;
@@ -33,22 +33,22 @@ export default function CodaModal() {
 
   const doCancel = () => {
     dispatch(modalUpdateFlag(0));
-    dispatch(modalCallBack(4));
+    dispatch(modalUpdateCallBack(4));
   }
 
   const doConfirm = () => {
     dispatch(modalUpdateFlag(0));
-    dispatch(modalCallBack(1));
+    dispatch(modalUpdateCallBack(1));
   }
 
   const doKill = () => {
     dispatch(modalUpdateFlag(0));
-    dispatch(modalCallBack(2));
+    dispatch(modalUpdateCallBack(2));
   }
 
   const doKillToDone = () => {
     dispatch(modalUpdateFlag(0));
-    dispatch(modalCallBack(3));
+    dispatch(modalUpdateCallBack(3));
   }
 
   useEffect(() => {
@@ -191,7 +191,7 @@ export default function CodaModal() {
           </div>
           <div className="modal-body">{confirmObj.modalBody}</div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-primary" data-dismiss="modal">Cancel</button>
+            <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => doCancel()}>Cancel</button>
             <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => doConfirm()}> {confirmObj.confirmBtn} </button>
           </div>
         </div>}
@@ -215,7 +215,7 @@ export default function CodaModal() {
           <div className="modal-footer">
             <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => doKill()}> Yes </button>
             <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => doKillToDone()}> Kill to Done </button>
-            <button type="button" className="btn btn-primary" data-dismiss="modal">Cancel</button>
+            <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => doCancel()}>Cancel</button>
           </div>
         </div>}
 
@@ -258,7 +258,7 @@ export default function CodaModal() {
               </div>
             </div>
             {hosts.length > 0 && <div className="modal-footer">
-              <button type="button" className="btn btn-primary" data-dismiss="modal">Cancel</button>
+              <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => doCancel()}>Cancel</button>
               <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => doConfirm()}> {confirmObj.confirmBtn} </button>
             </div>}
           </div>}

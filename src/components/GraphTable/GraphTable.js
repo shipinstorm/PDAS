@@ -460,6 +460,8 @@ function GraphTable(props) {
                 listWrapper: 'customContextmenuArea1ListWrapper',
                 listItem: 'customContextmenuArea1ListItem'
               }}
+              toggleDetails={props.toggleDetails}
+              toggleLog={props.toggleLog}
             />
           </ThemeProvider>
         </CacheProvider>

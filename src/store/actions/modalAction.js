@@ -30,7 +30,7 @@ export const modalUpdateFlag = (data) => (dispatch) => {
   })
 }
 
-export const modalCallBack = (data) => (dispatch) => {
+export const modalUpdateCallBack = (data) => (dispatch) => {
   dispatch({
     type: MODAL_CALLBACK,
     payload: data
