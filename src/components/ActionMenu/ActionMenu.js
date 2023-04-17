@@ -10,6 +10,7 @@ import './ActionMenu.scss';
 export default function DgraphActionMenuComponent({ targetId, classes, toggleDetails, toggleLog }) {
   // Global Variables from Redux State
   const externalIP = useSelector((state) => state.global.externalIP);
+  const imagePaths = useSelector((state) => state.global.imagePaths);
 
   // Job Variables from Redux State
   const selectedGraphData = useSelector((state) => state.job.graphSelected);
@@ -170,6 +171,9 @@ export default function DgraphActionMenuComponent({ targetId, classes, toggleDet
       // If we're accessing externally, disable the playImagesAction
       // If we're accessing internally, re-enable the playImagesAction
       tmpPlayImagesAction.disabled = externalIP;
+
+      if (items.length && imagePaths[getItemId(items[0])] && !Object.keys(imagePaths[getItemId(items[0])]).length) tmpPlayImagesAction.disabled = true;
+
       if (items.length === 1 && selectedItem) {
         tmpKillAction.title = 'Kill ' + getItemId(items[0]);
 
@@ -279,7 +283,7 @@ export default function DgraphActionMenuComponent({ targetId, classes, toggleDet
     setJobVisibility(tmpJobVisibility);
     setLinks(tmpLinks);
     setExcludeConfirmLists(tmpExcludeConfirmLists);
-  }, [items, selectedItem]);
+  }, [items, selectedItem, imagePaths]);
 
   const getItemId = (item) => {
     let itemId = item.did;

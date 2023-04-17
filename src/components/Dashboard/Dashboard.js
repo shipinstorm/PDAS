@@ -312,17 +312,19 @@ export default function Dashboard() {
 				})
 			);
 
-			let jobID = tmpJobSelectedId.length ? tmpJobSelectedId[tmpJobSelectedId.length - 1] : [];
-			if (jobID[2]) {
-				imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
-				dispatch(globalImagePaths(imagePaths));
-			} else if (jobID[1]) {
-				imagePaths[jobID[0] + '.' + jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
-				dispatch(globalImagePaths(imagePaths));
-			} else if (jobID[0]) {
-				imagePaths[jobID[0]] = ElasticSearchService.playImages(jobID[0]);
-				dispatch(globalImagePaths(imagePaths));
-			}
+			tmpJobSelectedId.map(selected => {
+				let jobID = selected.split(".");
+				if (jobID[2]) {
+					imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
+					dispatch(globalImagePaths(imagePaths));
+				} else if (jobID[1]) {
+					imagePaths[jobID[0] + '.' + jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
+					dispatch(globalImagePaths(imagePaths));
+				} else if (jobID[0]) {
+					imagePaths[jobID[0]] = ElasticSearchService.playImages(jobID[0]);
+					dispatch(globalImagePaths(imagePaths));
+				}
+			})
 
 			// Update global variables from url
 			dispatch(jobJobSelectedId(tmpJobSelectedId));
