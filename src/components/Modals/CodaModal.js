@@ -190,8 +190,8 @@ export default function CodaModal() {
           </div>
           <div className="modal-body">{confirmObj.modalBody}</div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => doCancel()}>Cancel</button>
-            <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => doConfirm()}> {confirmObj.confirmBtn} </button>
+            <button type="button" className="btn btn-primary modal-cancel" data-dismiss="modal" onClick={() => doCancel()}>Cancel</button>
+            <button type="button" className="btn btn-default modal-confirm" data-dismiss="modal" onClick={() => doConfirm()}> {confirmObj.confirmBtn} </button>
           </div>
         </div>}
         {modal_type === ModalType.Error && <div className="modal-content error-modal">
@@ -257,8 +257,8 @@ export default function CodaModal() {
               </div>
             </div>
             {hosts.length > 0 && <div className="modal-footer">
-              <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => doCancel()}>Cancel</button>
-              <button type="button" className="btn btn-default" data-dismiss="modal" onClick={() => doConfirm()}> {confirmObj.confirmBtn} </button>
+              <button type="button" className="btn btn-primary modal-cancel" data-dismiss="modal" onClick={() => doCancel()}>Cancel</button>
+              <button type="button" className="btn btn-default modal-confirm" data-dismiss="modal" onClick={() => doConfirm()}> {confirmObj.confirmBtn} </button>
             </div>}
           </div>}
         </div>}
