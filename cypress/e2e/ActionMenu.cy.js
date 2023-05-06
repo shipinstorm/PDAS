@@ -17,12 +17,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-      localPort +
-      "/search?q=" +
-      jobID +
-      "&sel=" +
-      jobID +
-      "&exp=&details=false&log=false"
+        localPort +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
+        jobID +
+        "&exp=&details=false&log=false"
     );
     // Assert
     cy.get(graphDataSelector).rightclick();
@@ -34,12 +34,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-      localPort +
-      "/search?q=" +
-      jobID +
-      "&sel=" +
-      jobID +
-      "&exp=&details=false&log=false"
+        localPort +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
+        jobID +
+        "&exp=&details=false&log=false"
     );
     // Act
     cy.get(graphDataSelector).rightclick();
@@ -56,12 +56,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-      localPort +
-      "/search?q=" +
-      jobID +
-      "&sel=" +
-      jobID +
-      "&exp=&details=false&log=false"
+        localPort +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
+        jobID +
+        "&exp=&details=false&log=false"
     );
     // Act
     cy.get(graphDataSelector).rightclick();
@@ -78,12 +78,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-      localPort +
-      "/search?q=" +
-      jobID +
-      "&sel=" +
-      jobID +
-      "&exp=&details=false&log=false"
+        localPort +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
+        jobID +
+        "&exp=&details=false&log=false"
     );
     // Act
     cy.get(graphDataSelector).rightclick();
@@ -100,12 +100,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-      localPort +
-      "/search?q=" +
-      jobID +
-      "&sel=" +
-      jobID +
-      "&exp=&details=false&log=false"
+        localPort +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
+        jobID +
+        "&exp=&details=false&log=false"
     );
     // Act
     cy.get(graphDataSelector).rightclick();
