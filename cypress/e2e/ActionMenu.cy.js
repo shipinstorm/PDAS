@@ -17,10 +17,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-        localPort +
-        "/search?q=&sel=" +
-        jobID +
-        "&exp=&details=false&log=false"
+      localPort +
+      "/search?q=" +
+      jobID +
+      "&sel=" +
+      jobID +
+      "&exp=&details=false&log=false"
     );
     // Assert
     cy.get(graphDataSelector).rightclick();
@@ -32,10 +34,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-        localPort +
-        "/search?q=&sel=" +
-        jobID +
-        "&exp=&details=false&log=false"
+      localPort +
+      "/search?q=" +
+      jobID +
+      "&sel=" +
+      jobID +
+      "&exp=&details=false&log=false"
     );
     // Act
     cy.get(graphDataSelector).rightclick();
@@ -52,10 +56,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-        localPort +
-        "/search?q=&sel=" +
-        jobID +
-        "&exp=&details=false&log=false"
+      localPort +
+      "/search?q=" +
+      jobID +
+      "&sel=" +
+      jobID +
+      "&exp=&details=false&log=false"
     );
     // Act
     cy.get(graphDataSelector).rightclick();
@@ -72,18 +78,20 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-        localPort +
-        "/search?q=&sel=" +
-        jobID +
-        "&exp=&details=false&log=false"
+      localPort +
+      "/search?q=" +
+      jobID +
+      "&sel=" +
+      jobID +
+      "&exp=&details=false&log=false"
     );
     // Act
     cy.get(graphDataSelector).rightclick();
     cy.get(viewDetailsSelector).click();
     // Assert
-    cy.get('.object-details-content').contains('Select job to view');
-    cy.get('.panel-default').should('not.exist');
-    cy.get('.detail-form').should('not.exist');
+    cy.get(".object-details-content").contains("Select job to view");
+    cy.get(".panel-default").should("not.exist");
+    cy.get(".detail-form").should("not.exist");
   });
 
   it("Hide Action", () => {
@@ -92,10 +100,12 @@ describe("<ActionMenu>", () => {
     // Arrange
     cy.visit(
       "http://localhost:" +
-        localPort +
-        "/search?q=&sel=" +
-        jobID +
-        "&exp=&details=false&log=false"
+      localPort +
+      "/search?q=" +
+      jobID +
+      "&sel=" +
+      jobID +
+      "&exp=&details=false&log=false"
     );
     // Act
     cy.get(graphDataSelector).rightclick();
