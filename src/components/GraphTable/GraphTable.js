@@ -317,7 +317,7 @@ function GraphTable(props) {
 
       return (
         <ExpandableTableRow
-          id={"jobID:" + did.toString()}
+          id={"jobID-" + did.toString()}
           expandComponent={
             !searchArrayData ||
               !searchArrayData.length ||
