@@ -18,7 +18,9 @@ describe("<ActionMenu>", () => {
     cy.visit(
       "http://localhost:" +
         localPort +
-        "/search?q=&sel=" +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
         jobID +
         "&exp=&details=false&log=false"
     );
@@ -33,7 +35,9 @@ describe("<ActionMenu>", () => {
     cy.visit(
       "http://localhost:" +
         localPort +
-        "/search?q=&sel=" +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
         jobID +
         "&exp=&details=false&log=false"
     );
@@ -53,7 +57,9 @@ describe("<ActionMenu>", () => {
     cy.visit(
       "http://localhost:" +
         localPort +
-        "/search?q=&sel=" +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
         jobID +
         "&exp=&details=false&log=false"
     );
@@ -73,7 +79,9 @@ describe("<ActionMenu>", () => {
     cy.visit(
       "http://localhost:" +
         localPort +
-        "/search?q=&sel=" +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
         jobID +
         "&exp=&details=false&log=false"
     );
@@ -81,9 +89,9 @@ describe("<ActionMenu>", () => {
     cy.get(graphDataSelector).rightclick();
     cy.get(viewDetailsSelector).click();
     // Assert
-    cy.get('.object-details-content').contains('Select job to view');
-    cy.get('.panel-default').should('not.exist');
-    cy.get('.detail-form').should('not.exist');
+    cy.get(".object-details-content").contains("Select job to view");
+    cy.get(".panel-default").should("not.exist");
+    cy.get(".detail-form").should("not.exist");
   });
 
   it("Hide Action", () => {
@@ -93,7 +101,9 @@ describe("<ActionMenu>", () => {
     cy.visit(
       "http://localhost:" +
         localPort +
-        "/search?q=&sel=" +
+        "/search?q=" +
+        jobID +
+        "&sel=" +
         jobID +
         "&exp=&details=false&log=false"
     );
