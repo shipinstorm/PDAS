@@ -248,6 +248,15 @@ export default function DgraphActionMenuComponent({
   useEffect(() => {
     window.addEventListener("keydown", (event) => {
       if (
+        event.keyCode === 32 &&
+        document.activeElement !== document.getElementById("search") &&
+        event.target.type !== "textarea"
+      ) {
+        event.preventDefault();
+        playImages();
+      }
+
+      if (
         event.ctrlKey &&
         event.shiftKey &&
         event.keyCode === 72 &&
@@ -862,7 +871,7 @@ export default function DgraphActionMenuComponent({
     }
 
     dispatch(modalConfirmObj(confirmModalObj));
-    dispatch(modalType(ModalType.KillOptions));
+    dispatch(modalUpdateType(ModalType.KillOptions));
     dispatch(modalUpdateFlag(1));
   };
 
@@ -899,6 +908,8 @@ export default function DgraphActionMenuComponent({
 
   // Start the playback action.
   const playImages = () => {
+    if (playImagesAction.disabled) return;
+
     console.log("[DEBUG] In playImages()");
 
     // Early out if there are no selected items.
@@ -907,8 +918,6 @@ export default function DgraphActionMenuComponent({
     } else {
       return;
     }
-
-    let subscription;
 
     // Build a string list of selected job ids, converting each data
     // structure into a string of "did.aid.tid", "did.aid" or "did".
@@ -924,21 +933,9 @@ export default function DgraphActionMenuComponent({
     console.log("[DEBUG] - items=" + idList.join(","));
 
     // Create an Observable for the service call to fetch the rvspec for the
-    let rvSpec;
-    // subscription = new Observable < string > (observer => {
-    //   ElasticSearchService.getRVSpec(idList)
-    //     .then(
-    //       rvSpec => { observer.next(rvSpec.rvSpec); observer.complete(); },
-    //       error => {
-    //         console.log("[ERROR] (1) Problem getting rvspec: " + error)
-    //         observer.complete();
-    //       }
-    //     );
-    // }).subscribe(
-    //   data => rvSpec = data,
-    //   error => console.log("[ERROR] (2) Problem getting rvspec: " + error.toString()),
-    //   () => playImagesCallBack(rvSpec)
-    // );
+    ElasticSearchService.getRVSpec(idList, externalIP)
+      .then((rvSpec) => playImagesCallBack(rvSpec.rvSpec))
+      .catch((error) => console.log("[ERROR] (1) Problem getting rvspec: " + error));
 
     // Cancel the playback if requested.
     // codaModal.cancelCallback = function () {
@@ -989,7 +986,7 @@ export default function DgraphActionMenuComponent({
           errorModalObj.modalBodyDetails =
             "Please kill job or wait for it to finish before hiding.";
           dispatch(modalConfirmObj(errorModalObj));
-          dispatch(modalType(ModalType.Error));
+          dispatch(modalUpdateType(ModalType.Error));
           dispatch(modalUpdateFlag(1));
         } else {
           for (let item of items) {
@@ -1041,7 +1038,7 @@ export default function DgraphActionMenuComponent({
 
       // dispatch(modalUpdateFlag(2));
       dispatch(modalConfirmObj(dialogModalObj));
-      dispatch(modalType(ModalType.Error));
+      dispatch(modalUpdateType(ModalType.Error));
       dispatch(modalUpdateFlag(1));
       console.log("[WARN  503.1] Error fetching rvspec: " + rvSpec);
       return;

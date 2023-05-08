@@ -42,16 +42,16 @@ const ExpandableTableRow = ({
           sx={
             isSelected
               ? {
-                  background: "#383838 !important",
-                  "& .MuiButtonBase-root": {
-                    color: "#848285 !important",
-                  },
-                }
+                background: "#383838 !important",
+                "& .MuiButtonBase-root": {
+                  color: "#848285 !important",
+                },
+              }
               : {
-                  "& .MuiButtonBase-root": {
-                    color: "#848285 !important",
-                  },
-                }
+                "& .MuiButtonBase-root": {
+                  color: "#848285 !important",
+                },
+              }
           }
         >
           <IconButton
@@ -135,8 +135,8 @@ export default function ArrayTableRow({
     const selectedGraphData = tmp[0] ? tmp[0] : {};
     tmp = arrayData[Number(did)]
       ? arrayData[Number(did)].filter(
-          (data) => data.aid === Number(arrayRow.aid)
-        )
+        (data) => data.aid === Number(arrayRow.aid)
+      )
       : [{}];
     const selectedArrayData = tmp[0] ? tmp[0] : {};
     const selectedTaskData = {};
@@ -157,7 +157,7 @@ export default function ArrayTableRow({
       { name: "" },
     ];
 
-    let [statuses, status] = setStatusPercents(originStatuses, arrayData, 1);
+    let [statuses, status, statusClass] = setStatusPercents(originStatuses, arrayData, 1);
 
     return (
       <ExpandableTableRow
@@ -186,6 +186,7 @@ export default function ArrayTableRow({
                   ? { background: "#383838 !important" }
                   : { background: "#282828 !important" }
               }
+              className={"row-" + statusClass}
             >
               {columnOrder[index] === 3 && (
                 <div className="statusContent">
@@ -219,9 +220,8 @@ export default function ArrayTableRow({
                   </p>
                 </div>
               )}
-              {/* {isMemMaxed[did] && isMemMaxed[did][arrayRow.aid] && ( */}
-              {/* {columnOrder[index] === 10 && (
-                <div className="memory-column">
+              {/* {isMemMaxed[did] && isMemMaxed[did][arrayRow.aid] && columnOrder[index] === 10 && (
+                <div class="column-cell memory-column pull-right text-center">
                   <span
                     className="mem-maxed-tag"
                     title="One or more tasks in this Array are using more memory than was reserved"

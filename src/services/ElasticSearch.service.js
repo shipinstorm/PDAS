@@ -86,13 +86,24 @@ class ElasticSearchService {
     // if(CodaGlobals.devmode === false) {
     //   headers.append('X-Requested-With', 'XMLHtt•pRequest');
     // }
-    let searchUrl = baseUrl+'noauth/health_rest';
+    let searchUrl = baseUrl + 'noauth/health_rest';
     return fetch(searchUrl, {
       headers: headers
     }).then(res => {
       let body = res.json();
-      return body.data || { };
+      return body.data || {};
     });
+  }
+
+  // Query the coda-rest-nfs service to get a baked rvspec for our list of
+  // ids.
+  static getRVSpec(idList, externalIP) {
+    console.log("[DEBUG] In getRVSpec()")
+    console.log("[DEBUG] - idList=" + idList.join(","))
+    let searchUrl = nfsBaseURL + 'rvspec/?ids=' + idList.join(",");
+    if (!externalIP) {
+      return fetch(searchUrl).then(res => res.json());
+    }
   }
 
   static playImages(dgraphId, arrayId = 0, taskId = 0) {
@@ -109,7 +120,7 @@ class ElasticSearchService {
         headers: headers
       }).then(res => {
         let body = res.json();
-        return body.data || { };
+        return body.data || {};
       })
     }
     else if (arrayId) {
@@ -120,7 +131,7 @@ class ElasticSearchService {
         headers: headers
       }).then(res => {
         let body = res.json();
-        return body.data || { };
+        return body.data || {};
       })
     }
     console.log("[DEBUG] - dgraphId=" + dgraphId)
@@ -129,7 +140,7 @@ class ElasticSearchService {
       headers: headers
     }).then(res => {
       let body = res.json();
-      return body.data || { };
+      return body.data || {};
     })
   }
 
