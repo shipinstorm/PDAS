@@ -165,13 +165,16 @@ export const setStatusPercents = (tmpStatuses, tmpData, flag) => {
     }
   }
 
+  let statusClass = "";
   status = "";
   if (flag === 0 && DGRAPH_STATUS_CODES[tmpData._statusname]) {
     status = DGRAPH_STATUS_CODES[tmpData._statusname].name;
+    statusClass = DGRAPH_STATUS_CODES[tmpData._statusname].statusClass;
   }
   if (flag === 1 && ARRAY_STATUS_CODES[tmpData._statusname]) {
     status = ARRAY_STATUS_CODES[tmpData._statusname].name;
+    statusClass = ARRAY_STATUS_CODES[tmpData._statusname].statusClass;
   }
 
-  return [statuses, status];
+  return [statuses, status, statusClass];
 };

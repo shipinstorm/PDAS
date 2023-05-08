@@ -104,6 +104,34 @@ function GraphTable(props) {
       ? JSON.parse("[" + localStorage.columnOrder + "]")
       : [0, 1, 2, 3, 4, 5, 6, 7]
   );
+  const [isMemMaxed, setIsMemMaxed] = useState({});
+
+  const getTaskMemoryData = (dids) => {
+    const tmpMemMaxed = isMemMaxed;
+    ElasticSearchService.getTaskMemoryData(dids)
+      .then((result) => {
+        for (let did of result.dids.buckets) {
+          tmpMemMaxed[did.key] = null;
+          for (let aid of did.aids.buckets) {
+            for (let memGranted of aid.mem_granted.buckets) {
+              // Allow the job to use 25% more memory than it reserved before alerting
+              // 25% is somewhat arbitrary.  Feel free to change it in the future
+              // The job must also be using more than 10GB.  This is also arbitrary
+              if (memGranted.max_mem_used.value > memGranted.key * 1.25 && memGranted.max_mem_used.value > 10240) {
+                if (!tmpMemMaxed[did.key]) {
+                  tmpMemMaxed[did.key] = {};
+                }
+                tmpMemMaxed[did.key][aid.key] = true;
+              }
+            }
+          }
+        }
+        setIsMemMaxed(tmpMemMaxed);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 
   const collapseAll = () => {
     dispatch(jobJobSelectedId([]));
@@ -278,7 +306,7 @@ function GraphTable(props) {
       let tmp = graphData.filter((data) => data.did === did);
       let tmpGraphData = tmp[0] ? tmp[0] : {};
 
-      let [statuses, status] = setStatusPercents(originStatuses, tmpGraphData, 0);
+      let [statuses, status, statusClass] = setStatusPercents(originStatuses, tmpGraphData, 0);
 
       const expandGraphRow = async () => {
         /**
@@ -347,19 +375,10 @@ function GraphTable(props) {
                 key={index}
                 sx={
                   isSelected
-                    ? {
-                      background: "#383838 !important",
-                      // overflow: 'hidden',
-                      // textOverflow: 'ellipsis',
-                      // whiteSpace: 'nowrap'
-                    }
-                    : {
-                      background: "#282828 !important",
-                      // overflow: 'hidden',
-                      // textOverflow: 'ellipsis',
-                      // whiteSpace: 'nowrap'
-                    }
+                    ? { background: "#383838 !important" }
+                    : { background: "#282828 !important" }
                 }
+                className={"row-" + statusClass}
               >
                 {columnOrder[index] === 3 && (
                   <div className="statusContent">
@@ -395,9 +414,8 @@ function GraphTable(props) {
                     </p>
                   </div>
                 )}
-                {/* {isMemMaxed[did] && isMemMaxed[did][arrayRow.aid] && ( */}
-                {/* {columnOrder[index] === 10 && (
-                  <div className="memory-column">
+                {isMemMaxed[did] && columnOrder[index] === 10 && (
+                  <div className="column-cell memory-column pull-right text-center">
                     <span
                       className="mem-maxed-tag"
                       title="One or more tasks in this Array are using more memory than was reserved"
@@ -406,7 +424,7 @@ function GraphTable(props) {
                       <span>Maxed</span>
                     </span>
                   </div>
-                )} */}
+                )}
                 {columnOrder[index] !== 3 && data[columnOrder[index]]}
               </TableCell>
             );

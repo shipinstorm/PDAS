@@ -14,3 +14,20 @@
     z-index: 10001;
   }
 }
+.row-done {
+  color: #b4b4b4 !important;
+}
+.row-running {
+  color: #9aca75 !important;
+}
+.row-in-queue {
+  color: #78c6ac !important;
+}
+.row-dependent {
+  color: #367587 !important;
+}
+.row-exited,
+.row-sys-killed,
+.row-killed {
+  color: #ec5750 !important;
+}

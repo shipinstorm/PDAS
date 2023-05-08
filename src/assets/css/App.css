@@ -178,6 +178,7 @@ ul.checkbox li {
 }
 .search-bar input {
   height: 33px;
+  color: #a3a3a3;
 }
 .checkboxes {
   display: inline-block;
