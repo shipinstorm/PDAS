@@ -3,51 +3,89 @@ export const nfsBaseURL = 'http://coda-rest-nfs-dev.dyn.fa.disney.com/';
 export const elasticsearchURL = 'https://wdas-elastic.fas.fa.disney.com:9200/coda_6';
 
 class ElasticSearchService {
-  static getDgraphs(query, from, size, hidden) {
+  static getDgraphs(query, from, size, hidden, devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchQuery = (hidden ? '' : '!clienthide:1 ') + (query ? ('_exists_:did !_exists_:aid ' + query) : '_exists_:did !_exists_:aid');
     let searchUrl = elasticsearchURL + '/_search?default_operator=AND&sort=did:desc&from=' + from + '&size=' + size + '&q=' + encodeURIComponent(searchQuery);
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
   }
 
-  static getDgraph(dgraphId) {
+  static getDgraph(dgraphId, devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/' + dgraphId + '?metadataValue=true';
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
   }
 
-  static getArrays(did) {
+  static getArrays(did, devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchQuery = '_exists_:aid !_exists_:tid did:' + did;
     let searchUrl = elasticsearchURL + '/_search?default_operator=AND&sort=aid:asc&q=' + encodeURIComponent(searchQuery);
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
   }
 
-  static getArray(dgraphId, arrayId) {
+  static getArray(dgraphId, arrayId, devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/' + dgraphId + '/' + arrayId + '?metadataValue=true';
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
   }
 
-  static getTasks(did, aid) {
+  static getTasks(did, aid, devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchQuery = '_exists_:tid did:' + did + ' aid: ' + aid;
     let searchUrl = elasticsearchURL + '/_search?default_operator=AND&sort=tid:asc&q=' + encodeURIComponent(searchQuery);
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
   }
 
-  static getTask(dgraphId, arrayId, taskId) {
+  static getTask(dgraphId, arrayId, taskId, devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/' + dgraphId + '/' + arrayId + '/' + taskId + '?metadataValue=true';
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
   }
 
-  static setDgraphMeta(did, key, value, errorCallback) {
+  static setDgraphMeta(did, key, value, errorCallback, devMode = true) {
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/setMeta/dgraph.' + did + '.' + key;
     return fetch(searchUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify(value),
     }).then(res => res);
   };
 
-  static setArrayMeta(did, aid, key, value) {
+  static setArrayMeta(did, aid, key, value, devMode = true) {
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/setMeta/array.' + did + '.' + aid + '.' + key;
     return fetch(searchUrl, {
       method: 'POST',
@@ -56,9 +94,12 @@ class ElasticSearchService {
     }).then(res => res);
   };
 
-  static setTaskMeta(did, aid, tid, key, value) {
+  static setTaskMeta(did, aid, tid, key, value, devMode = true) {
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/setMeta/task.' + did + '.' + aid + '.' + tid + '.' + key;
     return fetch(searchUrl, {
       method: 'POST',
@@ -70,45 +111,61 @@ class ElasticSearchService {
     });
   };
 
-  static getPoolData() {
+  static getPoolData(devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/getMeta/stats.cpupools?usecache=True&expire=30';
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
   };
 
-  static getLogHtml(dgraphId, arrayId, taskId) {
+  static getLogHtml(dgraphId, arrayId, taskId, devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = nfsBaseURL + 'logJSON/' + dgraphId + '/' + arrayId + '/' + taskId + '/' + 1024000;
-    return fetch(searchUrl).then(res => res.json());
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
   }
 
-  static networkCheck() {
-    // return new Promise((resolve, reject) => { resolve({}) });
+  static networkCheck(devMode = true) {
     let headers = new Headers();
-    // if(CodaGlobals.devmode === false) {
-    //   headers.append('X-Requested-With', 'XMLHtt•pRequest');
-    // }
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/health_rest';
-    return fetch(searchUrl, {
-      headers: headers
-    }).then(res => {
-      let body = res.json();
-      return body.data || {};
-    });
+    return fetch(searchUrl, { headers: headers })
+      .then(res => {
+        let body = res.json();
+        return body.data || {};
+      });
   }
 
   // Query the coda-rest-nfs service to get a baked rvspec for our list of
   // ids.
-  static getRVSpec(idList, externalIP) {
+  static getRVSpec(idList, externalIP, devMode = true) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     console.log("[DEBUG] In getRVSpec()")
     console.log("[DEBUG] - idList=" + idList.join(","))
     let searchUrl = nfsBaseURL + 'rvspec/?ids=' + idList.join(",");
     if (!externalIP) {
-      return fetch(searchUrl).then(res => res.json());
+      return fetch(searchUrl, { headers: headers })
+        .then(res => res.json());
     }
   }
 
-  static playImages(dgraphId, arrayId = 0, taskId = 0) {
+  static playImages(dgraphId, arrayId = 0, taskId = 0, devMode = true) {
     // return new Promise((resolve, reject) => { resolve([]) });
     let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = '';
     console.log("[DEBUG] In playImages()")
     if (taskId) {
@@ -116,35 +173,32 @@ class ElasticSearchService {
       console.log("[DEBUG] - arrayId=" + arrayId)
       console.log("[DEBUG] - taskId=" + taskId)
       searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId + '/' + arrayId + '/' + taskId;
-      return fetch(searchUrl, {
-        headers: headers
-      }).then(res => {
-        let body = res.json();
-        return body.data || {};
-      })
+      return fetch(searchUrl, { headers: headers })
+        .then(res => {
+          let body = res.json();
+          return body.data || {};
+        })
     }
     else if (arrayId) {
       console.log("[DEBUG] - dgraphId=" + dgraphId)
       console.log("[DEBUG] - arrayId=" + arrayId)
       searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId + '/' + arrayId;
-      return fetch(searchUrl, {
-        headers: headers
-      }).then(res => {
-        let body = res.json();
-        return body.data || {};
-      })
+      return fetch(searchUrl, { headers: headers })
+        .then(res => {
+          let body = res.json();
+          return body.data || {};
+        })
     }
     console.log("[DEBUG] - dgraphId=" + dgraphId)
     searchUrl = nfsBaseURL + 'imagepaths/' + dgraphId;
-    return fetch(searchUrl, {
-      headers: headers
-    }).then(res => {
-      let body = res.json();
-      return body.data || {};
-    })
+    return fetch(searchUrl, { headers: headers })
+      .then(res => {
+        let body = res.json();
+        return body.data || {};
+      })
   }
 
-  static requeueAll(dgraphId, arrayId = null, taskId = null) {
+  static requeueAll(dgraphId, arrayId = null, taskId = null, devMode = true) {
     let jobId = "" + dgraphId;
     if (arrayId) {
       jobId = jobId + "." + arrayId;
@@ -155,6 +209,9 @@ class ElasticSearchService {
     console.log("requeueAll(" + jobId + ")");
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/requeueAll/' + jobId;
     return fetch(searchUrl, {
       method: 'POST',
@@ -163,7 +220,7 @@ class ElasticSearchService {
     }).then(res => res);
   }
 
-  static requeueRun(dgraphId, arrayId = null, taskId = null) {
+  static requeueRun(dgraphId, arrayId = null, taskId = null, devMode = true) {
     let jobId = "" + dgraphId;
     if (arrayId) {
       jobId = jobId + "." + arrayId;
@@ -174,6 +231,9 @@ class ElasticSearchService {
     console.log("requeueRun(" + jobId + ")");
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/requeueRun/' + jobId;
     return fetch(searchUrl, {
       method: 'POST',
@@ -182,7 +242,7 @@ class ElasticSearchService {
     }).then(res => res);
   }
 
-  static requeueExit(dgraphId, arrayId = null, taskId = null) {
+  static requeueExit(dgraphId, arrayId = null, taskId = null, devMode = true) {
     let jobId = "" + dgraphId;
     if (arrayId) {
       jobId = jobId + "." + arrayId;
@@ -193,6 +253,9 @@ class ElasticSearchService {
     console.log("requeueExit(" + jobId + ")");
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/requeueExit/' + jobId;
     return fetch(searchUrl, {
       method: 'POST',
@@ -201,7 +264,7 @@ class ElasticSearchService {
     }).then(res => res);
   }
 
-  static kill(dgraphId, arrayId = null, taskId = null) {
+  static kill(dgraphId, arrayId = null, taskId = null, devMode = true) {
     let jobId = "" + dgraphId;
     if (arrayId) {
       jobId = jobId + "." + arrayId;
@@ -212,6 +275,9 @@ class ElasticSearchService {
     console.log("kill(" + jobId + ")");
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/kill/' + jobId;
     return fetch(searchUrl, {
       method: 'POST',
@@ -220,7 +286,7 @@ class ElasticSearchService {
     }).then(res => res);
   }
 
-  static killToDone(dgraphId, arrayId = null, taskId = null) {
+  static killToDone(dgraphId, arrayId = null, taskId = null, devMode = true) {
     let jobId = "" + dgraphId;
     if (arrayId) {
       jobId = jobId + "." + arrayId;
@@ -231,6 +297,9 @@ class ElasticSearchService {
     console.log("killToDone(" + jobId + ")");
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/killToDone/' + jobId;
     return fetch(searchUrl, {
       method: 'POST',
@@ -239,7 +308,7 @@ class ElasticSearchService {
     }).then(res => res);
   }
 
-  static requeueLocal(hostname, isexclusive, dgraphId, arrayId = null, taskId = null) {
+  static requeueLocal(hostname, isexclusive, dgraphId, arrayId = null, taskId = null, devMode = true) {
     let token = { hostlist: hostname, exclusive: isexclusive };
     let jobId = "" + dgraphId;
     if (arrayId) {
@@ -251,6 +320,9 @@ class ElasticSearchService {
     console.log("requeueLocal(" + jobId + ") on " + hostname + " exclusive: " + isexclusive);
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
     let searchUrl = baseUrl + 'noauth/actions/requeueLocal/' + jobId;
     return fetch(searchUrl, {
       method: 'POST',
@@ -259,27 +331,27 @@ class ElasticSearchService {
     }).then(res => res);
   }
 
-  static breakDgraphDependencies(dgraphId) {
-    let depExpRequest = this.setDgraphMeta(dgraphId, "depexp", "true");
-    let dgraphDepExpRequest = this.setDgraphMeta(dgraphId, "dgraphdepexp", "true");
-    let arrayDepExpRequest = this.setDgraphMeta(dgraphId, "arraydepexp", "true");
-    let taskDepExpRequest = this.setDgraphMeta(dgraphId, "taskdepexp", "true");
+  static breakDgraphDependencies(dgraphId, devMode = true) {
+    let depExpRequest = this.setDgraphMeta(dgraphId, "depexp", "true", devMode);
+    let dgraphDepExpRequest = this.setDgraphMeta(dgraphId, "dgraphdepexp", "true", devMode);
+    let arrayDepExpRequest = this.setDgraphMeta(dgraphId, "arraydepexp", "true", devMode);
+    let taskDepExpRequest = this.setDgraphMeta(dgraphId, "taskdepexp", "true", devMode);
     return Promise.all([depExpRequest, dgraphDepExpRequest, arrayDepExpRequest, taskDepExpRequest]);
   }
 
-  static breakArrayDependencies(dgraphId, arrayId) {
-    let depExpRequest = this.setArrayMeta(dgraphId, arrayId, "depexp", "true");
-    let dgraphDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "dgraphdepexp", "true");
-    let arrayDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "arraydepexp", "true");
-    let taskDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "taskdepexp", "true");
+  static breakArrayDependencies(dgraphId, arrayId, devMode = true) {
+    let depExpRequest = this.setArrayMeta(dgraphId, arrayId, "depexp", "true", devMode);
+    let dgraphDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "dgraphdepexp", "true", devMode);
+    let arrayDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "arraydepexp", "true", devMode);
+    let taskDepExpRequest = this.setArrayMeta(dgraphId, arrayId, "taskdepexp", "true", devMode);
     return Promise.all([depExpRequest, dgraphDepExpRequest, arrayDepExpRequest, taskDepExpRequest]);
   }
 
-  static breakTaskDependencies(dgraphId, arrayId, taskId) {
-    let depExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "depexp", "true");
-    let dgraphDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "dgraphdepexp", "true");
-    let arrayDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "arraydepexp", "true");
-    let taskDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "taskdepexp", "true");
+  static breakTaskDependencies(dgraphId, arrayId, taskId, devMode = true) {
+    let depExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "depexp", "true", devMode);
+    let dgraphDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "dgraphdepexp", "true", devMode);
+    let arrayDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "arraydepexp", "true", devMode);
+    let taskDepExpRequest = this.setTaskMeta(dgraphId, arrayId, taskId, "taskdepexp", "true", devMode);
     return Promise.all([depExpRequest, dgraphDepExpRequest, arrayDepExpRequest, taskDepExpRequest]);
   }
 }
