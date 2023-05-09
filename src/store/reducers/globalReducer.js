@@ -33,6 +33,7 @@ const initialState = {
   imagePaths: {},
   viewLog: false,
   showDevBanner: true,
+  devMode: true,
 };
 
 export default function foo(state = initialState, action) {

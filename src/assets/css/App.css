@@ -350,6 +350,10 @@ td.host span.thread-count {
 .MuiTableRow-root.Mui-selected > .MuiTableCell-root {
   background-color: #383838 !important;
 }
+.MuiTableHead-root .MuiTableCell-root {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
 .MuiTableBody-root .MuiTableCell-root {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
@@ -384,5 +388,6 @@ td.host span.thread-count {
   display: none;
 }
 .MuiTableHead-root th {
-  background-color: #505050 !important;
+  /* background-color: rgba(80, 80, 80, 0.5) !important; */
+  background-color: transparent;
 }
