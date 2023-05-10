@@ -16,16 +16,16 @@ const initialState = {
   codaHealth: {
     "ES-coda_6": {
       "status": "green"
-    }, 
+    },
     "mongo-connector": {
       "status": "green"
-    }, 
+    },
     "rdispatcher": {
       "status": "green"
-    }, 
+    },
     "rgoferd": {
       "status": "green"
-    }, 
+    },
     "rqinfod": {
       "status": "green"
     }
@@ -33,11 +33,11 @@ const initialState = {
   imagePaths: {},
   viewLog: false,
   showDevBanner: true,
-  devMode: true,
+  devMode: false,
 };
 
 export default function foo(state = initialState, action) {
-  switch(action.type) {
+  switch (action.type) {
     case GLOBAL_GRAPH_DATA:
       return {
         ...state,
@@ -73,7 +73,7 @@ export default function foo(state = initialState, action) {
         ...state,
         viewLog: action.payload
       }
-    default: 
+    default:
       return state;
   }
 }
