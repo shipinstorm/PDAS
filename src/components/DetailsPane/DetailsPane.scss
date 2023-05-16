@@ -509,7 +509,7 @@ a.list-group-item-danger.active:hover {
   text-align: center;
   color: rgba(255, 255, 255, 0.35);
   font-size: 16px;
-  padding-top: 18px;
+  padding: 18px 0px;
 }
 .loading-div img {
   width: 41px;
@@ -1196,7 +1196,6 @@ a.list-group-item-danger.active:hover {
 .banner-wrapper {
   left: 0;
   right: 0;
-  margin-bottom: 10px;
 }
 .top-browser-banner,
 .top-error-banner,
@@ -1268,6 +1267,7 @@ a.list-group-item-danger.active:hover {
   right: 0px;
   left: 0px;
   min-width: 675px;
+  display: flex;
 }
 // .search-bar {
 //   padding: 11px 130px 7px 30px;

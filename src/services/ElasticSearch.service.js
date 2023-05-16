@@ -121,6 +121,16 @@ class ElasticSearchService {
       .then(res => res.json());
   };
 
+  static getBannerData(url, devMode) {
+    let headers = new Headers();
+    if (devMode === false) {
+      headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
+    let searchUrl = baseUrl + `noauth/getMeta/${url}?usecache=True&expire=30`;
+    return fetch(searchUrl, { headers: headers })
+      .then(res => res.json());
+  }
+
   static getLogHtml(dgraphId, arrayId, taskId, devMode = false) {
     let headers = new Headers();
     if (devMode === false) {

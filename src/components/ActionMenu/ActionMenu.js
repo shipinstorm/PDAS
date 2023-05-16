@@ -19,6 +19,7 @@ export default function DgraphActionMenuComponent({
   classes,
   toggleDetails,
   toggleLog,
+  mainContentWrapperTop,
 }) {
   // Global Variables from Redux State
   const externalIP = useSelector((state) => state.global.externalIP);
@@ -1060,7 +1061,7 @@ export default function DgraphActionMenuComponent({
       style={{
         display: `${contextData.visible ? "block" : "none"}`,
         left: contextData.posX,
-        top: contextData.posY,
+        top: contextData.posY - mainContentWrapperTop,
       }}
     >
       <div className={`optionsList ${classes?.listWrapper}`}>
