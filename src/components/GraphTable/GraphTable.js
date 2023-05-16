@@ -21,6 +21,7 @@ import IconRun from "../../assets/images/icon-run.svg";
 import IconDependent from "../../assets/images/icon-dependent.svg";
 import IconQueued from "../../assets/images/icon-queued.svg";
 import IconDone from "../../assets/images/icon-done.svg";
+import SpinnerDarkGif from "../../assets/images/spinner_dark.gif";
 import originStatuses from "../../assets/data/statuses.json";
 
 import ElasticSearchService from "../../services/ElasticSearch.service";
@@ -260,7 +261,18 @@ function GraphTable(props) {
     },
   ];
 
-  const data = graphData.map((jobs) => {
+  const data1 = [
+    {
+      username: '',
+      jobid: '',
+      title: '',
+      status: '',
+      elapsed: '',
+      submitted: '',
+    }
+  ]
+
+  const data2 = graphData.map((jobs) => {
     return {
       username: jobs.icoda_username,
       jobid: jobs.did,
@@ -279,6 +291,20 @@ function GraphTable(props) {
     filter: true,
     filterType: "dropdown",
     viewColumns: true,
+
+    customRowRender: (data, dataIndex, rowIndex) => {
+      return (
+        <TableRow>
+          <TableCell colSpan={9}>
+            <div class="loading-div">
+              <img src={SpinnerDarkGif} alt="" />
+              <br />
+              Loading jobs...
+            </div>
+          </TableCell>
+        </TableRow>
+      )
+    }
   };
 
   const options2 = {
@@ -446,14 +472,13 @@ function GraphTable(props) {
         <CacheProvider value={muiCache}>
           <ThemeProvider theme={getMuiTheme()}>
             <MUIDataTable
-              title={"coda-ui-react"}
+              data={data1}
               columns={columns}
               options={options1}
             />
-            <div className="job-rows">Loading...</div>
           </ThemeProvider>
         </CacheProvider>
-      </div>
+      </div >
     );
   } else {
     return (
@@ -467,7 +492,7 @@ function GraphTable(props) {
                   {jobExpanded.length > 0 ? <KeyboardArrowDownIcon onClick={() => collapseAll()} /> : <KeyboardArrowRightIcon />}
                 </div>
               }
-              data={data}
+              data={data2}
               columns={columns}
               options={options2}
             />
@@ -480,6 +505,7 @@ function GraphTable(props) {
               }}
               toggleDetails={props.toggleDetails}
               toggleLog={props.toggleLog}
+              mainContentWrapperTop={props.mainContentWrapperTop}
             />
           </ThemeProvider>
         </CacheProvider>

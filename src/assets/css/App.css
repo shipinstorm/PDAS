@@ -22,23 +22,27 @@ body {
 .statusContent .status-icon {
   margin-right: 20px;
 }
-.text-done, .text-running, .text-queued, .text-dependent, .text-exit {
+.text-done,
+.text-running,
+.text-queued,
+.text-dependent,
+.text-exit {
   width: 30px;
 }
 .text-done {
-  color: #B4B4B4;
+  color: #b4b4b4;
 }
 .text-running {
-  color: #9ACA75;
+  color: #9aca75;
 }
 .text-queued {
-  color: #78C6AC; 
+  color: #78c6ac;
 }
 .text-dependent {
   color: #367587;
 }
 .text-exit {
-  color: #EC5750;
+  color: #ec5750;
 }
 .job-list {
   width: 100%;
@@ -353,6 +357,8 @@ td.host span.thread-count {
 .MuiTableHead-root .MuiTableCell-root {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
+  height: 51px !important;
+  min-height: 51px !important;
 }
 .MuiTableBody-root .MuiTableCell-root {
   padding-top: 0px !important;
@@ -380,7 +386,7 @@ td.host span.thread-count {
 }
 .MuiToolbar-root > div:nth-child(2) > button:nth-child(2) {
   position: absolute;
-  top: 37px;
+  top: -52px;
   right: 250px;
   z-index: 10001;
 }

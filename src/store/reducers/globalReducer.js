@@ -34,6 +34,7 @@ const initialState = {
   viewLog: false,
   showDevBanner: true,
   devMode: false,
+  mode: "dev",
 };
 
 export default function foo(state = initialState, action) {

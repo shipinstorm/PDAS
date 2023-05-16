@@ -24,6 +24,7 @@ import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { generateSearchQueries } from '../../utils/utils';
 
+import Banner from "../Banner/Banner";
 import SearchBar from '../SearchBar/SearchBar';
 import HeaderButtons from '../HeaderButtons';
 import DetailsPane from "../DetailsPane/DetailsPane";
@@ -84,7 +85,6 @@ export default function Dashboard() {
 	const [logPaneHeight, setLogPaneHeight] = useState(searchParamsObject.log === 'true' ? 268 : 6);
 	const viewLog = useSelector((state) => state.global.viewLog);
 
-	const showDevBanner = useSelector((state) => state.global.showDevBanner);
 	const graphData = useSelector((state) => state.global.graphData);
 	const arrayData = useSelector((state) => state.global.arrayData);
 	const taskData = useSelector((state) => state.global.taskData);
@@ -97,6 +97,10 @@ export default function Dashboard() {
 	const [initSearchQuery,] = useState(getInitSearchQuery());
 	const [autoCompleteValue, setAutoCompleteValue] = useState(initSearchQuery);
 	const [filterQueryFlag, setFilterQueryFlag] = useState([]);
+
+	const navBarHeight = 60;
+	const bannerHeight = 21;
+	const [mainContentWrapperTop, setMainContentWrapperTop] = useState(navBarHeight + bannerHeight);
 
 	const startResizing = React.useCallback((mouseDownEvent) => {
 		setIsLogPaneResizing(true);
@@ -158,13 +162,14 @@ export default function Dashboard() {
 
 		setSearchQuery(urlSearchQuery);
 		setFilterQueryFlag(tmpFilterQueryFlag);
+		setJobListLoading(true);
 
 		/**
 		 * This is for ElasticSearch
 		 * Comment out below section when you work with Mock Data
 		 */
 		ElasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
-		 	(result) => {
+			(result) => {
 				let tmpGraphData = [];
 				if (expandFlag) {
 					tmpGraphData = graphData;
@@ -343,34 +348,33 @@ export default function Dashboard() {
 	}
 
 	const toggleJob = async (jobId) => {
+		setJobListLoading(true);
 		await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
-		let newArrayData = {};
-		newArrayData = {...arrayData, [jobId]: resultArray.hits.hits.map(doc => doc._source)};
-		// newArrayData = { ...arrayData, [jobId]: dArrayData.hits.hits.map(doc => doc._source) };
+			let newArrayData = {};
+			newArrayData = { ...arrayData, [jobId]: resultArray.hits.hits.map(doc => doc._source) };
+			// newArrayData = { ...arrayData, [jobId]: dArrayData.hits.hits.map(doc => doc._source) };
 
-		let newTaskData = {};
-		let tmp = [];
-		await Promise.all(newArrayData[jobId].map(async (array) => {
-			await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
-			tmp[array.aid] = resultTask.hits.hits.map(doc => doc._source);
-			// tmp[array.aid] = dTaskData.hits.hits.map(doc => doc._source);
-			});
-		}))
-		newTaskData = { ...taskData, [jobId]: tmp };
-		dispatch(globalArrayData(newArrayData));
-		dispatch(globalTaskData(newTaskData));
-		setJobListLoading(false);
+			let newTaskData = {};
+			let tmp = [];
+			await Promise.all(newArrayData[jobId].map(async (array) => {
+				await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
+					tmp[array.aid] = resultTask.hits.hits.map(doc => doc._source);
+					// tmp[array.aid] = dTaskData.hits.hits.map(doc => doc._source);
+				});
+			}))
+			newTaskData = { ...taskData, [jobId]: tmp };
+			dispatch(globalArrayData(newArrayData));
+			dispatch(globalTaskData(newTaskData));
+			setJobListLoading(false);
 		});
 	}
 
 	return (
 		<div className="app">
-			<div className="banner-wrapper">
-				{showDevBanner && <div className="top-devenv-banner">
-					<span className="glyphicon glyphicon-exclamation-sign"></span>
-					<small>This is a <b>development</b> instance.</small>
-				</div>}
-			</div>
+			<Banner
+				mainContentWrapperTop={mainContentWrapperTop}
+				setMainContentWrapperTop={setMainContentWrapperTop}
+			/>
 			<div className="app-header">
 				<div className="app-searchbar">
 					<div className="coda-logo">CODA</div>
@@ -384,7 +388,7 @@ export default function Dashboard() {
 				</div>
 				<HeaderButtons toggleDetails={toggleDetails} toggleLog={toggleLog} />
 			</div>
-			<div className="main-content">
+			<div className="main-content-wrapper" style={{ top: mainContentWrapperTop }}>
 				<div className="app-container" style={viewDetails ? { width: 'calc(100vw - 400px)' } : {}}>
 					<div className="app-frame" style={{ height: 'calc(100% - ' + logPaneHeight + 'px)' }}>
 						<GraphTable
@@ -395,6 +399,7 @@ export default function Dashboard() {
 							setSearchQuery={searchQueryHandle}
 							toggleDetails={toggleDetails}
 							toggleLog={toggleLog}
+							mainContentWrapperTop={mainContentWrapperTop}
 						/>
 					</div>
 					<div
