@@ -4,6 +4,8 @@ import { useSelector } from "react-redux";
 import { Autocomplete, TextField } from "@mui/material";
 import InputAdornment from '@mui/material/InputAdornment';
 
+import ElasticSearchService from "../../services/ElasticSearch.service.js";
+
 import Filter from './Filter.js';
 import Tag from './Tag';
 
@@ -16,50 +18,19 @@ function SearchBar({
   const elementRef = useRef();
   const isFirstRun = useRef(true);
 
-  const graphData = useSelector((state) => state.global.graphData);
+  const [searchGraphData, setSearchGraphData] = useState([]);
 
-  const [searchGraphData, setSearchGraphData] = useState();
+  const handleInputChange = (event, newValue) => {
+    ElasticSearchService.getSearchSuggestions(newValue).then(response => {
+      setSearchGraphData(response);
+    });
 
-  const convertToSearchGraphData = (graphData) => {
-		let data = [], uniqueChars, tmp;
-		tmp = graphData.map((d) => {
-			if (d) {
-				return d.icoda_username;
-			}
-		})
-		uniqueChars = [...new Set(tmp)];
-		uniqueChars.map((d) => {
-			data.push({
-				title: '' + d,
-				header: 'user'
-			})
-		})
-		tmp = graphData.map((d) => {
-			return d.title;
-		})
-		uniqueChars = [...new Set(tmp)];
-		uniqueChars.map((d) => {
-			data.push({
-				title: '' + d,
-				header: 'title'
-			})
-		})
-		tmp = graphData.map((d) => {
-			return d._statusname;
-		})
-		uniqueChars = [...new Set(tmp)];
-		uniqueChars.map((d) => {
-			data.push({
-				title: '' + d,
-				header: 'status'
-			})
-		})
-		return data;
-	}
-
-  useEffect(() => {
-    setSearchGraphData(convertToSearchGraphData(graphData));
-  }, [graphData])
+    // Work In Progress: fetch title suggestions separately since they take so long to come back
+    // ElasticSearchService.getTitleSearchSuggestions(newValue).then(response => {
+    //   let newSearchGraphData = searchGraphData.filter(suggestion => suggestion.header != "title").concat(response);
+    //   setSearchGraphData(newSearchGraphData);
+    // });
+  }
 
   /**
    * Update searchQuery and redraw table
@@ -95,6 +66,9 @@ function SearchBar({
         className="autocomplete-searchbar"
         getOptionLabel={(option) => option.title}
         groupBy={option => option.header}
+        onInputChange={(event, newInputValue) => {
+          handleInputChange(event, newInputValue);
+        }}
         onChange={(e, newValue) => {
           /**
            * Fix searchQuery
@@ -149,6 +123,14 @@ function SearchBar({
               ref={elementRef}
               InputProps={{
                 ...params.InputProps,
+                startAdornment: (
+                  <>
+                    <InputAdornment position="start">
+                      <span className="material-icons search-icon">search</span>
+                    </InputAdornment>
+                    {params.InputProps.startAdornment}
+                  </>
+                ),
                 endAdornment: (
                   <InputAdornment position="end">
                     <Filter
@@ -159,11 +141,12 @@ function SearchBar({
                     />
                   </InputAdornment>
                 ),
+                disableUnderline: true,
               }}
               variant="standard"
               style={{
                 backgroundColor: '#4b4b4b',
-                padding: '0px 5px'
+                borderRadius: '2px'
               }}
               placeholder={autoCompleteValue ? "" : "Search by name, shot, job id, etc..."}
             />

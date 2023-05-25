@@ -71,6 +71,10 @@ function LogPane({
   return (
     <div id="error-log-wrapper">
       {Object.keys(selectedTaskData).length === 0 && <div className="log-pane">
+        <br />
+        <br />
+        <span className="material-icons">highlight_alt</span>
+        <br />
         Select a task to view log file
       </div>}
 

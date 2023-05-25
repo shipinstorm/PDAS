@@ -1,0 +1,33 @@
+.graphTableTitle {
+  display: flex;
+  align-items: center;
+  p {
+    font-size: 28px;
+    padding: 0px;
+    margin: 0px;
+  }
+  svg {
+    position: absolute;
+    cursor: pointer;
+    top: 15px;
+    left: 18px;
+    z-index: 10001;
+  }
+}
+.row-done {
+  color: #b4b4b4 !important;
+}
+.row-running {
+  color: #9aca75 !important;
+}
+.row-in-queue {
+  color: #78c6ac !important;
+}
+.row-dependent {
+  color: #367587 !important;
+}
+.row-exited,
+.row-sys-killed,
+.row-killed {
+  color: #ec5750 !important;
+}

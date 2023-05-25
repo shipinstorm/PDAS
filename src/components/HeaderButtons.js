@@ -25,6 +25,7 @@ function Button(props) {
         alignItems: 'center',
         cursor: 'pointer',
       }}
+      className={ props.toggled ? "toggled" : "" }
     >
       <span className="material-icons">{props.icon}</span>
       {props.text}
@@ -35,10 +36,10 @@ function Button(props) {
 function HeaderButtons(props) {
   return(
     <div className="header-buttons">
-      <LinkButton href="https://coda.disneyanimation.com/api/noauth/status" icon="stacked_bar_chart" />
+      <LinkButton href="https://coda.disneyanimation.com/api/noauth/status" icon="troubleshoot" />
       <LinkButton href="https://techweb.disneyanimation.com/docs/DOC-33061" icon="question_mark" />
-      <Button icon="vertical_split" text="Details" onClick={props.toggleDetails} />
-      <Button icon="horizontal_split" text="Log" id="logPaneButton" onClick={props.toggleLog} />
+      <Button icon="info" text="Details" onClick={props.toggleDetails} toggled={props.viewDetails} />
+      <Button icon="text_snippet" text="Log" id="logPaneButton" onClick={props.toggleLog} toggled={props.viewLog} />
     </div>
   )
 }

@@ -585,7 +585,7 @@ export default function DetailsPane() {
       {!(graph() || array() || task()) &&
         <div className="loading-div object-details-content">
           <br /><br />
-          <div style={{ textAlign: 'center' }}><img src={SelectImage} alt='' /></div>
+          <span className="material-icons">highlight_alt</span>
           <br />
           Select job to view details
         </div>}

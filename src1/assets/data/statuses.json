@@ -1,0 +1,58 @@
+[
+  {
+    "name": "done",
+    "mapping": "_done",
+    "percent": 0,
+    "value": 0,
+    "statusClass": "done"
+  },
+  {
+    "name": "running",
+    "mapping": "_running",
+    "percent": 0,
+    "value": 0,
+    "statusClass": "running"
+  },
+  {
+    "name": "exited",
+    "mapping": "_exit",
+    "percent": 0,
+    "value": 0,
+    "statusClass": "exited"
+  },
+  {
+    "name": "sys killed",
+    "mapping": "_syskill",
+    "percent": 0,
+    "value": 0,
+    "statusClass": "sys-killed"
+  },
+  {
+    "name": "in queue",
+    "mapping": "_queued",
+    "percent": 0,
+    "value": 0,
+    "statusClass": "in-queue"
+  },
+  {
+    "name": "dependent",
+    "mapping": "_depend",
+    "percent": 0,
+    "value": 0,
+    "statusClass": "dependent"
+  },
+  {
+    "name": "paused",
+    "mapping": "_suspended",
+    "percent": 0,
+    "value": 0,
+    "statusClass": "paused"
+  },
+  {
+    "name": "killed",
+    "mapping": "_userkill",
+    "percent": 0,
+    "value": 0,
+    "statusClass": "killed"
+  }
+]
