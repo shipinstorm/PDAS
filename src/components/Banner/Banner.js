@@ -131,7 +131,7 @@ export default function Banner({
   return (
     <div className="banner-wrapper">
       {showSupportedBrowserBanner && <div className="top-browser-banner">
-        <span class="glyphicon glyphicon-exclamation-sign"></span>
+        <span className="glyphicon glyphicon-exclamation-sign"></span>
         <small>This is an unsupported browser.  Please switch to Chrome for full support</small>
       </div>}
       {showDevBanner && <div className="top-devenv-banner">
@@ -139,23 +139,23 @@ export default function Banner({
         <small>This is a <b>development</b> instance.</small>
       </div>}
       {showStagingBanner && <div className="top-new-banner">
-        <span class="glyphicon glyphicon-exclamation-sign"></span>
+        <span className="glyphicon glyphicon-exclamation-sign"></span>
         <small>
           Welcome to the <b>staging</b> instance of the new Codaweb.
           <a href="mailto:coda-dev@disneyanimation.com" target="_blank" rel="noreferrer">Let us know</a> where we can make improvements.
         </small>
       </div>}
       {showHealthyBanner && !bannerDismissed && <div className="top-healthy-banner">
-        <span class="glyphicon glyphicon-ok-sign"></span>
+        <span className="glyphicon glyphicon-ok-sign"></span>
         <small>We're back! Job lists are updating normally now.</small>
-        <span class="glyphicon glyphicon-remove pull-right" onClick={() => dismissBanner()}></span>
+        <span className="glyphicon glyphicon-remove pull-right" onClick={() => dismissBanner()}></span>
       </div>}
       {showUpdateComingBanner && !bannerDismissed && <div className="top-new-banner">
-        <span class='glyphicon glyphicon-star'></span>
+        <span className='glyphicon glyphicon-star'></span>
         <small>
           <span innerHTML={bannerHTML}></span>
         </small>
-        <span class='glyphicon glyphicon-remove pull-right' onClick={() => dismissUpdateBanner()}></span>
+        <span className='glyphicon glyphicon-remove pull-right' onClick={() => dismissUpdateBanner()}></span>
       </div>}
     </div>
   )

@@ -295,7 +295,7 @@ function GraphTable(props) {
       return (
         <TableRow>
           <TableCell colSpan={9}>
-            <div class="loading-div">
+            <div className="loading-div">
               <img src={SpinnerDarkGif} alt="" />
               <br />
               Loading jobs...

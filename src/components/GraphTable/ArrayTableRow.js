@@ -221,7 +221,7 @@ export default function ArrayTableRow({
                 </div>
               )}
               {/* {isMemMaxed[did] && isMemMaxed[did][arrayRow.aid] && columnOrder[index] === 10 && (
-                <div class="column-cell memory-column pull-right text-center">
+                <div className="column-cell memory-column pull-right text-center">
                   <span
                     className="mem-maxed-tag"
                     title="One or more tasks in this Array are using more memory than was reserved"

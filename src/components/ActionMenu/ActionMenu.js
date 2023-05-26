@@ -20,6 +20,10 @@ export default function DgraphActionMenuComponent({
   toggleLog,
   mainContentWrapperTop,
 }) {
+  const dispatch = useDispatch();
+
+  const contextRef = useRef(null);
+
   // Global Variables from Redux State
   const externalIP = useSelector((state) => state.global.externalIP);
   const imagePaths = useSelector((state) => state.global.imagePaths);
@@ -49,9 +53,6 @@ export default function DgraphActionMenuComponent({
     posX: 0,
     posY: 0,
   });
-  const contextRef = useRef(null);
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
     if (modalCallBack === 1) {
@@ -1067,9 +1068,9 @@ export default function DgraphActionMenuComponent({
       <div className={`optionsList ${classes?.listWrapper}`}>
         {links &&
           links.length > 0 &&
-          links.map((link) => {
+          links.map((link, index) => {
             return (
-              <div className={"dgraph-menu " + link.className}>
+              <div key={index} className={"dgraph-menu " + link.className}>
                 {link?.horizontalBefore && (
                   <div>
                     <hr />
@@ -1112,9 +1113,10 @@ export default function DgraphActionMenuComponent({
                     {!link?.icon && <span className="no-icon"></span>}
                     {link?.title}
                     <div className="menu-sublinks pull-right">
-                      {link?.sublinks.map((sublink) => {
+                      {link?.sublinks.map((sublink, index) => {
                         return (
                           <span
+                            key={index}
                             onClick={() => sublink.subject.next(sublink)}
                             className={"requeueAction-" + sublink.title}
                           >

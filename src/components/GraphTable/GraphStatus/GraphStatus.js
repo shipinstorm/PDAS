@@ -156,7 +156,7 @@ export default function GraphStatus({ selectedGraphData }) {
   return (
     <>
       {!pending && (
-        // <div *ngIf="!pending" class="row status-numbers-text" [class.status-killed]="numKill>0" [style.display]="selected ? 'table' : ''" [hidden]="!hoverTextShow">
+        // <div *ngIf="!pending" className="row status-numbers-text" [class.status-killed]="numKill>0" [style.display]="selected ? 'table' : ''" [hidden]="!hoverTextShow">
         <div
           className={
             numKill > 0
