@@ -430,7 +430,7 @@ span.material-icons.search-icon {
 .MuiToolbar-root > div:nth-child(2) > button:nth-child(2) {
   position: absolute;
   top: -52px;
-  right: 250px;
+  right: 260px;
   z-index: 10001;
 }
 .MuiToolbar-root > div:nth-child(2) > span {
