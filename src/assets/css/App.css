@@ -406,9 +406,10 @@ span.material-icons.search-icon {
 .MuiTableBody-root .MuiTableCell-root {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
-  text-overflow: ellipsis;
+  max-width: 300px;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 .MuiTableBody-root .MuiTableCell-root p {
   margin-bottom: 0px !important;

@@ -149,6 +149,7 @@ function GraphTable(props) {
             root: {
               backgroundColor: "#282828 !important",
               color: "#8D8D8D !important",
+              height: "100%",
               "& > div:nth-of-type(3) > div > div > div": {
                 border: "none",
               },
@@ -197,6 +198,7 @@ function GraphTable(props) {
           styleOverrides: {
             responsiveBase: {
               overflow: "inherit",
+              height: "100% !important"
             },
           },
         },
