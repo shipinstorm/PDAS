@@ -4,7 +4,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 
-import { globalImagePaths, globalViewLog } from '../../store/actions/globalAction';
+import {
+  globalImagePaths,
+  globalViewLog
+} from '../../store/actions/globalAction';
 import { jobJobSelectedId } from '../../store/actions/jobAction';
 
 export default function TaskTableRow({
@@ -75,8 +78,9 @@ export default function TaskTableRow({
                 sx={isSelected ?
                   { background: '#383838 !important' } :
                   { background: '#282828 !important' }}
+                colSpan={index === 3 ? 6 : 1}
               >
-                {tmpArray2[columnOrder[index]].name === "View Log" ?
+                {tmpArray2[columnOrder[index]].name === "View Log" &&
                   <p
                     onClick={() => {
                       dispatch(globalViewLog(true));
@@ -84,8 +88,10 @@ export default function TaskTableRow({
                     className="btn btn-link btn-xs"
                   >
                     {tmpArray2[columnOrder[index]].name}
-                  </p> :
-                  tmpArray2[columnOrder[index]].name}
+                  </p>}
+                {tmpArray2[columnOrder[index]].name !== "View Log" &&
+                  tmpArray2[columnOrder[index]].name
+                }
               </TableCell>
             )
           })}

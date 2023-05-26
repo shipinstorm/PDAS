@@ -38,8 +38,6 @@ import DgraphActionMenuComponent from "../ActionMenu/ActionMenu";
 
 import './GraphTable.scss';
 
-
-
 const ExpandableTableRow = ({
   children,
   expandComponent,
@@ -102,7 +100,7 @@ function GraphTable(props) {
   const [columnOrder, setColumnOrder] = useState(
     localStorage.columnOrder
       ? JSON.parse("[" + localStorage.columnOrder + "]")
-      : [0, 1, 2, 3, 4, 5, 6, 7]
+      : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
   );
   const [isMemMaxed, setIsMemMaxed] = useState({});
 
@@ -243,6 +241,26 @@ function GraphTable(props) {
       label: "Status",
     },
     {
+      name: "done",
+      label: "D",
+    },
+    {
+      name: "running",
+      label: "R",
+    },
+    {
+      name: "queued",
+      label: "Q",
+    },
+    {
+      name: "pending",
+      label: "P",
+    },
+    {
+      name: "exit",
+      label: "E",
+    },
+    {
       name: "host",
       label: "Host (th)",
     },
@@ -272,11 +290,21 @@ function GraphTable(props) {
   ]
 
   const data2 = graphData.map((jobs) => {
+    let tmp = graphData.filter((data) => data.did === jobs.did);
+    let tmpGraphData = tmp[0] ? tmp[0] : {};
+
+    let [statuses, status, statusClass] = setStatusPercents(originStatuses, tmpGraphData, 0);
+
     return {
       username: jobs.icoda_username,
       jobid: jobs.did,
       title: jobs.title,
       status: jobs._statusname,
+      done: statuses[0].value,
+      running: statuses[1].value,
+      queued: statuses[4].value,
+      pending: statuses[5].value,
+      exit: statuses[2].value + statuses[3].value + statuses[7].value,
       elapsed: elapsedTime(jobs, {}, {}),
       submitted: submittedTime(jobs._submittime),
     };
@@ -394,7 +422,7 @@ function GraphTable(props) {
           isSelected={isSelected}
           isExpanded={isExpanded}
         >
-          {[...Array(8)].map((value, index) => {
+          {[...Array(13)].map((value, index) => {
             return (
               <TableCell
                 key={index}
@@ -428,17 +456,13 @@ function GraphTable(props) {
                     {status === "" && (
                       <div className="empty-div"></div>
                     )}
-                    <p className="text-done">{statuses[0].value}</p>
-                    <p className="text-running">{statuses[1].value}</p>
-                    <p className="text-queued">{statuses[4].value}</p>
-                    <p className="text-dependent">{statuses[5].value}</p>
-                    <p className="text-exit">
-                      {statuses[2].value +
-                        statuses[3].value +
-                        statuses[7].value}
-                    </p>
                   </div>
                 )}
+                {columnOrder[index] === 4 && <p className="text-done">{data[4]}</p>}
+                {columnOrder[index] === 5 && <p className="text-running">{data[5]}</p>}
+                {columnOrder[index] === 6 && <p className="text-queued">{data[6]}</p>}
+                {columnOrder[index] === 7 && <p className="text-dependent">{data[7]}</p>}
+                {columnOrder[index] === 8 && <p className="text-exit">{data[8]}</p>}
                 {isMemMaxed[did] && columnOrder[index] === 10 && (
                   <div className="column-cell memory-column pull-right text-center">
                     <span
@@ -450,7 +474,7 @@ function GraphTable(props) {
                     </span>
                   </div>
                 )}
-                {columnOrder[index] !== 3 && data[columnOrder[index]]}
+                {columnOrder[index] !== 3 && columnOrder[index] !== 4 && columnOrder[index] !== 5 && columnOrder[index] !== 6 && columnOrder[index] !== 7 && columnOrder[index] !== 8 && data[columnOrder[index]]}
               </TableCell>
             );
           })}

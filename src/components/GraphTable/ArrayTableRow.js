@@ -146,6 +146,11 @@ export default function ArrayTableRow({
       { name: "" },
       { name: "" },
       { name: "" },
+      { name: "" },
+      { name: "" },
+      { name: "" },
+      { name: "" },
+      { name: "" },
       {
         name: elapsedTime(
           selectedGraphData,
@@ -177,7 +182,7 @@ export default function ArrayTableRow({
         childArrayText={childArrayText}
         expandArrayRow={expandArrayRow}
       >
-        {[...Array(8)].map((value, index) => {
+        {[...Array(13)].map((value, index) => {
           return (
             <TableCell
               key={index}
@@ -211,15 +216,13 @@ export default function ArrayTableRow({
                   {status === "" && (
                     <div className="empty-div"></div>
                   )}
-                  <p className="text-done">{statuses[0].value}</p>
-                  <p className="text-running">{statuses[1].value}</p>
-                  <p className="text-queued">{statuses[4].value}</p>
-                  <p className="text-dependent">{statuses[5].value}</p>
-                  <p className="text-exit">
-                    {statuses[2].value + statuses[3].value + statuses[7].value}
-                  </p>
                 </div>
               )}
+              {columnOrder[index] === 4 && <p className="text-done">{statuses[0].value}</p>}
+              {columnOrder[index] === 5 && <p className="text-running">{statuses[1].value}</p>}
+              {columnOrder[index] === 6 && <p className="text-queued">{statuses[4].value}</p>}
+              {columnOrder[index] === 7 && <p className="text-dependent">{statuses[5].value}</p>}
+              {columnOrder[index] === 8 && <p className="text-exit">{statuses[2].value + statuses[3].value + statuses[7].value}</p>}
               {/* {isMemMaxed[did] && isMemMaxed[did][arrayRow.aid] && columnOrder[index] === 10 && (
                 <div className="column-cell memory-column pull-right text-center">
                   <span
@@ -231,7 +234,7 @@ export default function ArrayTableRow({
                   </span>
                 </div>
               )} */}
-              {columnOrder[index] !== 3 && tmpArray1[columnOrder[index]].name}
+              {columnOrder[index] !== 3 && columnOrder[index] !== 4 && columnOrder[index] !== 5 && columnOrder[index] !== 6 && columnOrder[index] !== 7 && columnOrder[index] !== 8 && tmpArray1[columnOrder[index]].name}
             </TableCell>
           );
         })}
