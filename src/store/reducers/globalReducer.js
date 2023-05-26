@@ -1,54 +1,81 @@
+import ElasticSearchService from "../../services/ElasticSearch.service.js";
 import {
-  JOB_JOB_SELECTED,
-  JOB_JOB_SELECTED_ID,
-  JOB_JOB_EXPANDED,
-  JOB_GRAPH_SELECTED,
-  JOB_ARRAY_SELECTED,
-  JOB_TASK_SELECTED,
+  GLOBAL_GRAPH_DATA,
+  GLOBAL_ARRAY_DATA,
+  GLOBAL_TASK_DATA,
+  GLOBAL_EXTERNAL_IP,
+  GLOBAL_CODA_HEALTH,
+  GLOBAL_IMAGE_PATHS,
+  GLOBAL_VIEW_LOG
 } from '../actionTypes';
 
 const initialState = {
-  jobSelected: [],
-  jobSelectedId: [],
-  jobExpanded: [],
-  graphSelected: {},
-  arraySelected: {},
-  taskSelected: {}
+  elasticSearchService: new ElasticSearchService(),
+  graphData: [],
+  arrayData: [],
+  taskData: [],
+  externalIP: false,
+  codaHealth: {
+    "ES-coda_6": {
+      "status": "green"
+    },
+    "mongo-connector": {
+      "status": "green"
+    },
+    "rdispatcher": {
+      "status": "green"
+    },
+    "rgoferd": {
+      "status": "green"
+    },
+    "rqinfod": {
+      "status": "green"
+    }
+  },
+  imagePaths: {},
+  viewLog: false,
+  showDevBanner: true,
+  mode: "dev",
 };
 
 export default function foo(state = initialState, action) {
-  switch(action.type) {
-    case JOB_JOB_SELECTED:
+  switch (action.type) {
+    case GLOBAL_GRAPH_DATA:
       return {
         ...state,
-        jobSelected: action.payload
+        graphData: action.payload
       }
-    case JOB_JOB_SELECTED_ID:
+    case GLOBAL_ARRAY_DATA:
       return {
         ...state,
-        jobSelectedId: action.payload
+        arrayData: action.payload
       }
-    case JOB_JOB_EXPANDED:
+    case GLOBAL_TASK_DATA:
       return {
         ...state,
-        jobExpanded: action.payload
+        taskData: action.payload
       }
-    case JOB_GRAPH_SELECTED:
+    case GLOBAL_EXTERNAL_IP:
       return {
         ...state,
-        graphSelected: {...action.payload}
+        externalIP: action.payload
       }
-    case JOB_ARRAY_SELECTED:
+    case GLOBAL_CODA_HEALTH:
       return {
         ...state,
-        arraySelected: {...action.payload}
+        codaHealth: action.payload
       }
-    case JOB_TASK_SELECTED:
+    case GLOBAL_IMAGE_PATHS:
       return {
         ...state,
-        taskSelected: {...action.payload}
+        imagePaths: action.payload
       }
-    default: 
+    case GLOBAL_VIEW_LOG:
+      return {
+        ...state,
+        viewLog: action.payload
+      }
+    default:
       return state;
   }
 }

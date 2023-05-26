@@ -4,8 +4,6 @@ import { useSelector } from "react-redux";
 import { Autocomplete, TextField } from "@mui/material";
 import InputAdornment from '@mui/material/InputAdornment';
 
-import ElasticSearchService from "../../services/ElasticSearch.service.js";
-
 import Filter from './Filter.js';
 import Tag from './Tag';
 
@@ -18,15 +16,17 @@ function SearchBar({
   const elementRef = useRef();
   const isFirstRun = useRef(true);
 
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
+
   const [searchGraphData, setSearchGraphData] = useState([]);
 
   const handleInputChange = (event, newValue) => {
-    ElasticSearchService.getSearchSuggestions(newValue).then(response => {
+    elasticSearchService.getSearchSuggestions(newValue).then(response => {
       setSearchGraphData(response);
     });
 
     // Work In Progress: fetch title suggestions separately since they take so long to come back
-    // ElasticSearchService.getTitleSearchSuggestions(newValue).then(response => {
+    // elasticSearchService.getTitleSearchSuggestions(newValue).then(response => {
     //   let newSearchGraphData = searchGraphData.filter(suggestion => suggestion.header != "title").concat(response);
     //   setSearchGraphData(newSearchGraphData);
     // });

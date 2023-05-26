@@ -7,16 +7,11 @@ import ArrayStatus from "../GraphTable/GraphStatus/ArrayStatus";
 import SelectImage from '../../assets/images/select.png';
 import SpinnerDark from "../../assets/images/spinner_dark.gif";
 
-import ElasticSearchService from "../../services/ElasticSearch.service";
-import { baseUrl, nfsBaseURL } from "../../services/ElasticSearch.service";
-
 import { globalExternalIP } from "../../store/actions/globalAction";
 
 import { elapsedTime, submittedTime } from '../../utils/utils';
 
 import './DetailsPane.scss';
-
-
 
 export default function DetailsPane() {
   const dispatch = useDispatch();
@@ -28,6 +23,7 @@ export default function DetailsPane() {
   const editVal5 = useRef(null);
   const editVal6 = useRef(null);
 
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
   const externalIP = useSelector((state) => state.global.externalIP);
   const codaHealth = useSelector((state) => state.global.codaHealth);
   const imagePaths = useSelector((state) => state.global.imagePaths);
@@ -62,17 +58,17 @@ export default function DetailsPane() {
 
   useEffect(() => {
     if (selectedGraphData && !(Object.keys(selectedGraphData).length === 0)) {
-      ElasticSearchService.getDgraph(selectedGraphData.did)
+      elasticSearchService.getDgraph(selectedGraphData.did)
         .then((resultArray) => {
           setGraphData(resultArray.dgraph[0]);
         });
     } else if (selectedArrayData && !(Object.keys(selectedArrayData).length === 0)) {
-      ElasticSearchService.getArray(selectedArrayData.did, selectedArrayData.aid)
+      elasticSearchService.getArray(selectedArrayData.did, selectedArrayData.aid)
         .then((resultArray) => {
           setArrayData(resultArray.array[0]);
         });
     } else if (selectedTaskData && !(Object.keys(selectedTaskData).length === 0)) {
-      ElasticSearchService.getTask(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid)
+      elasticSearchService.getTask(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid)
         .then((resultArray) => {
           setTaskData(resultArray);
         });
@@ -185,15 +181,15 @@ export default function DetailsPane() {
   const getImgUrl = () => {
     // return new Observable(observer => {
     if (task()) {
-      let imgUrl = nfsBaseURL + "image/" + selectedTaskData.did + "/" + selectedTaskData.aid + "/" + selectedTaskData.tid;
-      // observer.next(imgUrl);◘
+      let imgUrl = elasticSearchService.nfsBaseURL + "image/" + selectedTaskData.did + "/" + selectedTaskData.aid + "/" + selectedTaskData.tid;
+      // observer.next(imgUrl);
       return imgUrl;
     } else if (array()) {
       imagePaths[selectedArrayData.did + '.' + selectedArrayData.aid] && imagePaths[selectedArrayData.did + '.' + selectedArrayData.aid].then(imagePaths => {
         if (imagePaths && imagePaths.length > 0) {
           let firstImg = imagePaths[0];
           // observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
-          return (nfsBaseURL + "image/" + firstImg.did + "/" + firstImg.aid + "/" + firstImg.tid);
+          return (elasticSearchService.nfsBaseURL + "image/" + firstImg.did + "/" + firstImg.aid + "/" + firstImg.tid);
         } else {
           // observer.next(undefined);
           return (undefined);
@@ -204,7 +200,7 @@ export default function DetailsPane() {
         if (imagePaths && imagePaths.length > 0) {
           let firstImg = imagePaths[0];
           // observer.next(nfsBaseURL+"image/" + firstImg.did+"/" + firstImg.aid + "/" + firstImg.tid);
-          return (nfsBaseURL + "image/" + firstImg.did + "/" + firstImg.aid + "/" + firstImg.tid);
+          return (elasticSearchService.nfsBaseURL + "image/" + firstImg.did + "/" + firstImg.aid + "/" + firstImg.tid);
         } else {
           // observer.next(undefined);
           return (undefined);
@@ -224,7 +220,7 @@ export default function DetailsPane() {
 
   const errorLoadingImg = (event) => {
     if (task()) {
-      ElasticSearchService.getImagePaths(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid)
+      elasticSearchService.getImagePaths(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid)
         .subscribe(imagePaths => {
           if (imagePaths && imagePaths.length > 0) {
             console.log("Image exists, must login");
@@ -431,7 +427,7 @@ export default function DetailsPane() {
         }, 15000);
       };
       if (graph()) {
-        ElasticSearchService.setDgraphMeta(selectedGraphData.did, field, val, savedError)
+        elasticSearchService.setDgraphMeta(selectedGraphData.did, field, val, savedError)
           .then(result => {
             savedSuccess();
           })
@@ -439,7 +435,7 @@ export default function DetailsPane() {
             savedError(error);
           });
       } else if (array()) {
-        ElasticSearchService.setArrayMeta(selectedArrayData.did, selectedArrayData.aid, field, val)
+        elasticSearchService.setArrayMeta(selectedArrayData.did, selectedArrayData.aid, field, val)
           .then(result => {
             savedSuccess();
           })
@@ -447,7 +443,7 @@ export default function DetailsPane() {
             savedError(error);
           });
       } else if (task()) {
-        ElasticSearchService.setTaskMeta(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid, field, val)
+        elasticSearchService.setTaskMeta(selectedTaskData.did, selectedTaskData.aid, selectedTaskData.tid, field, val)
           .then(result => {
             savedSuccess();
           })
@@ -516,7 +512,7 @@ export default function DetailsPane() {
   }
 
   const checkNetwork = (callback = null) => {
-    ElasticSearchService.networkCheck()
+    elasticSearchService.networkCheck()
       .then(result => {
         dispatch(globalExternalIP(false));
         if (callback) { callback(); }
@@ -533,7 +529,7 @@ export default function DetailsPane() {
   }
 
   const refreshPools = () => {
-    ElasticSearchService.getPoolData()
+    elasticSearchService.getPoolData()
       .then(data => {
         let tmpPoolData = data.data;
         var totalSpec = 0;
@@ -932,7 +928,7 @@ export default function DetailsPane() {
                               </div>
                               <div>
                                 <div className="btn btn-link btn-xs text-left">
-                                  <a href={baseUrl + 'noauth/status'} target="_blank">View all pool info...</a>
+                                  <a href={elasticSearchService.baseUrl + 'noauth/status'} target="_blank" rel="noreferrer">View all pool info...</a>
                                 </div>
                               </div>
                             </div>}

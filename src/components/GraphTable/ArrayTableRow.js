@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import TableRow from "@mui/material/TableRow";
@@ -14,8 +15,6 @@ import IconDependent from "../../assets/images/icon-dependent.svg";
 import IconQueued from "../../assets/images/icon-queued.svg";
 import IconDone from "../../assets/images/icon-done.svg";
 import originStatuses from "../../assets/data/statuses.json";
-
-import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { globalImagePaths } from "../../store/actions/globalAction";
 import { jobJobSelectedId, jobJobExpanded } from "../../store/actions/jobAction";
@@ -81,6 +80,7 @@ export default function ArrayTableRow({
   columnOrder,
 }) {
   const dispatch = useDispatch();
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
   const imagePaths = useSelector((state) => state.global.imagePaths);
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
@@ -108,7 +108,7 @@ export default function ArrayTableRow({
 
   const selectArrayRow = (childArrayText) => {
     let jobID = childArrayText.toString().split(".");
-    imagePaths[jobID[0] + "." + jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
+    imagePaths[jobID[0] + "." + jobID[1]] = elasticSearchService.playImages(jobID[0], jobID[1]);
     dispatch(globalImagePaths(imagePaths));
 
     /**

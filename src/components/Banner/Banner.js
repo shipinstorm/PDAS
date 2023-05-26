@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import parse from "html-react-parser";
 import DOMPurify from "dompurify";
-import ElasticSearchService from "../../services/ElasticSearch.service";
 
 const bannerHeight = 21;
 
@@ -13,8 +12,8 @@ export default function Banner({
   const isChrome = navigator.userAgent.includes('Chrome');
 
   const codaHealth = useSelector((state) => state.global.codaHealth);
-  const devMode = useSelector((state) => state.global.devMode);
   const mode = useSelector((state) => state.global.mode);
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
 
   const [showErrorBanner, setShowErrorBanner] = useState(false);
   const [showSupportedBrowserBanner, setShowSupportedBrowserBanner] = useState(false);
@@ -38,7 +37,7 @@ export default function Banner({
     }
 
     // Show Dev Banner
-    if (!devMode && mode !== "dev") {
+    if (!process.env.REACT_APP_DEV_MODE && mode !== "dev") {
       setMainContentWrapperTop(mainContentWrapperTop => mainContentWrapperTop - bannerHeight);
       setShowDevBanner(false);
     }
@@ -51,7 +50,7 @@ export default function Banner({
 
     // All Other Error Banners
     // this._dgraphService.logPrismEvent({ "product": "codaweb", "tool": "codauiOpen" });
-    // if (!CodaGlobals.devmode) {
+    // if (!process.env.REACT_APP_DEV_MODE) {
     //   let prismEventUrl = this._dgraphService.prismEventURL;
     //   window.onbeforeunload = event => {
     //     this._dgraphService.userObj.then(userObj => {
@@ -78,7 +77,7 @@ export default function Banner({
       banner_url = "pers.q.config.codaweb.banner.prod";
     }
 
-    ElasticSearchService.getBannerData(banner_url, devMode)
+    elasticSearchService.getBannerData(banner_url)
       .then(data => {
         const tmpBannerHTML = parse(DOMPurify.sanitize(data[banner_url]));
         setBannerHTML(tmpBannerHTML)

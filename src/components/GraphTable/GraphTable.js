@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Waypoint } from "react-waypoint";
 
@@ -23,8 +23,6 @@ import IconQueued from "../../assets/images/icon-queued.svg";
 import IconDone from "../../assets/images/icon-done.svg";
 import SpinnerDarkGif from "../../assets/images/spinner_dark.gif";
 import originStatuses from "../../assets/data/statuses.json";
-
-import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { globalImagePaths } from "../../store/actions/globalAction";
 import { jobJobSelectedId, jobJobExpanded } from "../../store/actions/jobAction";
@@ -93,6 +91,7 @@ const ExpandableTableRow = ({
 function GraphTable(props) {
   const dispatch = useDispatch();
 
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
   const taskData = useSelector((state) => state.global.taskData);
@@ -109,7 +108,7 @@ function GraphTable(props) {
 
   const getTaskMemoryData = (dids) => {
     const tmpMemMaxed = isMemMaxed;
-    ElasticSearchService.getTaskMemoryData(dids)
+    elasticSearchService.getTaskMemoryData(dids)
       .then((result) => {
         for (let did of result.dids.buckets) {
           tmpMemMaxed[did.key] = null;
@@ -351,7 +350,7 @@ function GraphTable(props) {
       };
 
       const selectGraphRow = (childGraphText) => {
-        imagePaths[childGraphText] = ElasticSearchService.playImages(childGraphText);
+        imagePaths[childGraphText] = elasticSearchService.playImages(childGraphText);
         dispatch(globalImagePaths(imagePaths));
 
         /**
