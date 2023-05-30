@@ -114,7 +114,7 @@ function Filter({
           } else {
             // Styled checkbox unchecked
             autoCompleteValue = autoCompleteValue.filter((completeValue) => {
-              return completeValue.header != type || completeValue.title != value;
+              return completeValue.header !== type || completeValue.title !== value;
             })
             handleAutoCompleteValueChange(autoCompleteValue);
           }
@@ -172,11 +172,11 @@ function Filter({
                 onChange={(event) => {
                   // Remove duplicated tag
                   let newAutoCompleteValue = autoCompleteValue.filter((completeValue) => {
-                    return completeValue.header != "show" || completeValue.title != event.target.value;
+                    return completeValue.header !== "show" || completeValue.title !== event.target.value;
                   })
 
                   // Add new tag if there's no change in autoCompleteValue
-                  if (newAutoCompleteValue.length == autoCompleteValue.length) {
+                  if (newAutoCompleteValue.length === autoCompleteValue.length) {
                     autoCompleteValue.push({
                       header: "show",
                       title: event.target.value
@@ -217,7 +217,7 @@ function Filter({
               onChange={(event) => {
                 // Remove after tag
                 autoCompleteValue = autoCompleteValue.filter((completeValue) => {
-                  return completeValue.header != 'after';
+                  return completeValue.header !== 'after';
                 })
 
                 // Add after tag with newValue
