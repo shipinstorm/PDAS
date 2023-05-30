@@ -324,7 +324,7 @@ function GraphTable(props) {
     customRowRender: (data, dataIndex, rowIndex) => {
       return (
         <TableRow>
-          <TableCell colSpan={13}>
+          <TableCell colSpan={14}>
             <div className="loading-div">
               <img src={SpinnerDarkGif} alt="" />
               <br />

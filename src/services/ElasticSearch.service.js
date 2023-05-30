@@ -1,12 +1,13 @@
 class ElasticSearchService {
-  devMode          = process.env.REACT_APP_DEV_MODE;
+  devMode = process.env.REACT_APP_DEV_MODE;
 
-  baseUrl          = 'https://coda-rest.dyn.fa.disney.com/';
-  nfsBaseURL       = 'https://coda-rest-nfs.dyn.fa.disney.com/';
+  baseUrl = 'https://coda-rest.dyn.fa.disney.com/';
+  nfsBaseURL = 'https://coda-rest-nfs.dyn.fa.disney.com/';
   elasticsearchURL = 'https://wdas-elastic.fas.fa.disney.com:9200/coda_6';
-  userUrl          = '/getUser.json';
-  prismEventURL    = "https://api.disneyanimation.com/prism/event";
-	apollosearchURL  = "https://api.disneyanimation.com/apollosearch/apollosearch/person";
+  userUrl = '/getUser.json';
+  prismEventURL = "https://api.disneyanimation.com/prism/event";
+  apollosearchURL = "https://api.disneyanimation.com/apollosearch/apollosearch/person";
+  user = {};
 
   constructor() {
     if (this.devMode === "false") {
@@ -15,8 +16,20 @@ class ElasticSearchService {
       this.elasticsearchURL = window.location.protocol + '//' + window.location.host + '/elastic/coda_6';
       this.apollosearchURL = window.location.protocol + '//' + window.location.host + '/apollosearch/apollosearch/person';
       this.prismEventURL = "/prism/event";
-      this.userUrl = '/getUser.php';
+      // this.userUrl = '/getUser.php';
     }
+    this.getUser().then(userObj => this.user = userObj);
+  }
+
+  getUser() {
+    let headers = new Headers();
+
+    return fetch(this.userUrl, { headers: headers })
+      .then(res => res.json());
+  }
+
+  getUserName() {
+    return this.user['username'];
   }
 
   getDgraphs(query, from, size, hidden) {
@@ -146,7 +159,7 @@ class ElasticSearchService {
     return fetch(searchUrl, { headers: headers })
       .then(res => res.json());
   }
-  
+
   getLogHtml(dgraphId, arrayId, taskId) {
     let headers = new Headers();
     if (this.devMode === "false") {
@@ -383,9 +396,9 @@ class ElasticSearchService {
 
   getSearchSuggestions(searchValue) {
     let searchFields = [
-      { elasticsearchName: "icoda_username", displayName: "user"},
+      { elasticsearchName: "icoda_username", displayName: "user" },
       // { elasticsearchName: "title", displayName: "title" },
-      { elasticsearchName: "dept", displayName: "dept"},
+      { elasticsearchName: "dept", displayName: "dept" },
       { elasticsearchName: "production", displayName: "show" },
       { elasticsearchName: "shot", displayName: "shot" },
       { elasticsearchName: "seq", displayName: "seq" },
@@ -396,16 +409,16 @@ class ElasticSearchService {
     //construct POST requests
     let searchRequests = [];
     searchFields.forEach(field => {
-      let query = {"query":searchValue,"operator":"and"};
+      let query = { "query": searchValue, "operator": "and" };
       let searchBody = {
-        "size":0,
+        "size": 0,
         "query": {
           "match": {}
         },
         "aggs": {}
       }
       searchBody.query.match[field.elasticsearchName] = query;
-      searchBody.aggs[field.displayName] = { "terms": { "field": field.elasticsearchName+".raw", "size": 4 }};
+      searchBody.aggs[field.displayName] = { "terms": { "field": field.elasticsearchName + ".raw", "size": 4 } };
       searchRequests.push(fetch(searchUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -421,15 +434,15 @@ class ElasticSearchService {
       let suggestions = [];
       responseData.map(data => {
         for (let field in data.aggregations) {
-          if (data.aggregations[field].buckets){
-            suggestions = suggestions.concat(data.aggregations[field].buckets.map(bucket => {return {"title": bucket.key, "header":field}}));
+          if (data.aggregations[field].buckets) {
+            suggestions = suggestions.concat(data.aggregations[field].buckets.map(bucket => { return { "title": bucket.key, "header": field } }));
           }
         }
       });
       //return results concatenated
       return suggestions;
     });
-  } 
+  }
 
   // Work In Progress: We are not calling this yet in SearchBar.js but may do so in
   // order to separate the fetch to get titles from the other field suggestions since
@@ -439,14 +452,14 @@ class ElasticSearchService {
 
     //construct POST body
     let searchBody = {
-      "size":0,
+      "size": 0,
       "query": {
         "match": {
-          "title": {"query":searchValue,"operator":"and"}
+          "title": { "query": searchValue, "operator": "and" }
         }
       },
       "aggs": {
-        "title":  { "terms": { "field": "title.raw", "size": 4 }}
+        "title": { "terms": { "field": "title.raw", "size": 4 } }
       }
     }
     //fetch results
@@ -454,15 +467,15 @@ class ElasticSearchService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(searchBody),
-    }).then(response => response.json()).then( respData => {
+    }).then(response => response.json()).then(respData => {
       //restructure data before returning response
       let suggestions = [];
-      if (respData.aggregations && respData.aggregations["title"]){
-        suggestions = suggestions.concat(respData.aggregations["title"].buckets.map(bucket => {return {"title":bucket.key, "header":"title"}}));
+      if (respData.aggregations && respData.aggregations["title"]) {
+        suggestions = suggestions.concat(respData.aggregations["title"].buckets.map(bucket => { return { "title": bucket.key, "header": "title" } }));
       }
       return suggestions;
     });
-  } 
+  }
 }
 
 export default ElasticSearchService;

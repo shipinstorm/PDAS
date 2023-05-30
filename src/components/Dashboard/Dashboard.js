@@ -92,6 +92,7 @@ export default function Dashboard() {
 	const jobSelected = useSelector((state) => state.job.jobSelected);
 	const jobSelectedId = useSelector((state) => state.job.jobSelectedId);
 	const jobExpanded = useSelector((state) => state.job.jobExpanded);
+
 	const [jobListLoading, setJobListLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [initSearchQuery,] = useState(getInitSearchQuery());
@@ -284,7 +285,14 @@ export default function Dashboard() {
 	}, [dispatch, graphData, arrayData, taskData, jobSelectedId]);
 
 	useEffect(() => {
-		async function foo() {
+		async function getUserObj() {
+			elasticSearchService.getUser()
+			.then(userObj => {
+				foo(userObj)
+			});
+		}
+
+		async function foo(userObj) {
 			/**
 			 * When a user first logs or navigates to the base url
 			 * Auto populate the search bar to query for jobs submitted by them in the last two days.
@@ -301,7 +309,7 @@ export default function Dashboard() {
 
 				initSearchQuery.push({
 					header: 'user',
-					title: 'lean',
+					title: userObj['username'],
 				});
 			}
 
@@ -336,7 +344,7 @@ export default function Dashboard() {
 			dispatch(jobJobExpanded(tmpJobExpanded));
 			dispatch(globalViewLog(searchParamsObject.log === 'true' ? true : false));
 		}
-		foo();
+		getUserObj();
 	}, []);
 
 	const toggleDetails = () => {
