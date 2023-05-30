@@ -370,7 +370,8 @@ span.material-icons.search-icon {
 }
 .filter-button {
   padding: 5px;
-
+  position: absolute;
+  right: 0px;
 }
 .MuiMenu-list {
   padding: 0px !important;
@@ -440,4 +441,25 @@ span.material-icons.search-icon {
 .MuiTableHead-root th {
   /* background-color: rgba(80, 80, 80, 0.5) !important; */
   background-color: transparent;
+}
+.tag-bar {
+  position: relative;
+  width: 100%;
+  min-height: 42px;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  background-color: #4b4b4b;
+  border-radius: 2px;
+  padding-right: 100px;
+}
+.tag-bar input {
+  height: inherit;
+  background: #222 !important;
+  color: white;
 }
