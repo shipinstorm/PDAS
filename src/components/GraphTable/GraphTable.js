@@ -205,6 +205,22 @@ function GraphTable(props) {
       },
     });
 
+    const toolTipArray = {
+      username: "User",
+      jobid: "Job ID",
+      title: "Title",
+      status: "Status",
+      done: "Done",
+      running: "Running",
+      queued: "Queued",
+      pending: "Pending",
+      exit: "Exit",
+      host: "Host (th)",
+      elapsed: "Elapsed",
+      memory: "Memory (MB)",
+      submitted:  "Submitted",
+    }
+
   const columns = [
     {
       name: "username",
@@ -321,6 +337,13 @@ function GraphTable(props) {
     filterType: "dropdown",
     viewColumns: true,
 
+    // Customize Header Tooltip
+    textLabels: {
+      body: {
+        columnHeaderTooltip: column => `${toolTipArray[column.name]}`
+      },
+    },
+
     customRowRender: (data, dataIndex, rowIndex) => {
       return (
         <TableRow>
@@ -349,9 +372,17 @@ function GraphTable(props) {
     expandableRowsOnClick: true,
     pagination: false,
     columnOrder: columnOrder,
+    
     // Row select for DetailsPane
     selectableRows: "single",
     selectableRowsOnClick: true,
+
+    // Customize Header Tooltip
+    textLabels: {
+      body: {
+        columnHeaderTooltip: column => `${toolTipArray[column.name]}`
+      },
+    },
 
     customRowRender: (data, dataIndex, rowIndex) => {
       const did = data[1];

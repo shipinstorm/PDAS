@@ -251,7 +251,8 @@ export default function DgraphActionMenuComponent({
     window.addEventListener("keydown", (event) => {
       if (
         event.keyCode === 32 &&
-        document.activeElement !== document.getElementById("search") &&
+        document.activeElement !== document.getElementById("tags-standard") &&
+        document.activeElement !== document.getElementById("tags-bar") &&
         event.target.type !== "textarea"
       ) {
         event.preventDefault();
@@ -262,7 +263,8 @@ export default function DgraphActionMenuComponent({
         event.ctrlKey &&
         event.shiftKey &&
         event.keyCode === 72 &&
-        document.activeElement !== document.getElementById("search") &&
+        document.activeElement !== document.getElementById("tags-standard") &&
+        document.activeElement !== document.getElementById("tags-bar") &&
         event.target.type !== "textarea"
       ) {
         event.preventDefault();
@@ -273,7 +275,8 @@ export default function DgraphActionMenuComponent({
         event.ctrlKey &&
         event.shiftKey &&
         event.keyCode === 75 &&
-        document.activeElement !== document.getElementById("search") &&
+        document.activeElement !== document.getElementById("tags-standard") &&
+        document.activeElement !== document.getElementById("tags-bar") &&
         event.target.type !== "textarea"
       ) {
         event.preventDefault();
@@ -284,7 +287,8 @@ export default function DgraphActionMenuComponent({
         event.ctrlKey &&
         event.shiftKey &&
         event.keyCode === 76 &&
-        document.activeElement !== document.getElementById("search") &&
+        document.activeElement !== document.getElementById("tags-standard") &&
+        document.activeElement !== document.getElementById("tags-bar") &&
         event.target.type !== "textarea"
       ) {
         event.preventDefault();
@@ -295,7 +299,8 @@ export default function DgraphActionMenuComponent({
         event.ctrlKey &&
         event.shiftKey &&
         event.keyCode === 86 &&
-        document.activeElement !== document.getElementById("search") &&
+        document.activeElement !== document.getElementById("tags-standard") &&
+        document.activeElement !== document.getElementById("tags-bar") &&
         event.target.type !== "textarea"
       ) {
         event.preventDefault();

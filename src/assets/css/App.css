@@ -378,6 +378,9 @@ span.material-icons.search-icon {
   background: #383838;
   color: #a3a3a3;
 }
+.MuiMenu-list .MuiCheckbox-root {
+  padding: 9px 9px 9px 9px !important;
+}
 .MuiMenu-list .MuiGrid2-grid-xs-3,
 .MuiMenu-list .MuiGrid2-grid-xs-6,
 .MuiMenu-list .MuiGrid2-grid-xs-12 {
@@ -462,4 +465,8 @@ span.material-icons.search-icon {
   height: inherit;
   background: #222 !important;
   color: white;
+}
+.MuiMenuItem-root {
+  display: inherit !important;
+  padding: 5px !important;
 }

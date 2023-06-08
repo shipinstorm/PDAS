@@ -60,6 +60,7 @@ export default function Tag({
       {
         editTagIndex === index &&
         <input
+          id="tags-bar"
           type="text"
           value={inputValue}
           onBlur={() => updateValue()}
