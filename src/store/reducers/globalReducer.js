@@ -1,3 +1,4 @@
+import ElasticSearchService from "../../services/ElasticSearch.service.js";
 import {
   GLOBAL_GRAPH_DATA,
   GLOBAL_ARRAY_DATA,
@@ -9,6 +10,7 @@ import {
 } from '../actionTypes';
 
 const initialState = {
+  elasticSearchService: new ElasticSearchService(),
   graphData: [],
   arrayData: [],
   taskData: [],
@@ -33,7 +35,6 @@ const initialState = {
   imagePaths: {},
   viewLog: false,
   showDevBanner: true,
-  devMode: false,
   mode: "dev",
 };
 

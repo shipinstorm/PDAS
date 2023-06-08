@@ -6,10 +6,8 @@ import DOMPurify from "dompurify";
 
 import SpinnerDark from "../../assets/images/spinner_dark.gif";
 
-import ElasticSearchService from "../../services/ElasticSearch.service";
-
-function LogPane({
-}) {
+function LogPane() {
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
   const selectedTaskData = useSelector((state) => state.job.taskSelected);
 
   const [count, setCount] = useState(0);
@@ -27,7 +25,7 @@ function LogPane({
   }, [selectedTaskData]);
 
   const getLogHtml = (dgraphId, arrayId, taskId) => {
-    ElasticSearchService.getLogHtml(dgraphId, arrayId, taskId)
+    elasticSearchService.getLogHtml(dgraphId, arrayId, taskId)
       .then((logJSON) => {
         setLogJSON(logJSON.body);
         setHasError(false);
@@ -71,6 +69,10 @@ function LogPane({
   return (
     <div id="error-log-wrapper">
       {Object.keys(selectedTaskData).length === 0 && <div className="log-pane">
+        <br />
+        <br />
+        <span className="material-icons">highlight_alt</span>
+        <br />
         Select a task to view log file
       </div>}
 

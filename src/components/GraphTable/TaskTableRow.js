@@ -1,11 +1,13 @@
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 
-import ElasticSearchService from '../../services/ElasticSearch.service';
-
-import { globalImagePaths, globalViewLog } from '../../store/actions/globalAction';
+import {
+  globalImagePaths,
+  globalViewLog
+} from '../../store/actions/globalAction';
 import { jobJobSelectedId } from '../../store/actions/jobAction';
 
 export default function TaskTableRow({
@@ -15,12 +17,14 @@ export default function TaskTableRow({
   columnOrder
 }) {
   const dispatch = useDispatch();
+
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
   const imagePaths = useSelector((state) => state.global.imagePaths);
   const jobSelectedId = useSelector((state) => state.job.jobSelectedId);
 
   const selectTaskRow = (childTaskText) => {
     let jobID = childTaskText.toString().split('.');
-    imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
+    imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = elasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
     dispatch(globalImagePaths(imagePaths));
 
     /**
@@ -74,8 +78,9 @@ export default function TaskTableRow({
                 sx={isSelected ?
                   { background: '#383838 !important' } :
                   { background: '#282828 !important' }}
+                colSpan={index === 3 ? 6 : 1}
               >
-                {tmpArray2[columnOrder[index]].name === "View Log" ?
+                {tmpArray2[columnOrder[index]].name === "View Log" &&
                   <p
                     onClick={() => {
                       dispatch(globalViewLog(true));
@@ -83,8 +88,10 @@ export default function TaskTableRow({
                     className="btn btn-link btn-xs"
                   >
                     {tmpArray2[columnOrder[index]].name}
-                  </p> :
-                  tmpArray2[columnOrder[index]].name}
+                  </p>}
+                {tmpArray2[columnOrder[index]].name !== "View Log" &&
+                  tmpArray2[columnOrder[index]].name
+                }
               </TableCell>
             )
           })}

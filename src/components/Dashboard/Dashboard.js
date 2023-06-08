@@ -20,7 +20,6 @@ import {
 } from '../../store/actions/jobAction';
 
 import { dGraphData, dArrayData, dTaskData } from "../../services/mockData";
-import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { generateSearchQueries } from '../../utils/utils';
 
@@ -38,7 +37,6 @@ import '../../assets/css/App.css';
 export default function Dashboard() {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
-	const imagePaths = useSelector((state) => state.global.imagePaths);
 
 	/**
 	 * The useSearchParams hook is used to read and modify the query string in the URL for the current location.
@@ -88,10 +86,13 @@ export default function Dashboard() {
 	const graphData = useSelector((state) => state.global.graphData);
 	const arrayData = useSelector((state) => state.global.arrayData);
 	const taskData = useSelector((state) => state.global.taskData);
+	const imagePaths = useSelector((state) => state.global.imagePaths);
+	const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
 
 	const jobSelected = useSelector((state) => state.job.jobSelected);
 	const jobSelectedId = useSelector((state) => state.job.jobSelectedId);
 	const jobExpanded = useSelector((state) => state.job.jobExpanded);
+
 	const [jobListLoading, setJobListLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [initSearchQuery,] = useState(getInitSearchQuery());
@@ -136,7 +137,7 @@ export default function Dashboard() {
 		}
 	}, [viewLog, logPaneHeight]);
 
-	React.useEffect(() => {
+	useEffect(() => {
 		window.addEventListener("mousemove", resize);
 		window.addEventListener("mouseup", stopResizing);
 		return () => {
@@ -168,54 +169,54 @@ export default function Dashboard() {
 		 * This is for ElasticSearch
 		 * Comment out below section when you work with Mock Data
 		 */
-		ElasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
-			(result) => {
-				let tmpGraphData = [];
-				if (expandFlag) {
-					tmpGraphData = graphData;
-				}
-				result.hits.hits.map(doc => tmpGraphData.push(doc._source));
-				dispatch(globalGraphData(tmpGraphData));
-				setJobListLoading(false);
-			}
-		)
+		// elasticSearchService.getDgraphs(elasticSearchQuery, from, size, tmpFilterQueryFlag.display.hidden).then(
+		// 	(result) => {
+		// 		let tmpGraphData = [];
+		// 		if (expandFlag) {
+		// 			tmpGraphData = graphData;
+		// 		}
+		// 		result.hits.hits.map(doc => tmpGraphData.push(doc._source));
+		// 		dispatch(globalGraphData(tmpGraphData));
+		// 		setJobListLoading(false);
+		// 	}
+		// )
 
 		/**
 		 * This is for Mock Data
 		 * Comment out below section when you work with ElasticSearch
 		 */
-		// let icoda_username = [], title = [], status = [], after = [], dept = [], type = [], show = [];
-		// newSearchQuery.map((query) => {
-		// 	if (query.header === 'user') {
-		// 		icoda_username.push(query.title)
-		// 	} else if (query.header === 'title') {
-		// 		title.push(query.title)
-		// 	} else if (query.header === 'status') {
-		// 		status.push(query.title)
-		// 	} else if (query.header === 'dept') {
-		// 		dept.push(query.title)
-		// 	} else if (query.header === 'type') {
-		// 		type.push(query.title)
-		// 	} else if (query.header === 'show') {
-		// 		show.push(query.title)
-		// 	} else if (query.header === 'after') {
-		// 		after.push(query.title)
-		// 	}
-		// })
+		let icoda_username = [], title = [], status = [], after = [], dept = [], type = [], show = [];
+		newSearchQuery.map((query) => {
+			if (query.header === 'user') {
+				icoda_username.push(query.title)
+			} else if (query.header === 'title') {
+				title.push(query.title)
+			} else if (query.header === 'status') {
+				status.push(query.title)
+			} else if (query.header === 'dept') {
+				dept.push(query.title)
+			} else if (query.header === 'type') {
+				type.push(query.title)
+			} else if (query.header === 'show') {
+				show.push(query.title)
+			} else if (query.header === 'after') {
+				after.push(query.title)
+			}
+		})
 
-		// let tmpGraphData = dGraphData.hits.hits.filter(doc => {
-		// 	return (!icoda_username.length || icoda_username.includes(doc._source.icoda_username)) &&
-		// 		(!title.length || title.includes(doc._source.title)) &&
-		// 		(!status.length || status.includes(doc._source._statusname));
-		// });
-		// // Query after
-		// if (after.length === 1) {
-		// 	tmpGraphData = tmpGraphData.filter(doc => {
-		// 		return doc._source._submittime >= after[0];
-		// 	})
-		// }
-		// dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
-		// setJobListLoading(false);
+		let tmpGraphData = dGraphData.hits.hits.filter(doc => {
+			return (!icoda_username.length || icoda_username.includes(doc._source.icoda_username)) &&
+				(!title.length || title.includes(doc._source.title)) &&
+				(!status.length || status.includes(doc._source._statusname));
+		});
+		// Query after
+		if (after.length === 1) {
+			tmpGraphData = tmpGraphData.filter(doc => {
+				return doc._source._submittime >= after[0];
+			})
+		}
+		dispatch(globalGraphData(tmpGraphData.map((doc) => doc._source)));
+		setJobListLoading(false);
 	}
 
 	useEffect(() => {
@@ -284,7 +285,14 @@ export default function Dashboard() {
 	}, [dispatch, graphData, arrayData, taskData, jobSelectedId]);
 
 	useEffect(() => {
-		async function foo() {
+		async function getUserObj() {
+			elasticSearchService.getUser()
+			.then(userObj => {
+				foo(userObj)
+			});
+		}
+
+		async function foo(userObj) {
 			/**
 			 * When a user first logs or navigates to the base url
 			 * Auto populate the search bar to query for jobs submitted by them in the last two days.
@@ -301,7 +309,7 @@ export default function Dashboard() {
 
 				initSearchQuery.push({
 					header: 'user',
-					title: 'lean',
+					title: userObj['username'],
 				});
 			}
 
@@ -320,13 +328,13 @@ export default function Dashboard() {
 			tmpJobSelectedId.map(selected => {
 				let jobID = selected.split(".");
 				if (jobID[2]) {
-					imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = ElasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
+					imagePaths[jobID[0] + '.' + jobID[1] + '.' + jobID[2]] = elasticSearchService.playImages(jobID[0], jobID[1], jobID[2]);
 					dispatch(globalImagePaths(imagePaths));
 				} else if (jobID[1]) {
-					imagePaths[jobID[0] + '.' + jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
+					imagePaths[jobID[0] + '.' + jobID[1]] = elasticSearchService.playImages(jobID[0], jobID[1]);
 					dispatch(globalImagePaths(imagePaths));
 				} else if (jobID[0]) {
-					imagePaths[jobID[0]] = ElasticSearchService.playImages(jobID[0]);
+					imagePaths[jobID[0]] = elasticSearchService.playImages(jobID[0]);
 					dispatch(globalImagePaths(imagePaths));
 				}
 			})
@@ -336,7 +344,7 @@ export default function Dashboard() {
 			dispatch(jobJobExpanded(tmpJobExpanded));
 			dispatch(globalViewLog(searchParamsObject.log === 'true' ? true : false));
 		}
-		foo();
+		getUserObj();
 	}, []);
 
 	const toggleDetails = () => {
@@ -349,24 +357,24 @@ export default function Dashboard() {
 
 	const toggleJob = async (jobId) => {
 		setJobListLoading(true);
-		await ElasticSearchService.getArrays(jobId).then(async (resultArray) => {
+		// await elasticSearchService.getArrays(jobId).then(async (resultArray) => {
 			let newArrayData = {};
-			newArrayData = { ...arrayData, [jobId]: resultArray.hits.hits.map(doc => doc._source) };
-			// newArrayData = { ...arrayData, [jobId]: dArrayData.hits.hits.map(doc => doc._source) };
+			// newArrayData = { ...arrayData, [jobId]: resultArray.hits.hits.map(doc => doc._source) };
+			newArrayData = { ...arrayData, [jobId]: dArrayData.hits.hits.map(doc => doc._source) };
 
 			let newTaskData = {};
 			let tmp = [];
 			await Promise.all(newArrayData[jobId].map(async (array) => {
-				await ElasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
-					tmp[array.aid] = resultTask.hits.hits.map(doc => doc._source);
-					// tmp[array.aid] = dTaskData.hits.hits.map(doc => doc._source);
-				});
+				// await elasticSearchService.getTasks(jobId, array.aid).then((resultTask) => {
+					// tmp[array.aid] = resultTask.hits.hits.map(doc => doc._source);
+					tmp[array.aid] = dTaskData.hits.hits.map(doc => doc._source);
+				// });
 			}))
 			newTaskData = { ...taskData, [jobId]: tmp };
 			dispatch(globalArrayData(newArrayData));
 			dispatch(globalTaskData(newTaskData));
 			setJobListLoading(false);
-		});
+		// });
 	}
 
 	return (

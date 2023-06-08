@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import TableRow from "@mui/material/TableRow";
@@ -14,8 +15,6 @@ import IconDependent from "../../assets/images/icon-dependent.svg";
 import IconQueued from "../../assets/images/icon-queued.svg";
 import IconDone from "../../assets/images/icon-done.svg";
 import originStatuses from "../../assets/data/statuses.json";
-
-import ElasticSearchService from "../../services/ElasticSearch.service";
 
 import { globalImagePaths } from "../../store/actions/globalAction";
 import { jobJobSelectedId, jobJobExpanded } from "../../store/actions/jobAction";
@@ -81,6 +80,7 @@ export default function ArrayTableRow({
   columnOrder,
 }) {
   const dispatch = useDispatch();
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
   const imagePaths = useSelector((state) => state.global.imagePaths);
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
@@ -108,7 +108,7 @@ export default function ArrayTableRow({
 
   const selectArrayRow = (childArrayText) => {
     let jobID = childArrayText.toString().split(".");
-    imagePaths[jobID[0] + "." + jobID[1]] = ElasticSearchService.playImages(jobID[0], jobID[1]);
+    imagePaths[jobID[0] + "." + jobID[1]] = elasticSearchService.playImages(jobID[0], jobID[1]);
     dispatch(globalImagePaths(imagePaths));
 
     /**
@@ -146,6 +146,11 @@ export default function ArrayTableRow({
       { name: "" },
       { name: "" },
       { name: "" },
+      { name: "" },
+      { name: "" },
+      { name: "" },
+      { name: "" },
+      { name: "" },
       {
         name: elapsedTime(
           selectedGraphData,
@@ -177,7 +182,7 @@ export default function ArrayTableRow({
         childArrayText={childArrayText}
         expandArrayRow={expandArrayRow}
       >
-        {[...Array(8)].map((value, index) => {
+        {[...Array(13)].map((value, index) => {
           return (
             <TableCell
               key={index}
@@ -211,17 +216,15 @@ export default function ArrayTableRow({
                   {status === "" && (
                     <div className="empty-div"></div>
                   )}
-                  <p className="text-done">{statuses[0].value}</p>
-                  <p className="text-running">{statuses[1].value}</p>
-                  <p className="text-queued">{statuses[4].value}</p>
-                  <p className="text-dependent">{statuses[5].value}</p>
-                  <p className="text-exit">
-                    {statuses[2].value + statuses[3].value + statuses[7].value}
-                  </p>
                 </div>
               )}
+              {columnOrder[index] === 4 && <p className="text-done">{statuses[0].value}</p>}
+              {columnOrder[index] === 5 && <p className="text-running">{statuses[1].value}</p>}
+              {columnOrder[index] === 6 && <p className="text-queued">{statuses[4].value}</p>}
+              {columnOrder[index] === 7 && <p className="text-dependent">{statuses[5].value}</p>}
+              {columnOrder[index] === 8 && <p className="text-exit">{statuses[2].value + statuses[3].value + statuses[7].value}</p>}
               {/* {isMemMaxed[did] && isMemMaxed[did][arrayRow.aid] && columnOrder[index] === 10 && (
-                <div class="column-cell memory-column pull-right text-center">
+                <div className="column-cell memory-column pull-right text-center">
                   <span
                     className="mem-maxed-tag"
                     title="One or more tasks in this Array are using more memory than was reserved"
@@ -231,7 +234,7 @@ export default function ArrayTableRow({
                   </span>
                 </div>
               )} */}
-              {columnOrder[index] !== 3 && tmpArray1[columnOrder[index]].name}
+              {columnOrder[index] !== 3 && columnOrder[index] !== 4 && columnOrder[index] !== 5 && columnOrder[index] !== 6 && columnOrder[index] !== 7 && columnOrder[index] !== 8 && tmpArray1[columnOrder[index]].name}
             </TableCell>
           );
         })}

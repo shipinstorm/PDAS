@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import classNames from "classnames";
 import { Subject } from "rxjs";
-import ElasticSearchService from "../../services/ElasticSearch.service";
 import {
   modalConfirmObj,
   modalUpdateType,
@@ -21,9 +20,14 @@ export default function DgraphActionMenuComponent({
   toggleLog,
   mainContentWrapperTop,
 }) {
+  const dispatch = useDispatch();
+
+  const contextRef = useRef(null);
+
   // Global Variables from Redux State
   const externalIP = useSelector((state) => state.global.externalIP);
   const imagePaths = useSelector((state) => state.global.imagePaths);
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
 
   // Job Variables from Redux State
   const selectedGraphData = useSelector((state) => state.job.graphSelected);
@@ -49,9 +53,6 @@ export default function DgraphActionMenuComponent({
     posX: 0,
     posY: 0,
   });
-  const contextRef = useRef(null);
-
-  const dispatch = useDispatch();
 
   useEffect(() => {
     if (modalCallBack === 1) {
@@ -302,8 +303,8 @@ export default function DgraphActionMenuComponent({
       }
     });
 
-    // if (ElasticSearchService.user['username']) {
-    //   ElasticSearchService.populateHostList();
+    // if (elasticSearchService.user['username']) {
+    //   elasticSearchService.populateHostList();
     // }
   }, []);
 
@@ -627,19 +628,19 @@ export default function DgraphActionMenuComponent({
       case requeueAllAction:
         for (let item of items) {
           if (!item.aid) {
-            ElasticSearchService.requeueAll(Number(item.did))
+            elasticSearchService.requeueAll(Number(item.did))
               .then((title) => {
                 // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
               })
               .catch((error) => setErrorMessage(error));
           } else if (!item.tid) {
-            ElasticSearchService.requeueAll(Number(item.did), Number(item.aid))
+            elasticSearchService.requeueAll(Number(item.did), Number(item.aid))
               .then((title) => {
                 // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing...", time: new moment(), substatus: "requeueing..." });
               })
               .catch((error) => setErrorMessage(error));
           } else if (item.tid) {
-            ElasticSearchService.requeueAll(
+            elasticSearchService.requeueAll(
               Number(item.did),
               Number(item.aid),
               Number(item.tid)
@@ -654,19 +655,19 @@ export default function DgraphActionMenuComponent({
       case requeueRunAction:
         for (let item of items) {
           if (!item.aid) {
-            ElasticSearchService.requeueRun(Number(item.did))
+            elasticSearchService.requeueRun(Number(item.did))
               .then((title) => {
                 // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
               })
               .catch((error) => setErrorMessage(error));
           } else if (!item.tid) {
-            ElasticSearchService.requeueRun(Number(item.did), Number(item.aid))
+            elasticSearchService.requeueRun(Number(item.did), Number(item.aid))
               .then((title) => {
                 // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing running...", time: new moment(), runningOnly: true, substatus: "requeueing..." });
               })
               .catch((error) => setErrorMessage(error));
           } else if (item.tid) {
-            ElasticSearchService.requeueRun(
+            elasticSearchService.requeueRun(
               Number(item.did),
               Number(item.aid),
               Number(item.tid)
@@ -681,19 +682,19 @@ export default function DgraphActionMenuComponent({
       case requeueExitAction:
         for (let item of items) {
           if (!item.aid) {
-            ElasticSearchService.requeueExit(Number(item.did))
+            elasticSearchService.requeueExit(Number(item.did))
               .then((title) => {
                 // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
               })
               .catch((error) => setErrorMessage(error));
           } else if (!item.tid) {
-            ElasticSearchService.requeueExit(Number(item.did), Number(item.aid))
+            elasticSearchService.requeueExit(Number(item.did), Number(item.aid))
               .then((title) => {
                 // actionSuccess.emit({ itemId: getItemId(item), status: "requeueing exited...", time: new moment(), exitedOnly: true, substatus: "requeueing..." });
               })
               .catch((error) => setErrorMessage(error));
           } else if (item.tid) {
-            ElasticSearchService.requeueExit(
+            elasticSearchService.requeueExit(
               Number(item.did),
               Number(item.aid),
               Number(item.tid)
@@ -749,19 +750,19 @@ export default function DgraphActionMenuComponent({
   const doKillAction = () => {
     for (let item of items) {
       if (!item.aid) {
-        ElasticSearchService.kill(Number(item.did))
+        elasticSearchService.kill(Number(item.did))
           .then((title) => {
             // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
           })
           .catch((error) => setErrorMessage(error));
       } else if (!item.tid) {
-        ElasticSearchService.kill(Number(item.did), Number(item.aid))
+        elasticSearchService.kill(Number(item.did), Number(item.aid))
           .then((title) => {
             // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
           })
           .catch((error) => setErrorMessage(error));
       } else if (item.tid) {
-        ElasticSearchService.kill(
+        elasticSearchService.kill(
           Number(item.did),
           Number(item.aid),
           Number(item.tid)
@@ -777,19 +778,19 @@ export default function DgraphActionMenuComponent({
   const doKillToDoneAction = () => {
     for (let item of items) {
       if (!item.aid) {
-        ElasticSearchService.killToDone(Number(item.did))
+        elasticSearchService.killToDone(Number(item.did))
           .then((title) => {
             // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
           })
           .catch((error) => setErrorMessage(error));
       } else if (!item.tid) {
-        ElasticSearchService.killToDone(Number(item.did), Number(item.aid))
+        elasticSearchService.killToDone(Number(item.did), Number(item.aid))
           .then((title) => {
             // actionSuccess.emit({ itemId: getItemId(item), status: "killing...", time: new moment(), substatus: "killing..." });
           })
           .catch((error) => setErrorMessage(error));
       } else if (item.tid) {
-        ElasticSearchService.killToDone(
+        elasticSearchService.killToDone(
           Number(item.did),
           Number(item.aid),
           Number(item.tid)
@@ -805,7 +806,7 @@ export default function DgraphActionMenuComponent({
   const sendRequeueRequest = (listOfHosts, isexclusive) => {
     for (let item of items) {
       if (!item.aid) {
-        ElasticSearchService.requeueLocal(
+        elasticSearchService.requeueLocal(
           listOfHosts,
           isexclusive,
           Number(item.did)
@@ -815,7 +816,7 @@ export default function DgraphActionMenuComponent({
           })
           .catch((error) => setErrorMessage(error));
       } else if (!item.tid) {
-        ElasticSearchService.requeueLocal(
+        elasticSearchService.requeueLocal(
           listOfHosts,
           isexclusive,
           Number(item.did),
@@ -826,7 +827,7 @@ export default function DgraphActionMenuComponent({
           })
           .catch((error) => setErrorMessage(error));
       } else if (item.tid) {
-        ElasticSearchService.requeueLocal(
+        elasticSearchService.requeueLocal(
           listOfHosts,
           isexclusive,
           Number(item.did),
@@ -850,7 +851,7 @@ export default function DgraphActionMenuComponent({
 
     dispatch(modalConfirmObj(confirmModalObj));
     dispatch(modalUpdateType(ModalType.RequeueLocally));
-    dispatch(modalHostsObj(ElasticSearchService.hosts));
+    dispatch(modalHostsObj(elasticSearchService.hosts));
     dispatch(modalUpdateFlag(1));
   };
 
@@ -879,13 +880,13 @@ export default function DgraphActionMenuComponent({
   const breakDependencies = () => {
     for (let item of items) {
       if (!item.aid) {
-        ElasticSearchService.breakDgraphDependencies(Number(item.did))
+        elasticSearchService.breakDgraphDependencies(Number(item.did))
           .then((title) => {
             // actionSuccess.emit({ itemId: getItemId(item), status: "removing deps...", time: new moment(), substatus: "removing dependencies..." });
           })
           .catch((error) => setErrorMessage(error));
       } else if (!item.tid) {
-        ElasticSearchService.breakArrayDependencies(
+        elasticSearchService.breakArrayDependencies(
           Number(item.did),
           Number(item.aid)
         )
@@ -894,7 +895,7 @@ export default function DgraphActionMenuComponent({
           })
           .catch((error) => setErrorMessage(error));
       } else if (item.tid) {
-        ElasticSearchService.breakTaskDependencies(
+        elasticSearchService.breakTaskDependencies(
           Number(item.did),
           Number(item.aid),
           Number(item.tid)
@@ -934,7 +935,7 @@ export default function DgraphActionMenuComponent({
     console.log("[DEBUG] - items=" + idList.join(","));
 
     // Create an Observable for the service call to fetch the rvspec for the
-    ElasticSearchService.getRVSpec(idList, externalIP)
+    elasticSearchService.getRVSpec(idList, externalIP)
       .then((rvSpec) => playImagesCallBack(rvSpec.rvSpec))
       .catch((error) => console.log("[ERROR] (1) Problem getting rvspec: " + error));
 
@@ -992,7 +993,7 @@ export default function DgraphActionMenuComponent({
         } else {
           for (let item of items) {
             if (!item.aid) {
-              ElasticSearchService.setDgraphMeta(
+              elasticSearchService.setDgraphMeta(
                 Number(getItemId(item)),
                 "clienthide",
                 code
@@ -1008,7 +1009,7 @@ export default function DgraphActionMenuComponent({
       } else {
         for (let item of items) {
           if (!item.aid) {
-            ElasticSearchService.setDgraphMeta(
+            elasticSearchService.setDgraphMeta(
               Number(getItemId(item)),
               "clienthide",
               code
@@ -1047,7 +1048,7 @@ export default function DgraphActionMenuComponent({
 
     // Finally, if we got here, start the playback by opening the rvlink
     // url.
-    // rvLinkURL = ElasticSearchService.constructPlaybackUrl(rvSpec);
+    // rvLinkURL = elasticSearchService.constructPlaybackUrl(rvSpec);
     // if (rvLinkURL.length > 0) {
     //   location.href = rvLinkURL;
     // }
@@ -1067,9 +1068,9 @@ export default function DgraphActionMenuComponent({
       <div className={`optionsList ${classes?.listWrapper}`}>
         {links &&
           links.length > 0 &&
-          links.map((link) => {
+          links.map((link, index) => {
             return (
-              <div className={"dgraph-menu " + link.className}>
+              <div key={index} className={"dgraph-menu " + link.className}>
                 {link?.horizontalBefore && (
                   <div>
                     <hr />
@@ -1112,9 +1113,10 @@ export default function DgraphActionMenuComponent({
                     {!link?.icon && <span className="no-icon"></span>}
                     {link?.title}
                     <div className="menu-sublinks pull-right">
-                      {link?.sublinks.map((sublink) => {
+                      {link?.sublinks.map((sublink, index) => {
                         return (
                           <span
+                            key={index}
                             onClick={() => sublink.subject.next(sublink)}
                             className={"requeueAction-" + sublink.title}
                           >

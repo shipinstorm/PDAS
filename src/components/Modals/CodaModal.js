@@ -156,7 +156,7 @@ export default function CodaModal() {
   }
 
   return (
-    <div className={classNames("modal", show ? "show" : "fade")} tabindex="-1" role="dialog" aria-hidden="true">
+    <div className={classNames("modal", show ? "show" : "fade")} tabIndex="-1" role="dialog" aria-hidden="true">
       <div className={classNames("modal-dialog modal-sm", modal_type !== ModalType.Loading ? "confirm-dialog" : "")}>
         {/* Modal content */}
         {modal_type === ModalType.Loading && <div className="modal-content">

@@ -196,6 +196,7 @@ ul.checkbox li {
   background-color: #4b4b4b;
   color: rgba(255, 255, 255, 0.6);
   margin: 0px 4px;
+  font-weight: 500;
 }
 .header-buttons a {
   border-radius: 50%;
@@ -210,6 +211,28 @@ ul.checkbox li {
 .header-buttons button span.material-icons {
   font-size: 18px;
 }
+.header-buttons button span.material-icons {
+  padding-right: 4px;
+}
+
+.header-buttons a:hover,
+.header-buttons button:hover {
+  background-color: #949494;
+  color: #ffffffb3;
+}
+
+.header-buttons button.toggled {
+  background: rgba(255, 255, 255, 0.05);
+  border: solid #4b4b4b 2px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.header-buttons button.toggled:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border: solid #4b4b4b 2px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
 /*  Job List  */
 
 .job-list {
@@ -281,6 +304,13 @@ td.host span.thread-count {
 
 .log-pane {
   color: rgba(255, 255, 255, 0.35);
+  width: 100%;
+  text-align: center;
+  font-weight: 500;
+}
+
+.log-pane span.material-icons {
+  font-size: 42px;
 }
 
 .check-box {
@@ -293,6 +323,8 @@ td.host span.thread-count {
   margin: 0px 3px;
   padding: 0px 5px;
   color: white;
+  font-size: 14px;
+  font-weight: 500;
 }
 .autocomplete-tag-close {
   cursor: pointer;
@@ -303,13 +335,16 @@ td.host span.thread-count {
 }
 .autocomplete-group {
   display: flex;
-  border-bottom: 1px solid #1d25cd;
+  border-bottom: 1px solid #001f27;
+  font-size: 14px;
+  font-weight: 500;
 }
 .autocomplete-group:last-child {
   border-bottom: none !important;
 }
 .autocomplete-right {
-  background: #aaa;
+  background: #383838;
+  color: #eee;
   padding: 0px;
   width: 100%;
 }
@@ -327,7 +362,16 @@ td.host span.thread-count {
   text-align: right;
   padding-top: 10px !important;
   padding-right: 10px !important;
-  background: #eee;
+  background: #292929;
+  color: #BEBEBE;
+}
+span.material-icons.search-icon {
+  padding-left: 8px;
+}
+.filter-button {
+  padding: 5px;
+  position: absolute;
+  right: 0px;
 }
 .MuiMenu-list {
   padding: 0px !important;
@@ -363,9 +407,10 @@ td.host span.thread-count {
 .MuiTableBody-root .MuiTableCell-root {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
-  text-overflow: ellipsis;
+  max-width: 300px;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 .MuiTableBody-root .MuiTableCell-root p {
   margin-bottom: 0px !important;
@@ -387,7 +432,7 @@ td.host span.thread-count {
 .MuiToolbar-root > div:nth-child(2) > button:nth-child(2) {
   position: absolute;
   top: -52px;
-  right: 250px;
+  right: 260px;
   z-index: 10001;
 }
 .MuiToolbar-root > div:nth-child(2) > span {
@@ -396,4 +441,25 @@ td.host span.thread-count {
 .MuiTableHead-root th {
   /* background-color: rgba(80, 80, 80, 0.5) !important; */
   background-color: transparent;
+}
+.tag-bar {
+  position: relative;
+  width: 100%;
+  min-height: 42px;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  background-color: #4b4b4b;
+  border-radius: 2px;
+  padding-right: 100px;
+}
+.tag-bar input {
+  height: inherit;
+  background: #222 !important;
+  color: white;
 }

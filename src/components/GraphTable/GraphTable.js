@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Waypoint } from "react-waypoint";
 
@@ -24,8 +24,6 @@ import IconDone from "../../assets/images/icon-done.svg";
 import SpinnerDarkGif from "../../assets/images/spinner_dark.gif";
 import originStatuses from "../../assets/data/statuses.json";
 
-import ElasticSearchService from "../../services/ElasticSearch.service";
-
 import { globalImagePaths } from "../../store/actions/globalAction";
 import { jobJobSelectedId, jobJobExpanded } from "../../store/actions/jobAction";
 
@@ -39,8 +37,6 @@ import ArrayTableRow from "./ArrayTableRow";
 import DgraphActionMenuComponent from "../ActionMenu/ActionMenu";
 
 import './GraphTable.scss';
-
-
 
 const ExpandableTableRow = ({
   children,
@@ -93,6 +89,7 @@ const ExpandableTableRow = ({
 function GraphTable(props) {
   const dispatch = useDispatch();
 
+  const elasticSearchService = useSelector((state) => state.global.elasticSearchService);
   const graphData = useSelector((state) => state.global.graphData);
   const arrayData = useSelector((state) => state.global.arrayData);
   const taskData = useSelector((state) => state.global.taskData);
@@ -103,13 +100,13 @@ function GraphTable(props) {
   const [columnOrder, setColumnOrder] = useState(
     localStorage.columnOrder
       ? JSON.parse("[" + localStorage.columnOrder + "]")
-      : [0, 1, 2, 3, 4, 5, 6, 7]
+      : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
   );
   const [isMemMaxed, setIsMemMaxed] = useState({});
 
   const getTaskMemoryData = (dids) => {
     const tmpMemMaxed = isMemMaxed;
-    ElasticSearchService.getTaskMemoryData(dids)
+    elasticSearchService.getTaskMemoryData(dids)
       .then((result) => {
         for (let did of result.dids.buckets) {
           tmpMemMaxed[did.key] = null;
@@ -152,6 +149,7 @@ function GraphTable(props) {
             root: {
               backgroundColor: "#282828 !important",
               color: "#8D8D8D !important",
+              height: "100%",
               "& > div:nth-of-type(3) > div > div > div": {
                 border: "none",
               },
@@ -200,6 +198,7 @@ function GraphTable(props) {
           styleOverrides: {
             responsiveBase: {
               overflow: "inherit",
+              height: "100% !important"
             },
           },
         },
@@ -244,6 +243,26 @@ function GraphTable(props) {
       label: "Status",
     },
     {
+      name: "done",
+      label: "D",
+    },
+    {
+      name: "running",
+      label: "R",
+    },
+    {
+      name: "queued",
+      label: "Q",
+    },
+    {
+      name: "pending",
+      label: "P",
+    },
+    {
+      name: "exit",
+      label: "E",
+    },
+    {
       name: "host",
       label: "Host (th)",
     },
@@ -273,11 +292,21 @@ function GraphTable(props) {
   ]
 
   const data2 = graphData.map((jobs) => {
+    let tmp = graphData.filter((data) => data.did === jobs.did);
+    let tmpGraphData = tmp[0] ? tmp[0] : {};
+
+    let [statuses, status, statusClass] = setStatusPercents(originStatuses, tmpGraphData, 0);
+
     return {
       username: jobs.icoda_username,
       jobid: jobs.did,
       title: jobs.title,
       status: jobs._statusname,
+      done: statuses[0].value,
+      running: statuses[1].value,
+      queued: statuses[4].value,
+      pending: statuses[5].value,
+      exit: statuses[2].value + statuses[3].value + statuses[7].value,
       elapsed: elapsedTime(jobs, {}, {}),
       submitted: submittedTime(jobs._submittime),
     };
@@ -295,8 +324,8 @@ function GraphTable(props) {
     customRowRender: (data, dataIndex, rowIndex) => {
       return (
         <TableRow>
-          <TableCell colSpan={9}>
-            <div class="loading-div">
+          <TableCell colSpan={14}>
+            <div className="loading-div">
               <img src={SpinnerDarkGif} alt="" />
               <br />
               Loading jobs...
@@ -351,7 +380,7 @@ function GraphTable(props) {
       };
 
       const selectGraphRow = (childGraphText) => {
-        imagePaths[childGraphText] = ElasticSearchService.playImages(childGraphText);
+        imagePaths[childGraphText] = elasticSearchService.playImages(childGraphText);
         dispatch(globalImagePaths(imagePaths));
 
         /**
@@ -395,7 +424,7 @@ function GraphTable(props) {
           isSelected={isSelected}
           isExpanded={isExpanded}
         >
-          {[...Array(8)].map((value, index) => {
+          {[...Array(13)].map((value, index) => {
             return (
               <TableCell
                 key={index}
@@ -429,17 +458,13 @@ function GraphTable(props) {
                     {status === "" && (
                       <div className="empty-div"></div>
                     )}
-                    <p className="text-done">{statuses[0].value}</p>
-                    <p className="text-running">{statuses[1].value}</p>
-                    <p className="text-queued">{statuses[4].value}</p>
-                    <p className="text-dependent">{statuses[5].value}</p>
-                    <p className="text-exit">
-                      {statuses[2].value +
-                        statuses[3].value +
-                        statuses[7].value}
-                    </p>
                   </div>
                 )}
+                {columnOrder[index] === 4 && <p className="text-done">{data[4]}</p>}
+                {columnOrder[index] === 5 && <p className="text-running">{data[5]}</p>}
+                {columnOrder[index] === 6 && <p className="text-queued">{data[6]}</p>}
+                {columnOrder[index] === 7 && <p className="text-dependent">{data[7]}</p>}
+                {columnOrder[index] === 8 && <p className="text-exit">{data[8]}</p>}
                 {isMemMaxed[did] && columnOrder[index] === 10 && (
                   <div className="column-cell memory-column pull-right text-center">
                     <span
@@ -451,7 +476,7 @@ function GraphTable(props) {
                     </span>
                   </div>
                 )}
-                {columnOrder[index] !== 3 && data[columnOrder[index]]}
+                {columnOrder[index] !== 3 && columnOrder[index] !== 4 && columnOrder[index] !== 5 && columnOrder[index] !== 6 && columnOrder[index] !== 7 && columnOrder[index] !== 8 && data[columnOrder[index]]}
               </TableCell>
             );
           })}
